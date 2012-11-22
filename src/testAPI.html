@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+
+	<form name="post_essay" action="http://localhost:5000/essay"
+		method="post">
+		<fieldset>
+			<legend>Personal information:</legend>
+			User: <input type="text" size="30" name="username" placeholder="your name" required="required"><br>
+		</fieldset>
+		<fieldset>
+			<legend>Essay</legend>
+			Assignment: <input type="text" size="30" name="module" placeholder="TMA or EMA code" required="required"><br>
+			<textarea style="max-width: 90%; width:90%" rows="20" cols="60" name="text"  placeholder="paste the text of your essay" required="required"></textarea>
+		</fieldset>
+		<fieldset>
+			<input type="submit" value="Submit">
+		</fieldset>
+	</form>
+
+</body>
+</html>

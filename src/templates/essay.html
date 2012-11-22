@@ -1,0 +1,13 @@
+<!doctype html>
+<title>Hello from EssayAnalyser</title>
+
+{% if request.form['username'] %}
+<h1>Hello {{ request.form['username'] }}!</h1>
+{% else %}
+<h1>Hello World!</h1>
+{% endif %}
+
+<p>You've just submitted a new essay</p>
+<div class="essay">{{ request.form['text'] }}</div>
+
+<p>{{essay}}</p>

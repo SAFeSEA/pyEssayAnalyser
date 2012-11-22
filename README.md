@@ -44,14 +44,45 @@ An essay Analyser &amp; Summariser, using Flask for the API and NLTK for the lan
   >>> nltk.download('all')
 ~~~~~~~~~~~~~~~~~~~~~
    
-   Try the installation:
+   Try the NLTK installation:
    
 ~~~~~~~~~~~~~~~~~~~~~{.py}
    >>> from nltk.corpus import brown
    >>> brown.words()
+   ['The', 'Fulton', 'County', 'Grand', 'Jury', 'said', ...]
 ~~~~~~~~~~~~~~~~~~~~~
 
-## APIs
+7. Try the Flask installation and configuration:
+
+~~~~~~~~~~~~~~~~~~~~~
+   $ python src/TestFlask.py
+     * Running on http://127.0.0.1:5000/
+~~~~~~~~~~~~~~~~~~~~~
+
+Head over to http://127.0.0.1:5000/ in your browser, you should see the Hello World greetings.
+ 
+
+## Deployment of the EssayAnalyser
+
+~~~~~~~~~~~~~~~~~~~~~
+   $ python src/pyEssayAnalyser.py
+     * Running on http://127.0.0.1:5000/
+~~~~~~~~~~~~~~~~~~~~~
+
+TO DO.
+
+## API
+
+TO DO.
+
+Method  | URL        | Action
+--------|------------|------
+GET     | /                | Hello world 
+POST    | /api/essay       | add a new essay to the system and return various analytics
+GET     | /api/essay/UID | Retrieve essay with id = UID
+PUT     | /api/essay/UID | Update essay with id = UID
+GET     | /api/essay/UID/analytics | Retrieve various analytics on the essay with id = UID
+
 
 
 
