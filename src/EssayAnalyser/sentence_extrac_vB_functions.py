@@ -40,7 +40,7 @@ rank_weight_scores(myarray, nf, nf2)
 # Note: I have not used case-insensitive matching, because I don't want to
 # match lower-case instances because of ambiguity of 'reference' and 'references'.
 # I have tried various ways of using a disjunction for this, but have not yet succeeded.
-def get_essay_body(text,nf):
+def get_essay_body(text,nf=None):
     if 'References' in text:
         a = text.rfind('References') # Find the LAST occurrence of 'References', not the first, in case there is a contents page or other xref.
         #a = text.index("References") # Find the FIRST occurrence of 'References'.
@@ -63,7 +63,8 @@ def get_essay_body(text,nf):
         b = text[:a] 
         return b
     else:
-        nf.write('\n********* Cannot find a references section. *********\n') 
+        if nf is not None:
+            nf.write('\n********* Cannot find a references section. *********\n') 
         return text # If none of those terms are in text, just return text.
 
 # Function: Reinstate the SECOND of a pair of quotation marks.
@@ -450,7 +451,7 @@ def add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray):
 # Note that this involves finding which nodes should be joined by an edge, which in turn
 # requires every pair of nodes/sentences in the graph to be compared in order to derive
 # a similarity score. That part is carried by 'add_one_nodes_edges'.
-def add_all_node_edges(gr,myWarray,myCarray,nf2):    
+def add_all_node_edges(gr,myWarray,myCarray,nf2=None):    
     mylist = []
     counter1 = 0
     counter0 = 0
@@ -467,10 +468,10 @@ def add_all_node_edges(gr,myWarray,myCarray,nf2):
     sumzeroweights = sum(mylist) # Just keeping tabs on how many zero-weight edges there are.
     #print '\nNumber of sentence pair comparisons with edge weight 0 (sentence pairs with no similarity): ',
     #print sumzeroweights
-    nf2.write(str(sumzeroweights))
-    nf2.write(': Number of sentence pair comparisons with edge weight 0 (sentence pairs with no similarity)\n')
-    
-
+    if nf2 is not None:
+        nf2.write(str(sumzeroweights))
+        nf2.write(': Number of sentence pair comparisons with edge weight 0 (sentence pairs with no similarity)\n')
+       
 
 # Function: Find the global weight score WSVi for one node Vi in graph gr.
 # Called by 'find_all_gw_scores'.
@@ -518,7 +519,7 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
 # it is recursive. So you need some values in order to be able to start.
 # The arbitrary values move closer towards the real values at every iteration
 # until an inconsequential difference is made by further iterations.
-def find_all_gw_scores(gr, d, max_iterations, min_value, min_delta, graph_size, nodes, scores_array, nf, nf2):
+def find_all_gw_scores(gr, d, max_iterations, min_value, min_delta, graph_size, nodes, scores_array, nf=None, nf2=None):
     #for i in range(3):  # Set low for testing purposes.
     for i in range(max_iterations):  # Only go round this loop max_iterations (100) times for each node.
         #print i
@@ -536,10 +537,11 @@ def find_all_gw_scores(gr, d, max_iterations, min_value, min_delta, graph_size, 
             print '_____________________________________________'
             #nf2.write('Total number of sentences:')         
             #nf2.write(str(len(nodes)))
-            #nf2.write('\n')                                    
-            nf2.write('\nFinal iteration number:')                      
-            nf2.write(str(i+1))
-            nf2.write('\n')                    
+            #nf2.write('\n')             
+            if nf2 is not None:                       
+                nf2.write('\nFinal iteration number:')                      
+                nf2.write(str(i+1))
+                nf2.write('\n')                    
             break # ... stop
     return scores_array
 
@@ -555,7 +557,7 @@ def update_array(myarray,scores_array):
             
 # Function: Make a structure containing the results presented with the WSVi score
 # first, then the array key, then the original sentence.
-def rank_weight_scores(myarray, nf, nf2):
+def rank_weight_scores(myarray, nf=None, nf2=None):
     mylist = []
     mylist2 = []
     counter = 0
@@ -572,27 +574,31 @@ def rank_weight_scores(myarray, nf, nf2):
     s = str(temp0) # Map headings list to a string
     w = re.sub('\]\),', ']),\n', s) # Add a new line at the end of every result.
     y = re.sub('\"\),', '\'),\n', w) # Be careful...
-    nf.write('\n\nWhole paragraphs that are probably not sentences (headings, captions, ...): \n')
-    nf.write(y)
+    if nf is not None:
+        nf.write('\n\nWhole paragraphs that are probably not sentences (headings, captions, ...): \n')
+        nf.write(y)
     temp2 = [(a,b,c,d,e) for (a,b,c,d,e) in mylist if e != []] # Remove the now-empty sentences from the rankings    
     temp3 = [(a,b,c,d,e) for (a,b,c,d,e) in temp2 if c != '*-s*'] # Remove the array entries labeled 'heading' from the results to be returned to the user
     temp3.sort() # ... and sort the structure according to its first argument (WSVi score)
     list.reverse(temp3)
     for (a,b,c,d,e) in temp3: # Get only the sentence key numbers from the sorted scores list...
         mylist2.append(b)
-    nf.write('\n\nRanked sentence order: (currently includes title (if the essay gives one) but not empty sentences (following processing) or headings, captions, ...)\n') 
-    nf.write(str(mylist2)) # ...and write them to the results file so you can see the order at a glance.
-    nf2.write('\nRanked sentence order:\n') 
-    nf2.write(str(mylist2)) # ...and write them to the summary file as well.
-    nf2.write('\n\nHighest-scoring sentence:')
-    nf2.write('\n')
-    nf2.write(str(temp3[0]))
-    nf2.write('\nOne of the lowest-scoring sentence (usually more than one):')
-    nf2.write('\n')
+    if nf is not None:
+        nf.write('\n\nRanked sentence order: (currently includes title (if the essay gives one) but not empty sentences (following processing) or headings, captions, ...)\n') 
+        nf.write(str(mylist2)) # ...and write them to the results file so you can see the order at a glance.
+    if nf2 is not None:
+        nf2.write('\nRanked sentence order:\n') 
+        nf2.write(str(mylist2)) # ...and write them to the summary file as well.
+        nf2.write('\n\nHighest-scoring sentence:')
+        nf2.write('\n')
+        nf2.write(str(temp3[0]))
+        nf2.write('\nOne of the lowest-scoring sentence (usually more than one):')
+        nf2.write('\n')
     temp4 = len(temp3)
     temp5 = temp4-1
-    nf2.write(str(temp3[temp5]))
-    nf2.write('\n')
+    if nf2 is not None:
+        nf2.write(str(temp3[temp5]))
+        nf2.write('\n')
     return temp3    
 
 # Copyright (c) 2012 Debora Georgia Field <deboraf7@aol.com>
