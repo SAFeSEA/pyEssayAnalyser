@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+	<head>
+	<title>Flaskr</title>
+	<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+	<script type="text/javascript" src="{{ url_for('static', filename='flot/jquery.js') }}"></script>
+    <script  type="text/javascript" src="{{ url_for('static', filename='flot/jquery.flot.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='flot/jquery.flot.symbol.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='flot/jquery.flot.tooltip.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='flot/openessayist.flot.symbol.js') }}"></script>
+    
+    
+        <style type="text/css">
+
+#flotTip {
+    background-color: #222222 !important;
+    border: 1px solid #000000 !important;
+    border-radius: 3px 3px 3px 3px !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+    color: #FFFFFF !important;
+    font-size: 11px !important;
+    padding: 3px 6px !important;
+    text-align: center !important;
+    text-decoration: none !important;
+}
+</style>
+    
+	</head>
+	<body>
+	<div class=page>
+		<h1>Flaskr</h1>
+
+ <div id="placeholder" style="width:600px;height:700px"></div>
+ 
+	</div>
+	
+	{{essay}}
+	
+	</body>
+	
+	<script type="text/javascript">
+$(function () {
+	
+	function suffixFormatter(val, axis) {
+		toto = {{essay['keyword']|safe}};
+    	if ((val > 0) && (val <= toto.length))
+        	return toto[val-1]
+    	else 
+    		return "";
+	}
+	
+    // setup background areas
+    var markings = [
+    {% for item in essay['count'] %}
+    	{ color: 'lightblue', lineWidth: 2, xaxis: { from: {{ item }}, to: {{ item }} } },
+    {% endfor %}
+    	{ color: '#f6f6f6', yaxis: { from: 10000 } }
+ 	];
+    var data = [
+    	{ label: "EssayXXX", data: {{essay['points']}}, points: { symbol: "stick" } }
+    ];
+
+    $.plot($("#placeholder"), data, {
+        series: { points: { show: true, radius: 5 } },
+        yaxis: { tickFormatter: suffixFormatter, tickSize: 1 },
+        grid: { markings: markings, hoverable: true },
+        tooltip: true,
+        tooltipOpts: {
+            content: "<div><span>%s</span> - <span>X: %x</span> <span>Y: %y</span></div>",
+            dateFormat: "%y-%0m-%0d %H:%M:%S",
+            shifts: {
+                x: 10,
+                y: 20
+                },
+            defaultTheme: false
+        }
+        
+    });
+});
+</script>
+	
+</html>
