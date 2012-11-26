@@ -6,53 +6,28 @@
 
 from flask import render_template, request, jsonify
 from uuid import uuid4
-import tempfile,os,shutil
+#import tempfile,os,shutil
 
 from sentence_extrac_vB_functions import * # File containing my own functions. This version of the functions uses cosine similarity, no edge if edge == 0, AND uses two arrays to speed up building of the graph. Results are in results_4a.
 from nltk.tokenize import LineTokenizer # "tokenizer that divides a string into substrings by treating any single newline character as a separator."
 from nltk import PunktSentenceTokenizer # The standard sentence tokeniser used by NLTK
+from nltk import FreqDist
 from time import time # For calculating processing times
 import networkx as nx # This is for implementing networks/graphs
+#from itertools import chain
+
+from EssayAnalyser import _apiLogger, _tempDir
 
 
-
-def process_essay():
-    # NVL : build the data structure for the JSON output
-    essay = {}
-    
-    essay['essayID'] = str(uuid4())         # NVL : generate a random UUID for the essay (converted to string)
-    essay['text'] = request.form['text']    # NVL : the text of the essay is extracted from the FORM part of the REQUEST, as received by the API 
-    
-    startfiletime = time()
-    endimporttime = time() # Set current time to a variable for later calculations
-    startprogtime = time() # Set current time to a variable for later calculations
-
-    # Begin by deleting the temporary directory and files you created last time you ran this program.
-    tempdir0 = tempfile.gettempdir() # This gets the path to the location of the temporary files and dirs.
-    tempfilelist = os.listdir(tempdir0) # This gets a list of the items stored in that location
-    for dirname in tempfilelist:
-        fullpath = os.path.join(tempdir0, dirname) # Join the path name to the dir name so you can delete the directories
-    if dirname.startswith('AAA_SentExtrac_Results_'): # Only delete the temp dirs that you have created in an earlier run of this program.
-        shutil.rmtree(fullpath) # Do the deletion
-    tempdir1 = tempfile.mkdtemp(suffix='', prefix='AAA_SentExtrac_Results_', dir=None) # Create a new directory for the essay results files to go in. Make it a temporary directory. Temporary files are stored here: c:\\users\\debora\\appdata\\local\\temp        
-
-    # NVL : create two files for the text and the result (to match original code)
-    # NVL : name is based on random UUID
-    filename = os.path.join(tempdir1, essay['essayID'] + '.txt')                     
-    newfilename = os.path.join(tempdir1, essay['essayID'] + '_results.txt') 
-    text0 = request.form['text']
-    
-    newfilename2 = os.path.join(tempdir1, 'sent_extract_results_summary.txt') 
-    nf2 = open(newfilename2, 'w') # Open 'newfilename2' (for writing to) and set open file to var 'nf2'
-    nf = open(newfilename, 'w') # Open 'newfilename' (for writing to) and set open file to var 'nf'
-    nf.write('\n\n') # Add blank lines to the essay results file            
-    nf.write(str(filename)) # Write the new file name to the essay results file
-    nf.write('\n\n') # Add blank lines to the essay results file
-
+## Process and segment the given text (string)
+# @param text0: The text (string) to be processed
+# @return: text,parasenttok (arrays)
+#
+def get_segmented_text(text0):
     
     # Get the body of the essay. 
     # Currently this is everything occurring before the references section but it needs improvement/refinment.
-    text1 = get_essay_body(text0, nf)     
+    text1 = get_essay_body(text0)     
 
     # Split the essay body on whitespace so that you can correct the latin9 encoding before sentence splitting. 
     # Latin9 encoding puts questions marks everywhere, which confuses the sentence splitter. I reverse this split before sentence tokenisation. 
@@ -82,12 +57,6 @@ def process_essay():
                 #print '\n\nThis is parasenttok: ', parasenttok[:30]            
                 #m = sbd.load_sbd_model('C:/Python27/splitta.1.03/model_nb/', use_svm=False) # Playing with a different sentence splitter
                 #senttok = sbd.sbd_text(m, temp2)
-  
-  
-    # Word-tokenise the result.           
-    text3 = word_tokenize(parasenttok)
-    #print '\n\nThis is text3 after word tokenisation: ', text3[:30]
-
 
     # Word-tokenise the result.           
     text3 = word_tokenize(parasenttok)
@@ -103,7 +72,6 @@ def process_essay():
     # This is because the content of the headings is important, but the headings themselves cannot be key sentences.
     text5 = label_headings(text4)
 
-    
     # Put all word-tokens into lower case. 
     # This is done so that the same word token represented in different cases will be counted as the same word. Note that this is done after sentence splitting in case capitalisation of sentence-initial words is used by sentence splitter.
     text6 = lowercase_sents(text5)
@@ -120,8 +88,19 @@ def process_essay():
     # Note that I do not currently remove sentences and paragraphs that have by now become empty (owing to punctuation and stopwords and numbers being removed), because we need to remember the structure of the original document for the results.
     # Ho
     text = remove_numeric_sents(text7)
+    return text,parasenttok
+    
 
-    texttime = time() # Set current time to a variable for later calculations
+def process_essay():
+    text0 = request.form['text']        # NVL : the text of the essay is extracted from the FORM part of the REQUEST, as received by the API
+    
+    # NVL : build the data structure for the JSON output
+    essay = {}
+    essay['essayID'] = str(uuid4())     # NVL : generate a random UUID for the essay (converted to string)
+
+    text,parasenttok = get_segmented_text(text0)
+    
+    _apiLogger.info("text segmented:\t" + str(parasenttok))
 
     # Initialise an empty associative array (Python dict) that will hold the sentence- and word- tokenised sentences, each associated with an index key. 
     # This is done partly so that we can build a graph using numbers as nodes instead of actual sentences as nodes.
@@ -134,8 +113,6 @@ def process_essay():
     # Add each original unprocessed sentence to 'myarray' at the appropriate key point, so they can be returned in the user feedback later.
     # 'Unprocessed' means following latin9 cleanup, after sentence tokenisation, but before word tokenisation and all the other pre-processing
     add_to_sentence_array(myarray, parasenttok) 
-    #print '\nThis is myarray: '
-    #print myarray
 
     # Now we start to build the graph in which the index key to each sentence (from 'myarray') is a node representing that sentence. 
     # We build a graph so that we can work out how strongly connected each sentence is to every other sentence in the graph/text on the basis of similarity of pairs of sentences.
@@ -148,7 +125,8 @@ def process_essay():
     # Add the appropriate nodes to the empty graph.    
     # 'list(myarray)' lists only the keys from 'myarray', so this adds the keys from 'myarray' as nodes to the graph 'gr' that we have already defined and filled with the essay's sentences, one per key/node.
     gr.add_nodes_from(list(myarray)) 
-    #print gr.nodes()
+    _apiLogger.info("nodes:\t" + str(gr.nodes()))
+
                 
     # Initialise some empty arrays.
     myWarray = {} 
@@ -157,22 +135,17 @@ def process_essay():
     # Fill one array with the unique words in each sentence (i.e., remove repetitions) and fill the other array with their numbers of occurrences. There is one entry in each array for each sentence.            
     # This is done to speed up the graph-building process. In an essay with 280 sentences, every sentence is compared to every sentence that precedes it, that's about 39,200 comparisons. The arrays are used as look-up tables by the cosine similarity function that measures the similarity of a pair of sentences.
     make_graph_building_arrays(myarray, myWarray, myCarray)
-    #print myWarray
-    #print text
+
     # Add all the appropriate weighted and directed edges to the graph that you have already initiated, and to which you have added the appropriate nodes. This requires comparison of pairs of sentences/nodes in order to calculate the weight of the edge that joins them.
-    add_all_node_edges(gr,myWarray,myCarray,nf2)
+    add_all_node_edges(gr,myWarray,myCarray)
     number_of_edges = len(gr.edges())
-    nf2.write(str(number_of_edges))
-    nf2.write(': Total number of edges in the graph (pairs of sentences with some similarity)\n')         
-    #nf2.write('\n')
-    possible_number_of_edges = ((len(myarray))**2)/2
-    nf2.write(str(possible_number_of_edges))            
-    nf2.write(': Half the square of the number of sentences\n')         
-    #nf2.write('\n')
     
-    #print gr.edges()
-    #print myarray
-    graphtime = time() # Set current time to a variable for later calculations
+    _apiLogger.info("" + str(number_of_edges) + "\t: Total number of edges in the graph (pairs of sentences with some similarity)")
+    possible_number_of_edges = ((len(myarray))**2)/2    
+    _apiLogger.info("" + str(possible_number_of_edges) + " : Half the square of the number of sentences")
+
+    _apiLogger.info("" + str(number_of_edges) + "\t: Total number of edges in the graph (pairs of sentences with some similarity)")
+    _apiLogger.info("edges:\t" + str(gr.edges()))
 
 
     # Now we set some parameters to enable the calculation of the global weight score WSVi for each node Vi.
@@ -208,89 +181,33 @@ def process_essay():
     
     # And finally we get to calculate the WSVi global weight score for each node in the graph using parameters set above.
     # This function relies on all the processing done so far (the building of a directed graph with weighted edges using an essay as input).
-    find_all_gw_scores(gr, d, max_iterations, min_value, min_delta, graph_size, nodes, scores_array, nf, nf2)
+    find_all_gw_scores(gr, d, max_iterations, min_value, min_delta, graph_size, nodes, scores_array)
 
     # Add the WSVi scores to the array created earlier that contains the original text before word-tokenisation. For printing the results out.       
     update_array(myarray,scores_array)
-    #print '\nThis is myarray after updating with scores: ', myarray
-
-    #number_of_paragraphs = len(paratok)
-    nf.write('\nTotal number of paragraphs (includes headings, tables,... but not refs): ') #...and print the results to the summary results file.
-    nf.write(str(len(paratok)))
-
-    nf.write('\nTotal number of sentences (includes headings, tables,... but not refs): ')         
-    nf.write(str(len(nodes)))            
-
-    number_of_words = count_words(text4)
-    nf.write('\nTotal number of words (includes headings, tables,... but not refs): ') #...and print the results to the summary results file.
-    nf.write(str(number_of_words))
-
-    nf.write('\nTotal number of edges in the graph: ')         
-    nf.write(str(number_of_edges))
-                            
     
     # Make a structure containing the results, putting the WSVi rank first, then the array key, then the original sentence, for printing out.                
-    ranked_global_weights = rank_weight_scores(myarray, nf, nf2)
-
-    scorestime = time() # Set current time to a variable for later calculations
-                
-    textproctime = texttime - startfiletime # Work out how long different parts of the program took to run...
-    graphproctime = graphtime - texttime
-    scoresproctime = scorestime - graphtime
-    totalproctime = scorestime - startfiletime
-    
-    nf2.write('\nText processing time: ')
-    nf2.write(str(textproctime))
-    nf2.write('\nGraph processing time: ')
-    nf2.write(str(graphproctime))
-    nf2.write('\nScores processing time: ')
-    nf2.write(str(scoresproctime))
-    nf2.write('\nTotal essay processing time: ')
-    nf2.write(str(totalproctime))
-    nf2.write('\n\n*********************************************************\n\n')
-    #nf2.write('\n\n')
+    ranked_global_weights = rank_weight_scores(myarray)
 
     # Write detailed results to the essay results file.        
     s = str(ranked_global_weights) # Map the results into a string so you can write the string to the output file
     #w = re.sub('\'\),', '\'),\n', s) # Add a new line at the end of every result so that each result is written to a separate line
     w = re.sub('\]\),', ']),\n', s) # Add a new line at the end of every result so that each result is written to a separate line
     y = re.sub('\"\),', '\'),\n', w) # Be careful, because Python sometimes uses double quotes instead of single ones          
-    #nf.write('\n\nParagraphs that are probably headings, captions, table entries...: \n')
-    #nf.write(str(headings)) 
-    nf.write('\n\nDetailed sentence ranking results : \n')
-    nf.write(y) 
-    nf.close() # Close the essay results file
-
-
-
-    importproctime = endimporttime - startprogtime # Get some more processing timings
-    nf2.write('\nCompilation and import processing time: ')
-    nf2.write(str(importproctime))
-    stopprogtime = time()
-    nf2.write('\nProgram stopped running at: ')
-    nf2.write(str(stopprogtime))
-    totalprogtime = stopprogtime - startprogtime
-    nf2.write('\nTotal program processing time: ')
-    nf2.write(str(totalprogtime))
-    #nf.close() # Close the essay results file.
-    nf2.close() # Close the summary results file.
-
 
     # NVL : get the different pieces into the JSON data structure
-    essay['paratok'] = paratok
     essay['parasenttok'] = parasenttok
 
     stats = {}
-    
-    stats['paragraphs'] = str(len(paratok))
-    stats['words'] = str(count_words(text4))
+    stats['paragraphs'] = str(len(parasenttok))
+    stats['sentences'] =  sum(w for w in [len(x) for x in parasenttok]) 
+    stats['words'] = str(count_words(text))
     stats['nodes'] = str(len(nodes))
     stats['edges'] = str(number_of_edges)
 
     essay['stats'] = stats
     
     mylist2 = []
-    
     
     top_ranked_global_weights = ranked_global_weights[:10]
     
@@ -301,8 +218,74 @@ def process_essay():
     
     # NVL : return the JSON object
     return jsonify(essay)
+    #return render_template('essay.html', essay=essay)
+
+def flatten(l, ltypes=(list, tuple)):
+    ltype = type(l)
+    l = list(l)
+    i = 0
+    while i < len(l):
+        while isinstance(l[i], ltypes):
+            if not l[i]:
+                l.pop(i)
+                i -= 1
+                break
+            else:
+                l[i:i + 1] = l[i]
+        i += 1
+    return ltype(l)
+
+def process_dispersion():
+    text0 = request.form['text']        # NVL : the text of the essay is extracted from the FORM part of the REQUEST, as received by the API
     
+    # NVL : build the data structure for the JSON output
+    essay = {}
+    essay['essayID'] = str(uuid4())     # NVL : generate a random UUID for the essay (converted to string)
+  
+    # return the filtered text and paragraph/sentence structure  
+    text,parasenttok = get_segmented_text(text0)
+
+    # segment the whole paragraph/sentence
+    paratk = word_tokenize(parasenttok)
+ 
+    # flatten both lists
+    fpara  = flatten(paratk)
+    ftext  = flatten(text)
+
+    # do a cumulative count of the words in each paragraph    
+    parcount = []
+    shift=0
+    for para in word_tokenize(parasenttok):
+        cnt = shift + count_words([para])
+        shift = cnt
+        parcount.append(cnt)
+
+    # compute the frequency distribution of the text
+    fdist = FreqDist(word for word in ftext)
+
+    # export the JSON data structure
+    essay['text'] = fpara       # full text (as flattened paras
+    essay['count'] = parcount   # word count per paragraph 
+
+    essay['keyword'] = fdist.keys()[:50]    # keywords ordered by frequency
+    essay['ranking'] = fdist.values()[:50]  # frequency
     
+    # create the dispersion data
+    points = [[x,y+1] for x in range(len(essay['text']))
+                    for y in range(len(essay['keyword']))
+                    if essay['text'][x].lower()  == essay['keyword'][y].lower() ]
+    if points:
+        x, y = zip(*points)
+    else:
+        x = y = ()
+
+    essay['points'] = points
+
+    # return the data structure
+    # In JSON mode, return the JSON structure
+    # In HTML mode, render the template
+    #return jsonify(essay)
+    return render_template('dispersion.html', essay=essay)
     
 def get_essay(essayID):
     pass
