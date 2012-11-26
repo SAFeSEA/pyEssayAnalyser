@@ -6,7 +6,7 @@
 </head>
 <body>
 
-	<form name="post_essay" action="http://localhost:5000/essay"
+	<form name="post_essay" onsubmit="return onsubmitform();"
 		method="post">
 		<fieldset>
 			<legend>Personal information:</legend>
@@ -18,9 +18,27 @@
 			<textarea style="max-width: 90%; width:90%" rows="20" cols="60" name="text"  placeholder="paste the text of your essay" required="required"></textarea>
 		</fieldset>
 		<fieldset>
-			<input type="submit" value="Submit">
+			<input type="submit" name="operation" onclick="document.pressed=this.value" value="JSON" />
+			<input type="submit" name="operation" onclick="document.pressed=this.value" value="Dispersion" />
 		</fieldset>
 	</form>
 
 </body>
+
+<script type="text/javascript">
+function onsubmitform()
+{
+  if(document.pressed == 'JSON')
+  {
+   document.post_essay.action ="http://localhost:5000/api/essay";
+  }
+  else
+  if(document.pressed == 'Dispersion')
+  {
+    document.post_essay.action ="http://localhost:5000/api/essay/dispersion";
+  }
+  return true;
+}
+</script>
+
 </html>
