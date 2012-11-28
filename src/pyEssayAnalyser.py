@@ -8,6 +8,7 @@ from flask import Flask, request
 from flask_debugtoolbar import DebugToolbarExtension
 
 from EssayAnalyser import API
+from flask.helpers import jsonify
 
 app = Flask(__name__)
 
@@ -28,11 +29,21 @@ toolbar = DebugToolbarExtension(app)
 
 @app.route('/')
 def hello_world():
+    api = []
+    api.append({"method" : "POST", "url":"/api/essay/analysis"})
+    api.append({"method" : "POST", "url":"/api/essay/dispersion"})
+    
+    info = {}
+    info['name'] = "pyEssayAnalysier"
+    info['version'] = "0.1"
+    info['api'] = api
+
     app.logger.info("Hello there")
-    return 'Hello World!'
+    
+    return jsonify(info)
 
 
-@app.route('/api/essay', methods=['POST'])
+@app.route('/api/essay/analysis', methods=['POST'])
 def essay_post_new():
     return API.process_essay()
     
@@ -42,15 +53,15 @@ def essay_post_dispersion():
     
 
 
-@app.route('/api/essay/<essayID>', methods=['GET','PUT'])
-def essay_getput(essayID):
-    return 'Hello ' + essayID  + "!"
-
-
-@app.route('/api/essay/<essayID>/analytics', methods=['GET'])
-def essay_get_analytics(essayID):
-    return 'Hello ' + essayID  + "!"
+#@app.route('/api/essay/<essayID>', methods=['GET','PUT'])
+#def essay_getput(essayID):
+#    return 'Hello ' + essayID  + "!"
+#
+#
+#@app.route('/api/essay/<essayID>/analytics', methods=['GET'])
+#def essay_get_analytics(essayID):
+#    return 'Hello ' + essayID  + "!"
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(None,8062)

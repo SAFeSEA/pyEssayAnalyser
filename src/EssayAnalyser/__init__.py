@@ -18,6 +18,10 @@ fh.setFormatter(formatter)
 # Add the file handler to the logger
 _apiLogger.addHandler(fh)
 
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+_apiLogger.addHandler(ch)
+
 # Create a temporary directory (used for caching results)
 # This will be created once per session, when the system is launched 
 _tempDir = tempfile.mkdtemp(suffix='', prefix='AAA_essayAnalyser_cache_', dir=None)

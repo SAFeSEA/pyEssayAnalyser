@@ -30,12 +30,12 @@ function onsubmitform()
 {
   if(document.pressed == 'JSON')
   {
-   document.post_essay.action ="http://localhost:5000/api/essay";
+   document.post_essay.action ="http://localhost:8062/api/essay/analysis";
   }
   else
   if(document.pressed == 'Dispersion')
   {
-    document.post_essay.action ="http://localhost:5000/api/essay/dispersion";
+    document.post_essay.action ="http://localhost:8062/api/essay/dispersion";
   }
   return true;
 }

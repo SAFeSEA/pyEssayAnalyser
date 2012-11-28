@@ -215,7 +215,8 @@ def process_essay():
         mylist2.append((a,b,c))
         
     essay['ranked'] = mylist2
-    
+    _apiLogger.info("test:\t")
+   
     # NVL : return the JSON object
     return jsonify(essay)
     #return render_template('essay.html', essay=essay)
@@ -271,21 +272,23 @@ def process_dispersion():
     essay['ranking'] = fdist.values()[:50]  # frequency
     
     # create the dispersion data
-    points = [[x,y+1] for x in range(len(essay['text']))
+    points = [[x,y+1] for x in range(len(fpara))
                     for y in range(len(essay['keyword']))
-                    if essay['text'][x].lower()  == essay['keyword'][y].lower() ]
+                    if fpara[x].lower()  == essay['keyword'][y].lower() ]
     if points:
         x, y = zip(*points)
     else:
         x = y = ()
 
     essay['points'] = points
-
+    print  essay
+    #return jsonify([])
     # return the data structure
     # In JSON mode, return the JSON structure
     # In HTML mode, render the template
-    #return jsonify(essay)
-    return render_template('dispersion.html', essay=essay)
+    
+    return jsonify(essay)
+    #return render_template('dispersion.html', essay=essay)
     
 def get_essay(essayID):
     pass
