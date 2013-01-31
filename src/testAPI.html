@@ -1,44 +1,136 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Insert title here</title>
-</head>
-<body>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Insert title here</title>
+	</head>
 
-	<form name="post_essay" onsubmit="return onsubmitform();"
+	<style>
+		div.essay {
+			background: none repeat scroll 0 0 #F0F0F0;
+			display: block;
+			padding: 0.5em;
+		}
+	</style>
+	<body>
+
+		<form name="post_essay" onsubmit="return onsubmitform();"
 		method="post">
-		<fieldset>
-			<legend>Personal information:</legend>
-			User: <input type="text" size="30" name="username" placeholder="your name" required="required"><br>
-		</fieldset>
-		<fieldset>
-			<legend>Essay</legend>
-			Assignment: <input type="text" size="30" name="module" placeholder="TMA or EMA code" required="required"><br>
-			<textarea style="max-width: 90%; width:90%" rows="20" cols="60" name="text"  placeholder="paste the text of your essay" required="required"></textarea>
-		</fieldset>
-		<fieldset>
-			<input type="submit" name="operation" onclick="document.pressed=this.value" value="JSON" />
-			<input type="submit" name="operation" onclick="document.pressed=this.value" value="Dispersion" />
-		</fieldset>
-	</form>
+			<fieldset>
+				<legend>
+					Personal information:
+				</legend>
+				User:
+				<input type="text" size="30" name="username" placeholder="your name" required="required">
+				<br>
+			</fieldset>
+			<fieldset>
+				<legend>
+					Essay
+				</legend>
+				Assignment:
+				<input type="text" size="30" name="module" placeholder="TMA or EMA code" required="required">
+				<br>
+				<textarea style="max-width: 90%; width:90%" rows="20" cols="60" name="text"  placeholder="paste the text of your essay" required="required"></textarea>
+			</fieldset>
+			<fieldset>
+				<input type="submit" name="operation" onclick="document.pressed=this.value" value="JSON" />
+				<input type="submit" name="operation" onclick="document.pressed=this.value" value="Dispersion" />
+				<input type="submit" name="operation" onclick="document.pressed=this.value" value="Keywords" />
+			</fieldset>
+		</form>
 
-</body>
+		<button onclick="handleAJAX()">
+			Click me
+		</button>
 
-<script type="text/javascript">
-function onsubmitform()
-{
-  if(document.pressed == 'JSON')
-  {
-   document.post_essay.action ="http://localhost:8062/api/essay/analysis";
-  }
-  else
-  if(document.pressed == 'Dispersion')
-  {
-    document.post_essay.action ="http://localhost:8062/api/essay/dispersion";
-  }
-  return true;
-}
-</script>
+		<div class="essay" id="myessay" style="height: 350px; display: none;">
+
+	</body>
+
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
+	<script type="text/javascript">
+		function handleAJAX() {
+			var $form = $('form');
+			$inputs = $form.find("input, select, button, textarea");
+			// serialize the data in the form
+			serializedData = $form.serialize();
+
+			$inputs.attr("disabled", "disabled");
+
+			$.when(
+				$.ajax({
+					url : "http://localhost:8062/api/essay/analysis",
+					type : "POST",
+					crossDomain : true,
+					data : serializedData,
+					dataType: 'json',
+					}), 
+				$.ajax({
+					url : "http://localhost:8062/api/essay/analysis",
+					type : "POST",
+					crossDomain : true,
+					data : serializedData
+					}))
+			.then(function(a1, a2,a3,a4) 
+				{
+					console.log("Hooray, it worked!");
+				},
+			function(a1, a2,a3,a4) 
+				{
+					console.log("booh, it didn't work!");
+				}		
+			);
+
+			/* $.ajax({
+			 url: "http://localhost:8062/api/essay/analysis",
+			 type: "POST",
+			 crossDomain: true,
+			 data: serializedData,
+			 // callback handler that will be called on success
+			 success: function(response, textStatus, jqXHR){
+			 // log a message to the console
+			 console.log("Hooray, it worked!");
+			 },
+			 // callback handler that will be called on error
+			 error: function(jqXHR, textStatus, errorThrown){
+			 // log the error to the console
+			 console.log(
+			 "The following error occured: "+
+			 textStatus, errorThrown
+			 );
+			 },
+			 // callback handler that will be called on completion
+			 // which means, either on success or error
+			 complete: function(){
+			 // enable the inputs
+			 $inputs.removeAttr("disabled");
+			 }
+			 }); 	*/
+
+			$inputs.removeAttr("disabled");
+			$form.hide("slide", {
+				direction : "up"
+			}, 50);
+			$('div#myessay').toggle("slide", {
+				direction : "up"
+			}, 500);
+		}
+
+		function onsubmitform() {
+			if (document.pressed == 'JSON') {
+				document.post_essay.action = "http://localhost:8062/api/essay/analysis";
+			} else if (document.pressed == 'Dispersion') {
+				document.post_essay.action = "http://localhost:8062/api/essay/dispersion";
+			} else if (document.pressed == 'Keywords') {
+				document.post_essay.action = "http://localhost:8062/api/essay/keywords";
+			} else if (document.pressed == 'AJAX') {
+				document.post_essay.action = "JavaScript:handleAJAX()";
+			}
+			return true;
+		}
+	</script>
 
 </html>

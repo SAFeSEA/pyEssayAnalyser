@@ -180,8 +180,10 @@ def lowercase_sents(text):
     for para in text:
         mylist1 = []
         for sent in para:
-            temp = [str.lower(w) for w in sent]
-            mylist1.append(temp)
+            #temp1 = [str.lower(w) for w in sent]
+            temp1 = [w.lower() for w in sent]
+            #temp1 = [unicode.lower(w) for w in sent]
+            mylist1.append(temp1)
         mylist2.append(mylist1)
     return mylist2
 

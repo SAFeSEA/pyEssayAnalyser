@@ -29,29 +29,56 @@ toolbar = DebugToolbarExtension(app)
 
 @app.route('/')
 def hello_world():
-    api = []
-    api.append({"method" : "POST", "url":"/api/essay/analysis"})
-    api.append({"method" : "POST", "url":"/api/essay/dispersion"})
+    apis = []
+    apis.append({
+                 'method' : 'POST', 
+                 'url' : '/api/essay/analysis',
+                 'params': [{
+                        'attribute' : 'text',
+                        'value' : 'string'
+                           }]
+    })
+    apis.append({
+                 'url' : '/api/essay/keywords',
+                 'params': [{
+                        'attribute' : 'text',
+                        'value' : 'string'
+                           }]
+    })
+    apis.append({
+                 'url' : '/api/essay/dispersion',
+                 'params': [{
+                        'attribute' : 'text',
+                        'value' : 'string'
+                           }]
+    })
     
     info = {}
-    info['name'] = "pyEssayAnalysier"
-    info['version'] = "0.1"
-    info['api'] = api
+    info['name'] = 'pyEssayAnalyser'
+    info['version'] = "0.3"
+    info['api'] = apis
 
-    app.logger.info("Hello there")
+    #    app.logger.info("Hello there")
     
     return jsonify(info)
 
 
 @app.route('/api/essay/analysis', methods=['POST'])
 def essay_post_new():
-    return API.process_essay()
+    return API.process_essay_v2()
     
 @app.route('/api/essay/dispersion', methods=['POST'])
 def essay_post_dispersion():
     return API.process_dispersion()
     
+@app.route('/api/essay/keywords', methods=['POST'])
+def essay_post_keywords():
+    return API.process_keyword_v2()
 
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 #@app.route('/api/essay/<essayID>', methods=['GET','PUT'])
 #def essay_getput(essayID):
