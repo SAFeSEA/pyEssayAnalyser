@@ -457,13 +457,16 @@ def nicolas_results_ke(text0):
         list3grams.append({'ngram':win_words,'count':kk,'score':[i1,i2,i3]})
 
     list1grams = []
-    for win_words in keywords[:25]:
+    for win_words in keywords[:]:
         kk = fdist[win_words]
         i1 = mapkeyscore[win_words]
         list1grams.append({'ngram':[win_words],'count':kk,'score':[i1]})
 
     data1 = json_graph.adjacency_data(gr)
     data2 = json_graph.node_link_data(gr)
+    
+    #H = nx.Graph(gr.subgraph(keywords[0:100]))
+    #data3 = json_graph.adjacency_data(H)
     
     essay = {}
     
@@ -476,5 +479,6 @@ def nicolas_results_ke(text0):
     #essay['di'] = di
     essay['graph_adjacency'] = data1
     essay['graph_node_link'] = data2
+    #essay['graph_sub'] = data3
  
     return essay
