@@ -18,25 +18,16 @@
 		method="post">
 			<fieldset>
 				<legend>
-					Personal information:
-				</legend>
-				User:
-				<input type="text" size="30" name="username" placeholder="your name" required="required">
-				<br>
-			</fieldset>
-			<fieldset>
-				<legend>
 					Essay
 				</legend>
-				Assignment:
-				<input type="text" size="30" name="module" placeholder="TMA or EMA code" required="required">
-				<br>
-				<textarea style="max-width: 90%; width:90%" rows="20" cols="60" name="text"  placeholder="paste the text of your essay" required="required"></textarea>
+				<label for="text">Assignment:</label>
+				<textarea id="text" style="max-width: 90%; width:90%" rows="20" cols="60" name="text"  placeholder="paste the text of your essay" required="required"></textarea>
 			</fieldset>
 			<fieldset>
 				<input type="submit" name="operation" onclick="document.pressed=this.value" value="JSON" />
-				<input type="submit" name="operation" onclick="document.pressed=this.value" value="Dispersion" />
-				<input type="submit" name="operation" onclick="document.pressed=this.value" value="Keywords" />
+				<input type="submit" name="operation" onclick="document.pressed=this.value" value="INFO" />
+				<!-- <input type="submit" name="operation" onclick="document.pressed=this.value" value="Dispersion" />
+				<input type="submit" name="operation" onclick="document.pressed=this.value" value="Keywords" /> -->
 			</fieldset>
 		</form>
 
@@ -120,15 +111,24 @@
 		}
 
 		function onsubmitform() {
-			if (document.pressed == 'JSON') {
-				document.post_essay.action = "http://localhost:8062/api/essay/analysis";
-			} else if (document.pressed == 'Dispersion') {
-				document.post_essay.action = "http://localhost:8062/api/essay/dispersion";
-			} else if (document.pressed == 'Keywords') {
-				document.post_essay.action = "http://localhost:8062/api/essay/keywords";
-			} else if (document.pressed == 'AJAX') {
-				document.post_essay.action = "JavaScript:handleAJAX()";
+			var cmd = document.pressed;
+			console.log(cmd);
+			var url = '';
+			var method=''
+			switch(cmd)
+			{
+				case "JSON":
+					url = "http://localhost:8062/api/analysis";
+					method="POST";
+					break;
+				case "INFO":
+					url = "http://localhost:8062/";
+					method="GET";
+					break;
 			}
+			
+			document.post_essay.action = url;
+			document.post_essay.method=method;
 			return true;
 		}
 	</script>

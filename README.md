@@ -82,8 +82,3 @@ POST    | /api/essay       | add a new essay to the system and return various an
 GET     | /api/essay/UID | Retrieve essay with id = UID
 PUT     | /api/essay/UID | Update essay with id = UID
 GET     | /api/essay/UID/analytics | Retrieve various analytics on the essay with id = UID
-
-
-
-
-

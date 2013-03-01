@@ -9,12 +9,16 @@
 from flask import request, jsonify
 from uuid import uuid4
 
-
+''' version 1 of essayAnalyser '''
 import sentence_extrac_vB_functions as sentence
 import keywords_functions_betweenness_v8 as keyword
 
+''' version 2 of essayAnalyser '''
 import sentence_extrac_v2_functions as sentence2
 import keywords_functions_betweenness_v8b as keyword2
+
+''' version 3 of essayAnalyser '''
+
 
 from nltk.tokenize import LineTokenizer # "tokenizer that divides a string into substrings by treating any single newline character as a separator."
 from nltk import PunktSentenceTokenizer # The standard sentence tokeniser used by NLTK
@@ -32,8 +36,9 @@ from networkx.algorithms.centrality.betweenness import betweenness_centrality
 
 from EssayAnalyser import _apiLogger #, _tempDir
 from time import time
-from EssayAnalyser import _eaTagger
+#from EssayAnalyser import _eaTagger, se_main_v3
 from operator import itemgetter
+from nltk.data import load
 
 
 ## Process and segment the given text (string)
@@ -360,6 +365,8 @@ def process_keyword():
     #_apiLogger.info(">> pos_tag : %s" % (time() - proctime,))
     #proctime = time() 
 
+    _POS_TAGGER = 'taggers/maxent_treebank_pos_tagger/english.pickle'
+    _eaTagger = load(_POS_TAGGER)
     text3 = _eaTagger.tag(text2)
     _apiLogger.info(">> _eaTagger.tag : %s" % (time() - proctime,))
     proctime = time() 
@@ -513,5 +520,9 @@ def process_keyword_v2():
 
     essay = keyword2.nicolas_results_ke(text0)
     return jsonify(essay)
-    
-    
+
+'''
+
+'''
+def analyse_essay_v3(text0):   
+    pass
