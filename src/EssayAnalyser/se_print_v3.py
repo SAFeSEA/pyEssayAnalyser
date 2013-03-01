@@ -1,7 +1,12 @@
 import re # For regular expressions
 from time import time # For calculating processing times
 from uuid import uuid4
-from decimal import *
+#from decimal import *
+from EssayAnalyser.se_procedure_v3 import pre_process_text_se, pre_process_struc,\
+    process_essay_se
+from EssayAnalyser.ke_all_v3 import process_essay_ke
+from decimal import getcontext, Decimal
+from EssayAnalyser import _apiLogger
 """
 This file contains the functions for writing desired sentence extraction results to file.
 The functions for the key word/phrase results are in file ke_all.py.
@@ -289,50 +294,101 @@ def debora_results_se(gr,text,ranked_global_weights,reorganised_array,number_of_
 # Prints and writes to file various results Nicolas wants.    
 # Called in se_main.py.
 def nicolas_results_se(gr,ranked_global_weights,parasenttok, number_of_words, struc_feedback):
-    # NVL : get the different pieces into the JSON data structure
     essay = {}
-    essay['essayID'] = str(uuid4())     # NVL : generate a random UUID for the essay (converted to string)
+
+    ### Add paragraph/sentence structure
     essay['parasenttok'] = parasenttok
+    
+    ### Add statistics on essay
     stats = {}
     stats['paragraphs'] = str(len(parasenttok))
-    print 'stats["paragraphs"] = str(len(parasenttok))\n\n', len(parasenttok)
-
     stats['sentences'] =  sum(w for w in [len(x) for x in parasenttok])       
-    print 'sum(w for w in [len(x) for x in parasenttok])\n\n', stats['sentences']               
-
     stats['words'] = number_of_words 
-    print '\n\nTotal number of words: ', number_of_words
-
     stats['nodes'] = str(len(gr.nodes()))
-
-    print '\n\nTotal number of edges in the graph: ',  len(gr.edges())        
     stats['edges'] = str(len(gr.edges()))
 
     essay['stats'] = stats
 
+    ### Add section feedback
     struc_feedback['comment intro concl'] = cf_keysents_sections(ranked_global_weights)
     essay['struc_feedback'] = struc_feedback    
     
 
+    ## Add ranked 
     mylist2 = []
-    top_ranked_global_weights = ranked_global_weights[:10]    
+    top_ranked_global_weights = ranked_global_weights[:15]    
     for (a,b,c,d,e) in top_ranked_global_weights: # Get only the sentence key numbers from the sorted scores list...
         mylist2.append((a,b,c))        
     essay['ranked'] = mylist2
-
-    print '\n\n', stats, '\n\n', struc_feedback, '\n\n', mylist2, '\n\n'
     
-    return essay, essay['essayID']
+    return essay
 
-    # NVL : return the JSON object
-    #return render_template('essay.html', essay=essay)    
+
+def Flask_process_text(text0):
+    proctime = time()
+    ##############################
+    ##############################
+    ## 3. Do required NLP pre-processing on this essay
+    ##############################
+    ##############################
+    text,parasenttok,wordtok_text,number_of_words,struc_feedback = pre_process_text_se(text0,None,None,"NVL")
+    # Next line is needed instead of above line if we are using sbd sentence splitter.
+    #text,parasenttok,wordtok_text,number_of_words,struc_feedback = pre_process_text_se(text0,nf,nf2,model,dev)
+    _apiLogger.info(">> ##### pre_process_text_se ###### : %s" % (time() - proctime))    
+    ##############################
+    ##############################
+    ## 4. Do required essay structure pre-processing on this essay
+    ##############################
+    ##############################
+    text_se,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last = pre_process_struc(text,None,None,"NVL")
+    _apiLogger.info(">> ##### pre_process_struc ######## : %s" % (time() - proctime))    
     
+    ##############################
+    ##############################
+    ## 5. Construct the key sentence graph and do the graph analyses
+    ##############################
+    ##############################      
+    gr_se,myarray_se,ranked_global_weights,reorganised_array,graphtime=process_essay_se(text_se,parasenttok,None,None,"NVL")
+    _apiLogger.info(">> ##### process_essay_se ######### : %s" % (time() - proctime))    
+    
+    '''
+    ## 6. Construct the key word graph and do the graph analyses
+    @param text_ke: ?????
+    @param gr_ke: networkx graph for the keywords
+    @param di: array of ["keyword", rank], sorted by rank
+    @param myarray_ke: associative array "lemma" : [list of words]
+    @param keylemmas: array of lemmas
+    @param keywords: array of keywords
+    @param bigram_keyphrases: array of [ [ "keyword", "keyword" ] , count ]
+    @param trigram_keyphrases: array of [ [ "keyword", "keyword", "keyword" ] , count ]
+    @param quadgram_keyphrases: array of [ [ "keyword", "keyword", "keyword", "keyword" ] , count ]
+    '''
+    text_ke,gr_ke,di,myarray_ke,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases=process_essay_ke(text_se,wordtok_text,None,None,"NVL")
+    _apiLogger.info(">> ##### process_essay_ke ######### : %s" % (time() - proctime))    
+    
+    ##############################
+    ##############################
+    ## 7. Write to file whichever results you choose
+    ##############################
+    ##############################      
+    essay = nicolas_results_se(gr_se,ranked_global_weights,parasenttok, number_of_words,struc_feedback)
+    _apiLogger.info(">> ##### nicolas_results_se ####### : %s" % (time() - proctime))    
+    essay = {}
+    
+    # Get an associative array out of the keywords list    
+    mapkeyscore = {}
+    for (score, word) in di:
+        mapkeyscore[word] = score
 
-
-
-
-
-
-
+    essay['bigram_keyphrases'] = bigram_keyphrases
+    essay['trigram_keyphrases'] = trigram_keyphrases
+    essay['quadgram_keyphrases'] = quadgram_keyphrases
+    #essay['myarray_ke'] = myarray_ke
+    #essay['keylemmas'] = keylemmas
+    
+    return essay
+    
+    
+    
         
 # Copyright (c) 2012 Debora Georgia Field <deboraf7@aol.com>
