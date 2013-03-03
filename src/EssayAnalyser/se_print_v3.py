@@ -7,6 +7,8 @@ from EssayAnalyser.se_procedure_v3 import pre_process_text_se, pre_process_struc
 from EssayAnalyser.ke_all_v3 import process_essay_ke
 from decimal import getcontext, Decimal
 from EssayAnalyser import _apiLogger
+from collections import OrderedDict
+
 """
 This file contains the functions for writing desired sentence extraction results to file.
 The functions for the key word/phrase results are in file ke_all.py.
@@ -290,10 +292,96 @@ def debora_results_se(gr,text,ranked_global_weights,reorganised_array,number_of_
     write_to_details_file(filename,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr,ranked_global_weights,reorganised_array,introcount,conclcount,nf,nf2)
     write_to_summary_file(filename,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr,ranked_global_weights,reorganised_array,introcount,conclcount,nf,nf2)
 
-# Function: nicolas_results_se(gr,ranked_global_weights,parasenttok, number_of_words, struc_feedback)
-# Prints and writes to file various results Nicolas wants.    
-# Called in se_main.py.
+def write_to_summary_file_ALT(filename,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr,ranked_global_weights,reorganised_array,introcount,conclcount,nf,nf2):
+    """
+    Write the sentence analytics into a file
+    Replace DGF initial method (write_to_summary_file) by separating data processing and outputing
+    TODO: check the format of the output
+    """
+    data = getAnalytics(text, number_of_words, section_names, section_labels, headings, conclheaded, c_first, c_last, introheaded, i_first, i_last, gr, ranked_global_weights, reorganised_array, introcount, conclcount)
+    for key,attr in data.items():
+        nf2.write(key + "; ") 
+        nf2.write(str(attr))
+        nf2.write('; ')
+    pass
+
+def getAnalytics(text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr,ranked_global_weights,reorganised_array,introcount,conclcount):
+    """
+    Get a summary of text & sentence analytics
+    @return: A dictionary (ordrered) containing a set of metrics
+    TODO: check the default values on some of the keys (intro head is [])
+    """
+    countTrueSent = 0
+    countSentLen = 0
+    for item in reorganised_array: # For each member of the list/array (each sentence)
+        tidysent = item[4]
+        countSentLen += len(tidysent)
+        label = item[2]
+        if label == '#+s#' or label == '#+s:i#' or label == '#+s:c#' or label == '#+s:s#' or label == '#+s:p#':
+            countTrueSent += 1
+        else:
+            countTrueSent = countTrueSent
+
+    countIntroSent = 0
+    countConclSent = 0
+    for item in reorganised_array:
+        label = item[2]
+        if label == '#+s:i#':
+            countIntroSent += 1
+        if label == '#+s:c#':
+            countConclSent += 1
+    countAvSentLen = float(countSentLen) / float(countTrueSent)
+    countAvSentLen = round(countAvSentLen, 2)
+
+    # Use an OrderedDict to maintain order of inserted item (better for checking)
+    summary = OrderedDict()
+    summary['all words'] = number_of_words
+    summary['tidy words'] = countSentLen
+    
+    summary['true sents'] = countTrueSent
+    summary['avlen tidysent'] = countAvSentLen
+    summary['paras'] = len(text)
+    summary['heads'] = len(headings)
+    summary['non-heading paras'] = len(text) - len(headings)  
+    summary['intro head'] = introheaded
+
+    getcontext().prec = 3
+    if countIntroSent > 0: 
+        y = 100 * Decimal(1.0/(countTrueSent / countIntroSent)) # y is the percentage of the essay body taken up by the introduction
+    else: # xxxx This condition should not succeed for any essay, but some test files don't return a result for intro section, in which case countIntroSent == 0, which returns an error on the previous line. Needs a better fix. 
+        y = 0
+    summary['% body == i'] = round(y,2)
+    summary['i sents'] = countIntroSent
+    summary['concl head'] = conclheaded
+
+    if countConclSent > 0:
+        y = 100 * Decimal(1.0/(countTrueSent / countConclSent)) # y is the percentage of the essay body taken up by the introduction
+    else:
+        y = 0
+    summary['% body == c'] = round(y,2)
+    summary['c sents'] = countConclSent
+    summary['nodes'] = len(gr.nodes())
+        
+    number_of_edges = len(gr.edges())
+    summary['edges'] = number_of_edges                        
+    x = float(number_of_edges) / float(countTrueSent)
+    ratio = round(x, 2)
+    summary['edges/sents'] = ratio
+    summary['i & toprank'] = (introcount) # introcount is the number of top-ranking sentences that are in the introduction
+    summary['c & toprank'] = (conclcount) # introcount is the number of top-ranking sentences that are in the introduction
+
+    r = ranked_global_weights[0][0]
+    summary['se top centr score'] = round(r,5)
+    
+    return summary
+
+
 def nicolas_results_se(gr,ranked_global_weights,parasenttok, number_of_words, struc_feedback):
+    """
+    Return the result of the text & sentence analytics
+    @return: A dictionary containing various elements of the text analytics
+    """
+    
     essay = {}
 
     ### Add paragraph/sentence structure
@@ -325,8 +413,8 @@ def nicolas_results_se(gr,ranked_global_weights,parasenttok, number_of_words, st
 
 
 def Flask_process_text(text0):
-    proctime = time()
-    _apiLogger.info(">> ##### essay received      ###### : %s" % (time() - proctime))    
+    processtime = time()
+    _apiLogger.info(">> ##\t essay received : \t %s" % (time() - processtime))    
 
     
     ##############################
@@ -337,14 +425,14 @@ def Flask_process_text(text0):
     text,parasenttok,wordtok_text,number_of_words,struc_feedback = pre_process_text_se(text0,None,None,"NVL")
     # Next line is needed instead of above line if we are using sbd sentence splitter.
     #text,parasenttok,wordtok_text,number_of_words,struc_feedback = pre_process_text_se(text0,nf,nf2,model,dev)
-    _apiLogger.info(">> ##### pre_process_text_se ###### : %s" % (time() - proctime))    
+    _apiLogger.info(">> ##\t pre_process_text_se : \t %s" % (time() - processtime))    
     ##############################
     ##############################
     ## 4. Do required essay structure pre-processing on this essay
     ##############################
     ##############################
     text_se,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last = pre_process_struc(text,None,None,"NVL")
-    _apiLogger.info(">> ##### pre_process_struc ######## : %s" % (time() - proctime))    
+    _apiLogger.info(">> ##\t pre_process_struc : \t %s" % (time() - processtime))    
     
     ##############################
     ##############################
@@ -352,7 +440,7 @@ def Flask_process_text(text0):
     ##############################
     ##############################      
     gr_se,myarray_se,ranked_global_weights,reorganised_array,graphtime=process_essay_se(text_se,parasenttok,None,None,"NVL")
-    _apiLogger.info(">> ##### process_essay_se ######### : %s" % (time() - proctime))    
+    _apiLogger.info(">> ##\t process_essay_se : \t %s" % (time() - processtime))    
     
     '''###########################
     ##############################
@@ -370,7 +458,7 @@ def Flask_process_text(text0):
     @param quadgram_keyphrases: array of [ [ "keyword", "keyword", "keyword", "keyword" ] , count ]
     '''
     text_ke,gr_ke,di,myarray_ke,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases=process_essay_ke(text_se,wordtok_text,None,None,"NVL")
-    _apiLogger.info(">> ##### process_essay_ke ######### : %s" % (time() - proctime))    
+    _apiLogger.info(">> ##\t process_essay_ke : \t %s" % (time() - processtime))    
     
     ##############################
     ##############################
@@ -378,7 +466,21 @@ def Flask_process_text(text0):
     ##############################
     ##############################      
     essay = nicolas_results_se(gr_se,ranked_global_weights,parasenttok, number_of_words,struc_feedback)
-    _apiLogger.info(">> ##### nicolas_results_se ####### : %s" % (time() - proctime))    
+    _apiLogger.info(">> ##\t nicolas_results_se : \t %s" % (time() - processtime))    
+    
+    ##############################
+    ##############################
+    ## 8. Get the text & sentence analytics
+    ##############################
+    ##############################      
+    introcount,conclcount = cf_keysents_sections(ranked_global_weights)
+    analytics = getAnalytics(text_se, number_of_words, section_names, section_labels, 
+                                    headings, conclheaded, c_first, c_last, introheaded, 
+                                    i_first, i_last, gr_se, ranked_global_weights, 
+                                    reorganised_array, introcount, conclcount)
+    _apiLogger.info(">> ##\t format getAnalytics : \t %s" % (time() - processtime))   
+    for key,attr in analytics.items():
+        print "  " + key + " => " + str(attr)
     
     # Build an associative array out of the keywords list    
     mapkeyscore = {}
@@ -416,10 +518,11 @@ def Flask_process_text(text0):
     essay['bigram_keyphrases'] = ngramToJSON(bigram_keyphrases)
     essay['trigram_keyphrases'] = ngramToJSON(trigram_keyphrases)
     essay['quadgram_keyphrases'] = ngramToJSON(quadgram_keyphrases)
-    #essay['myarray_ke'] = myarray_ke
-    #essay['keylemmas'] = keylemmas
+    essay['myarray_ke'] = myarray_ke
+    essay['keylemmas'] = keylemmas
+    essay['analytics'] = analytics
     
-    _apiLogger.info(">> ##### return post-processed JSON : %s" % (time() - proctime))    
+    _apiLogger.info(">> ##\t return processed JSON : \t %s" % (time() - processtime))    
     return essay
     
     

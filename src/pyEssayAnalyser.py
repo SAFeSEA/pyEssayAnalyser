@@ -52,8 +52,6 @@ def hello_world():
     info['version'] = "3.0"
     info['api'] = apis
 
-    #    app.logger.info("Hello there")
-    
     return jsonify(info)
 
 
@@ -67,7 +65,7 @@ def essay_post_new():
         - the status code of the transaction (200 or 500)
     """
     
-    text0 = request.form['text']        # NVL : the text of the essay is extracted from the FORM part of the REQUEST, as received by the API
+    text0 = request.form['text']
     essay = {}
     
     status = 200
@@ -75,7 +73,7 @@ def essay_post_new():
         essay = Flask_process_text(text0) 
     except Exception as e:
         ## Any unsupported exceptions coming from code
-        ## TODO: get better message (uncrompromising) 
+        ## TODO: get a better error message (not revealing internal error) 
         status = 500
         essay = { 'error' : {  'status' : status,
                                'msg'    : e.message}}
