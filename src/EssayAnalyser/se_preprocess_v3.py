@@ -139,6 +139,13 @@ def tidy_up_latin9(text):
     text = [re.sub('^\?$', "--", w) for w in text]   # Em-dashes and en-dashes: 'access ? enrolment' becomes 'access -- enrolment'
     text = [re.sub('\?s$', "'s", w) for w in text]   # Apostrophe: "Frankenstein?s" becomes "Frankenstein's"
     text = [re.sub('^p\.$', "p", w) for w in text]   # change 'p.' to 'p'
+    ### TODO: added substitution for missing characters
+    text = [re.sub(u'\u2022', "*", w) for w in text]
+    text = [re.sub(u'\u2019', "'", w) for w in text]
+    text = [re.sub(u'\u2018', "'", w) for w in text]
+    text = [re.sub(u'\u201c', "\"", w) for w in text]
+    text = [re.sub(u'\u201d', "\"", w) for w in text]
+
     while 1: # Now deal with quotation marks (that come in pairs), starting with the first of the pair here.
         if counter <= len(text): # Note that you cannot now just replace every question mark with a quotation mark, because some questions marks really are questions marks.
             for x in text:

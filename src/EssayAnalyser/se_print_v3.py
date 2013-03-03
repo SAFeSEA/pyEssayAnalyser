@@ -326,6 +326,9 @@ def nicolas_results_se(gr,ranked_global_weights,parasenttok, number_of_words, st
 
 def Flask_process_text(text0):
     proctime = time()
+    _apiLogger.info(">> ##### essay received      ###### : %s" % (time() - proctime))    
+
+    
     ##############################
     ##############################
     ## 3. Do required NLP pre-processing on this essay
@@ -351,8 +354,11 @@ def Flask_process_text(text0):
     gr_se,myarray_se,ranked_global_weights,reorganised_array,graphtime=process_essay_se(text_se,parasenttok,None,None,"NVL")
     _apiLogger.info(">> ##### process_essay_se ######### : %s" % (time() - proctime))    
     
-    '''
+    '''###########################
+    ##############################
     ## 6. Construct the key word graph and do the graph analyses
+    ##############################
+    ##############################      
     @param text_ke: ?????
     @param gr_ke: networkx graph for the keywords
     @param di: array of ["keyword", rank], sorted by rank
@@ -373,19 +379,47 @@ def Flask_process_text(text0):
     ##############################      
     essay = nicolas_results_se(gr_se,ranked_global_weights,parasenttok, number_of_words,struc_feedback)
     _apiLogger.info(">> ##### nicolas_results_se ####### : %s" % (time() - proctime))    
-    essay = {}
     
-    # Get an associative array out of the keywords list    
+    # Build an associative array out of the keywords list    
     mapkeyscore = {}
-    for (score, word) in di:
+    for (word,score) in di:
         mapkeyscore[word] = score
 
-    essay['bigram_keyphrases'] = bigram_keyphrases
-    essay['trigram_keyphrases'] = trigram_keyphrases
-    essay['quadgram_keyphrases'] = quadgram_keyphrases
+    # Get the rank score of a keyword, 0 if not found
+    def getScore(keyword):
+        if keyword in mapkeyscore:
+            return mapkeyscore[keyword]
+        else:
+            return 0
+    
+    # Get the lemma form of a keyword
+    def getLemma(keyword):
+        for (k,v) in myarray_ke.items():
+            if keyword in v:
+                return k
+        return keyword + " ###"
+    
+    # Build A JSON object out of the Ngram(s), with their score(s), count and form(s) 
+    def ngramToJSON(ngram_list):
+        jsonNGram = []
+        for [win_words,count] in ngram_list:
+            ngram=[getLemma(w) for w in win_words]
+            #key = ''.join(r1)
+            score = [getScore(n) for n in ngram]
+            jsonNGram.append({
+                'ngram':ngram,
+                'source':win_words,
+                'count':count,
+                'score':score})
+        return jsonNGram
+
+    essay['bigram_keyphrases'] = ngramToJSON(bigram_keyphrases)
+    essay['trigram_keyphrases'] = ngramToJSON(trigram_keyphrases)
+    essay['quadgram_keyphrases'] = ngramToJSON(quadgram_keyphrases)
     #essay['myarray_ke'] = myarray_ke
     #essay['keylemmas'] = keylemmas
     
+    _apiLogger.info(">> ##### return post-processed JSON : %s" % (time() - proctime))    
     return essay
     
     

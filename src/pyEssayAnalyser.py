@@ -34,8 +34,7 @@ def hello_world():
     """
     Route for the documentation of the API
     
-    @return: 
-        - a JSON object containing the
+    @return: a JSON object containing the APIs of the services
     """
     
     apis = []
@@ -78,9 +77,8 @@ def essay_post_new():
         ## Any unsupported exceptions coming from code
         ## TODO: get better message (uncrompromising) 
         status = 500
-        essay = { 'error' : 
-                 {  'status' : status,
-                    'msg'    : e.message}}
+        essay = { 'error' : {  'status' : status,
+                               'msg'    : e.message}}
      
     return jsonify(essay) , status  
 
