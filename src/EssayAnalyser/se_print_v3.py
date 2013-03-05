@@ -8,7 +8,7 @@ from EssayAnalyser.ke_all_v3 import process_essay_ke
 from decimal import getcontext, Decimal
 from EssayAnalyser import _apiLogger
 from collections import OrderedDict
-
+from collections import Counter
 """
 This file contains the functions for writing desired sentence extraction results to file.
 The functions for the key word/phrase results are in file ke_all.py.
@@ -479,8 +479,8 @@ def Flask_process_text(text0):
                                     i_first, i_last, gr_se, ranked_global_weights, 
                                     reorganised_array, introcount, conclcount)
     _apiLogger.info(">> ##\t format getAnalytics : \t %s" % (time() - processtime))   
-    for key,attr in analytics.items():
-        print "  " + key + " => " + str(attr)
+    #for key,attr in analytics.items():
+    #    print "  " + key + " => " + str(attr)
     
     # Build an associative array out of the keywords list    
     mapkeyscore = {}
@@ -514,16 +514,52 @@ def Flask_process_text(text0):
                 'count':count,
                 'score':score})
         return jsonNGram
+    
+    # Build a hierarchical structure of keywpords 
+    def toTree():
+        treenode = []
+        for kk in keylemmas:
+            v = myarray_ke[kk]
+            tally=Counter()
+            for elem in v:
+                tally[elem] += 1
+            
+            subtree = []    
+            for (elem,count) in tally.items():
+                keywords = [ {'name': w , 'mysize': getScore(w), 'mycount': 1, "colour":"#f9f0ab" } for w in v if w==elem ]
+                subtree.append({ 'name' : elem, 'children' : keywords})
+                #tt = [{ 'name' : elem, 'children' : keywords}]
+                #keywords = [ {'name': w , 'size': getScore(w), "colour":"#f9f0ab" } for w in v ]
+                ##treenode.append({ 'name' : k, 'size': 1, "colour":"#f9f0ab" })
+            treenode.append({ 'name' : kk, 'children' : subtree})
+        
+        return treenode
 
+    children = toTree()
+   
+    
+    essay = OrderedDict()
+    
+    essay['stats'] = { 
+            'n-keylemma' : len(keylemmas),
+            'n-myarray_ke' : len(myarray_ke),
+            'n-keywords' : len(keywords)
+        }
+    essay['tree'] = { 'name' : 'concept map', 'children' : children}
+    
+    essay['keylemmas'] = keylemmas
+    essay['keywords'] = keywords
     essay['bigram_keyphrases'] = ngramToJSON(bigram_keyphrases)
     essay['trigram_keyphrases'] = ngramToJSON(trigram_keyphrases)
     essay['quadgram_keyphrases'] = ngramToJSON(quadgram_keyphrases)
-    essay['myarray_ke'] = myarray_ke
-    essay['keylemmas'] = keylemmas
+    #essay['myarray_ke'] = myarray_ke
+    #essay['keylemmas'] = keylemmas
     essay['analytics'] = analytics
     
+    
+    
     _apiLogger.info(">> ##\t return processed JSON : \t %s" % (time() - processtime))    
-    return essay
+    return  essay#['tree']
     
     
     
