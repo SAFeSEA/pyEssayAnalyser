@@ -196,17 +196,19 @@ def sort_betweenness_scores(betweenness_scores, nf):
 # as well as a list of those key lemmas (kls_in_ass_q).
 # Called by debora_results_ke (in this file).
 def cf_ass_q_keylemmas(ass_q,keylemmas,scoresNfreqs):
-    kls_in_ass_q = []    
-    for mytuple in ass_q: # 
+    kls_in_ass_q = []
+    mylist3 = []
+    for mytuple in ass_q: #
         if mytuple[1] in keylemmas:
             for item in scoresNfreqs:
-                if item[0] == mytuple[1]:
+                if item[0] == mytuple[1] and item not in mylist3: # Use mylist3 to prevent adding duplicates
                     kls_in_ass_q.append(item) # ('accessibility', 0.10632945238775138, 2, 12)
+                    mylist3.append(item)
     mylist = []
     for item in kls_in_ass_q:
         mylist.append(item[3])
-    sum_kls_in_ass_q = sum(mylist)
-    return kls_in_ass_q, sum_kls_in_ass_q
+    sum_freq_kls_in_ass_q = sum(mylist)
+    return kls_in_ass_q, sum_freq_kls_in_ass_q
 
 
 # Function: cf_ngrams_section(keywords,ngrams,text_se,label)

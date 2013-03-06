@@ -542,7 +542,7 @@ def Flask_process_text(text0):
         for [win_words,count] in ngram_list:
             subtree = []
             for kk in win_words:
-                keywords = [ {'name': kk , 'mysize': getScore(kk), 'mycount': count, "colour":"#f9f0ab" }]
+                keywords = [ {'name': kk , 'mysize': getScore(kk), 'mycount': count, "colour":"#f9f0ab" } for x in range(count)]
                 subtree.append({ 'name' : kk, 'children' : keywords})
                 #gg = getLemma(kk)
                 #v = myarray_ke[gg]
@@ -561,15 +561,19 @@ def Flask_process_text(text0):
        
         return treenode
 
-    children = keywordstoTree()
-    children1 = ngramToTree(bigram_keyphrases)
-    ttttt = children + children1
+    children3 = ngramToTree(trigram_keyphrases)
+    children2 = ngramToTree(bigram_keyphrases)
+    children1 = keywordstoTree()
+    
+    ttttt = children3 + children2 + children1
     random.shuffle(ttttt)
     essay = OrderedDict()
-    
-    tt = [ttttt[i:i+6] for i in range(0, len(ttttt), 6)]
-    
-    gg = [{'name' : '##CAT_'+str(idx+1)+'##', 'children': elt} for idx,elt in enumerate(tt)]
+    tt = [ttttt[i:i+7] for i in range(0, len(ttttt), 7)]
+    gg = [{'name' : 'CAT#'+str(idx+1)+'', 'children': elt} for idx,elt in enumerate(tt)]
+
+    gg = [{'name' : 'TRI-GRAMS', 'children': children3},
+          {'name' : 'BIGRAMS', 'children': children2},
+          {'name' : 'KEYLEMMA', 'children': children1}]
     
     essay['stats'] = { 
             'n-keylemma' : len(keylemmas),
@@ -590,7 +594,7 @@ def Flask_process_text(text0):
     
     
     _apiLogger.info(">> ##\t return processed JSON : \t %s" % (time() - processtime))    
-    return  essay['tree']
+    return  essay#['tree']
     
     
     
