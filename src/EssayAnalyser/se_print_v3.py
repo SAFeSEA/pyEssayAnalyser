@@ -9,6 +9,8 @@ from decimal import getcontext, Decimal
 from EssayAnalyser import _apiLogger
 from collections import OrderedDict
 from collections import Counter
+import random
+
 """
 This file contains the functions for writing desired sentence extraction results to file.
 The functions for the key word/phrase results are in file ke_all.py.
@@ -516,7 +518,7 @@ def Flask_process_text(text0):
         return jsonNGram
     
     # Build a hierarchical structure of keywpords 
-    def toTree():
+    def keywordstoTree():
         treenode = []
         for kk in keylemmas:
             v = myarray_ke[kk]
@@ -534,18 +536,47 @@ def Flask_process_text(text0):
             treenode.append({ 'name' : kk, 'children' : subtree})
         
         return treenode
-
-    children = toTree()
-   
     
+    def ngramToTree(ngram_list):
+        treenode = []
+        for [win_words,count] in ngram_list:
+            subtree = []
+            for kk in win_words:
+                keywords = [ {'name': kk , 'mysize': getScore(kk), 'mycount': count, "colour":"#f9f0ab" }]
+                subtree.append({ 'name' : kk, 'children' : keywords})
+                #gg = getLemma(kk)
+                #v = myarray_ke[gg]
+                #tally=Counter()
+                #for elem in v:
+                #    tally[elem] += 1
+            
+                    #subtree = []    
+                #for (elem,count) in tally.items():
+                #    keywords = [ {'name': w , 'mysize': getScore(w), 'mycount': 1, "colour":"#f9f0ab" } for w in v if w==elem ]
+                #    subtree.append({ 'name' : elem, 'children' : keywords})
+                    #tt = [{ 'name' : elem, 'children' : keywords}]
+                    #keywords = [ {'name': w , 'size': getScore(w), "colour":"#f9f0ab" } for w in v ]
+                    ##treenode.append({ 'name' : k, 'size': 1, "colour":"#f9f0ab" })
+            treenode.append({ 'name' : ' '.join(win_words), 'children' : subtree})
+       
+        return treenode
+
+    children = keywordstoTree()
+    children1 = ngramToTree(bigram_keyphrases)
+    ttttt = children + children1
+    random.shuffle(ttttt)
     essay = OrderedDict()
+    
+    tt = [ttttt[i:i+6] for i in range(0, len(ttttt), 6)]
+    
+    gg = [{'name' : '##CAT_'+str(idx+1)+'##', 'children': elt} for idx,elt in enumerate(tt)]
     
     essay['stats'] = { 
             'n-keylemma' : len(keylemmas),
             'n-myarray_ke' : len(myarray_ke),
             'n-keywords' : len(keywords)
         }
-    essay['tree'] = { 'name' : 'concept map', 'children' : children}
+    essay['tree'] = { 'name' : 'concept map', 'children' : gg}
     
     essay['keylemmas'] = keylemmas
     essay['keywords'] = keywords
@@ -559,7 +590,7 @@ def Flask_process_text(text0):
     
     
     _apiLogger.info(">> ##\t return processed JSON : \t %s" % (time() - processtime))    
-    return  essay#['tree']
+    return  essay['tree']
     
     
     
