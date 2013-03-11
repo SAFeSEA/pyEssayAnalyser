@@ -384,8 +384,8 @@ def nicolas_results_se(gr,ranked_global_weights,parasenttok, number_of_words, st
     @return: A dictionary containing various elements of the text analytics
     """
     
-    essay = {}
-
+    #essay = {}
+    essay = OrderedDict()
     ### Add paragraph/sentence structure
     essay['parasenttok'] = parasenttok
     
@@ -511,10 +511,23 @@ def Flask_process_text(text0):
             #key = ''.join(r1)
             score = [getScore(n) for n in ngram]
             jsonNGram.append({
-                'ngram':ngram,
+                'ngram':win_words,
                 'source':win_words,
                 'count':count,
                 'score':score})
+        return jsonNGram
+    
+    def lemmaToJSON(keyword_list):
+        jsonNGram = []
+        for w in keyword_list:
+            ngram=getLemma(w)
+            v = myarray_ke[ngram]
+            score = getScore(w)
+            jsonNGram.append({
+                'ngram':[ngram],
+                'source':[w],
+                'count':len(v),
+                'score':[score]})
         return jsonNGram
     
     # Build a hierarchical structure of keywpords 
@@ -565,11 +578,11 @@ def Flask_process_text(text0):
     children2 = ngramToTree(bigram_keyphrases)
     children1 = keywordstoTree()
     
-    ttttt = children3 + children2 + children1
-    random.shuffle(ttttt)
-    essay = OrderedDict()
-    tt = [ttttt[i:i+7] for i in range(0, len(ttttt), 7)]
-    gg = [{'name' : 'CAT#'+str(idx+1)+'', 'children': elt} for idx,elt in enumerate(tt)]
+    #ttttt = children3 + children2 + children1
+    #random.shuffle(ttttt)
+    #tt = [ttttt[i:i+7] for i in range(0, len(ttttt), 7)]
+    #gg = [{'name' : 'CAT#'+str(idx+1)+'', 'children': elt} for idx,elt in enumerate(tt)]
+
 
     gg = [{'name' : 'TRI-GRAMS', 'children': children3},
           {'name' : 'BIGRAMS', 'children': children2},
@@ -583,15 +596,15 @@ def Flask_process_text(text0):
     essay['tree'] = { 'name' : 'concept map', 'children' : gg}
     
     essay['keylemmas'] = keylemmas
-    essay['keywords'] = keywords
-    essay['bigram_keyphrases'] = ngramToJSON(bigram_keyphrases)
-    essay['trigram_keyphrases'] = ngramToJSON(trigram_keyphrases)
-    essay['quadgram_keyphrases'] = ngramToJSON(quadgram_keyphrases)
+    essay['keywordsXXX'] = keywords
+    essay['keywords'] = lemmaToJSON(keywords)
+    essay['bigrams'] = ngramToJSON(bigram_keyphrases)
+    essay['trigrams'] = ngramToJSON(trigram_keyphrases)
+    essay['quadgrams'] = ngramToJSON(quadgram_keyphrases)
     #essay['myarray_ke'] = myarray_ke
     #essay['keylemmas'] = keylemmas
     essay['analytics'] = analytics
-    
-    
+   
     
     _apiLogger.info(">> ##\t return processed JSON : \t %s" % (time() - processtime))    
     return  essay#['tree']
