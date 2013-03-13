@@ -416,8 +416,7 @@ def nicolas_results_se(gr,ranked_global_weights,parasenttok, number_of_words, st
 
 def Flask_process_text(text0):
     processtime = time()
-    _apiLogger.info(">> ##\t essay received : \t %s" % (time() - processtime))    
-
+    _apiLogger.info(">> ##\t essay received : \t %s" % (time() - processtime))   
     
     ##############################
     ##############################
@@ -428,6 +427,7 @@ def Flask_process_text(text0):
     # Next line is needed instead of above line if we are using sbd sentence splitter.
     #text,parasenttok,wordtok_text,number_of_words,struc_feedback = pre_process_text_se(text0,nf,nf2,model,dev)
     _apiLogger.info(">> ##\t pre_process_text_se : \t %s" % (time() - processtime))    
+    
     ##############################
     ##############################
     ## 4. Do required essay structure pre-processing on this essay
@@ -517,17 +517,21 @@ def Flask_process_text(text0):
                 'score':score})
         return jsonNGram
     
-    def lemmaToJSON(keyword_list):
+    def lemmaToJSON(keylemmas):
         jsonNGram = []
-        for w in keyword_list:
-            ngram=getLemma(w)
-            v = myarray_ke[ngram]
-            score = getScore(w)
+        for w in keylemmas:
+            #ngram=getLemma(w)
+            v = myarray_ke[w]
+            tally=Counter()
+            for elem in v:
+                tally[elem] += 1
+                
+            #score = getScore(w)
             jsonNGram.append({
-                'ngram':[ngram],
-                'source':[w],
+                'ngram':[w],
+                'source':[elem for (elem,count) in tally.items()],
                 'count':len(v),
-                'score':[score]})
+                'score':[getScore(elem) for (elem,count) in tally.items() if getScore(elem) != 0]})
         return jsonNGram
     
     # Build a hierarchical structure of keywpords 
@@ -597,7 +601,7 @@ def Flask_process_text(text0):
     
     essay['keylemmas'] = keylemmas
     essay['keywordsXXX'] = keywords
-    essay['keywords'] = lemmaToJSON(keywords)
+    essay['keywords'] = lemmaToJSON(keylemmas)
     essay['bigrams'] = ngramToJSON(bigram_keyphrases)
     essay['trigrams'] = ngramToJSON(trigram_keyphrases)
     essay['quadgrams'] = ngramToJSON(quadgram_keyphrases)
@@ -605,9 +609,8 @@ def Flask_process_text(text0):
     #essay['keylemmas'] = keylemmas
     essay['analytics'] = analytics
    
-    
     _apiLogger.info(">> ##\t return processed JSON : \t %s" % (time() - processtime))    
-    return  essay#['tree']
+    return  essay
     
     
     

@@ -67,17 +67,21 @@ def essay_post_new():
     
     text0 = request.form['text']
     essay = {}
-    
     status = 200
-    try:
+    
+    if (app.debug is True):
         essay = Flask_process_text(text0) 
-    except Exception as e:
-        ## Any unsupported exceptions coming from code
-        ## TODO: get a better error message (not revealing internal error) 
-        status = 500
-        essay = { 'error' : {  'status' : status,
-                               'msg'    : e.message}}
-     
+    else:
+        try:
+            essay = Flask_process_text(text0) 
+        except Exception as e:
+            ## Any unsupported exceptions coming from code
+            ## TODO: get a better error message (not revealing internal error) 
+            status = 500
+            essay = { 'error' : {  
+                'status' : status,
+                'msg'    : e.message}}
+    
     return jsonify(essay) , status  
 
 @app.after_request
