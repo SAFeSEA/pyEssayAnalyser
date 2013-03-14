@@ -289,7 +289,7 @@ def debora_write_results_se(filename,paras,rankorder,number_of_words,\
     section_names,section_labels,headings,\
     conclheaded,c_first,c_last,introheaded,i_first,i_last,\
     ranked_global_weights,reorganised_array,introcount,conclcount,\
-	len_body,len_headings,countTrueSent,countSentLen,countAvSentLen,\
+    len_body,len_headings,countTrueSent,countSentLen,countAvSentLen,\
     countIntroSent,percent_body_i,\
     countConclSent,percent_body_c,\
     nodes,edges,edges_over_sents,nf,nf2):
@@ -309,8 +309,6 @@ def debora_write_results_se(filename,paras,rankorder,number_of_words,\
     #return paras,len_body,len_headings,countTrueSent,countAvSentLen,countIntroSent,introcount,conclcount,percent_body_i,countConclSent,percent_body_c,nodes,edges,edges_over_sents
 
  #   (filename,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr,ranked_global_weights,reorganised_array,introcount,conclcount,nf,nf2)
-
-
 
 
 ##def write_to_summary_file_ALT(filename,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr,ranked_global_weights,reorganised_array,introcount,conclcount,nf,nf2):
@@ -638,7 +636,7 @@ def Flask_process_text(text0):
     _apiLogger.info(">> ##\t return processed JSON : \t %s" % (time() - processtime))    
     return  essay
     
- """   
     
+"""    
         
 # Copyright (c) 2012 Debora Georgia Field <deboraf7@aol.com>
