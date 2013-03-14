@@ -33,28 +33,28 @@ def get_essay_body(text2,nf,dev):
     if 'References' in text2:
         a = text2.rfind('References') # Find the LAST occurrence of 'References', not the first, in case there is a contents page or other xref.        
         b = text2[:a] # Get all the text2 of the essay occurring before the bibliography (the body).
-        return b, 'yes'    
+        return b, True    
     elif 'REFERENCES' in text2:
         a = text2.rfind("REFERENCES") 
         b = text2[:a] 
-        return b, 'yes'
+        return b, True
     elif 'Reference' in text2: # One essay I looked at had the bibliography section title: 'Reference list'.
         a = text2.rfind("Reference") 
         b = text2[:a] 
-        return b, 'yes'
+        return b, True
     elif 'REFERENCE' in text2: # One essay I looked at had: 'REFERENCE'.
         a = text2.rfind("REFERENCE") 
         b = text2[:a] 
-        return b, 'yes'         
+        return b, True         
     elif 'Bibliography' in text2:
         a = text2.rfind("Bibliography") 
         b = text2[:a] 
-        return b, 'yes'
+        return b, True
     else:
         if dev == 'DGF':
             print '\n********* Cannot find a references section. *********\n'
             nf.write('\n********* Cannot find a references section. *********\n')
-        return text2, 'no' # If none of those terms are in text, just return text.
+        return text2, False # If none of those terms are in text, just return text.
 
 # Function: update_text(text, x, y, counter)
 # A basic substitution operation that carries out character substitution in a text (a list of words).

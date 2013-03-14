@@ -29,8 +29,8 @@ def pre_process_text_se(text0,nf,nf2,dev):
     # Currently this is everything occurring before the references section but it needs improvement/refinment.
     text1, refs_present = get_essay_body(text0,nf,dev)     
 
-    struc_feedback = {}
-    struc_feedback['comment refs present'] = refs_present
+    #struc_feedback = {}
+    #struc_feedback['comment refs present'] = refs_present
 
     # Split the essay body on whitespace so that you can correct the latin9 encoding before sentence splitting. 
     # Latin9 encoding puts questions marks everywhere, which confuses the sentence splitter. I reverse this split before sentence tokenisation. 
@@ -75,7 +75,7 @@ def pre_process_text_se(text0,nf,nf2,dev):
     # I do not remove them at the beginning, because I do not yet know how interesting/significant numeric sentences are.
     text = process_sents(find_and_label_numeric_sents, text4)
 
-    return text,parasenttok,wordtok_text,number_of_words,struc_feedback
+    return text,parasenttok,wordtok_text,number_of_words,refs_present
 
 # Function: pre_process_struc(text,nf,nf2,dev):
 # Labels each sentence with its structural function.

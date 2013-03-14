@@ -9,8 +9,10 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 #from EssayAnalyser import API
 from flask.helpers import jsonify
-from EssayAnalyser.se_print_v3 import Flask_process_text
+#from EssayAnalyser.se_print_v3 import Flask_process_text
+
 import time
+from api_handlers import Flask_process_text
 
 app = Flask(__name__)
 
@@ -67,17 +69,21 @@ def essay_post_new():
     
     text0 = request.form['text']
     essay = {}
-    
     status = 200
-    try:
+    
+    if (app.debug is True):
         essay = Flask_process_text(text0) 
-    except Exception as e:
-        ## Any unsupported exceptions coming from code
-        ## TODO: get a better error message (not revealing internal error) 
-        status = 500
-        essay = { 'error' : {  'status' : status,
-                               'msg'    : e.message}}
-     
+    else:
+        try:
+            essay = Flask_process_text(text0) 
+        except Exception as e:
+            ## Any unsupported exceptions coming from code
+            ## TODO: get a better error message (not revealing internal error) 
+            status = 500
+            essay = { 'error' : {  
+                'status' : status,
+                'msg'    : e.message}}
+    
     return jsonify(essay) , status  
 
 @app.after_request

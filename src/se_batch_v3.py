@@ -3,19 +3,13 @@ from time import time # For calculating processing times
 import os # This is for file handling
 import tempfile
 import shutil
+from EssayAnalyser.se_main_v3 import top_level_procedure
 #import networkx as nx  # Leave this in. For testing.
 #import sbd # This is an alternative sentence splitter
 #import profile # For running the Python profiler to see which functions are hogging the time
 ####from se_procedure_v3 import *
 ####from ke_all_v3 import *
 ####import codecs
-
-
-
-from EssayAnalyser.se_procedure_v3 import pre_process_ass_q, pre_process_text_se,\
-	process_essay_se, pre_process_struc
-from EssayAnalyser.ke_all_v3 import process_essay_ke, debora_results_ke
-from EssayAnalyser.se_print_v3 import debora_results_se, nicolas_results_se
 
 startprogtime = time() # Set current time to a variable for later calculations
 
@@ -49,11 +43,7 @@ dev = 'DGF'
 ## 1. Do required NLP pre-processing on assignment question.
 ##############################
 ##############################
-ass_q_long = "Write a report explaining the main accessibility challenges for disabled learners that you work with or support in your own work context(s). Use examples from your own experience, supported by the research and practice literature. If you're not a practitioner, write from the perspective of a person in a relevant context. Critically evaluate the influence of the context (e.g. country, institution, educational sector, perceived role of online learning within education) on: the identified challenges particular to your own context. the influence of legislation and local policies. the roles and responsibilities of key individuals. the role of assistive technologies in addressing these challenges."
-ass_q_short = "Write a report explaining the main accessibility challenges for disabled learners that you work with or support in your own work context(s)"
-
-ass_q_long = pre_process_ass_q(ass_q_long,dev)
-ass_q_short = pre_process_ass_q(ass_q_short,dev)        
+      
 
 ##############################
 ##############################
@@ -85,7 +75,7 @@ for filename in filelist: # For each file in the current directory...
     if filename[-3:] == 'txt': # If a file name ends in 'txt'...
         print filename # Print to shell to monitor progress
         f = open(filename, 'r') # Open current essay file for reading
-        text0 = f.read() # Read in the essay and set to var 'text0'
+        essaytext = f.read() # Read in the essay and set to var 'essaytext'
         f.close() # Close the essay file
         string = filename[:-4] + '_results' + '.txt'
         newfilename = os.path.join(tempdir1, string)                     
@@ -94,6 +84,7 @@ for filename in filelist: # For each file in the current directory...
         # DGF: Nicolas, hopefully you should be able to just lift everything between here and the next double row of hashes
         # and substitute it for your two functions 'get_segmented_text' and 'process_essay' in your 'api.py' file.
         
+        top_level_procedure(essaytext,filename,nf,nf2,dev)
 
         if dev == 'DGF':
             #nf2.write('\n') # Add blank lines to the essay results file            
@@ -102,75 +93,6 @@ for filename in filelist: # For each file in the current directory...
             
         #struc_feedback = {}
         
-        # DGF: Nicolas, merging the key sentence and key lemma/word work has meant I have had to split essay pre-processing into two procedures.
-        ##############################
-        ##############################
-        ## 3. Do required NLP pre-processing on this essay
-        ##############################
-        ##############################
-
-        text,parasenttok,wordtok_text,number_of_words,struc_feedback = pre_process_text_se(text0,nf,nf2,dev)
-        # Next line is needed instead of above line if we are using sbd sentence splitter.
-        #text,parasenttok,wordtok_text,number_of_words,struc_feedback = pre_process_text_se(text0,nf,nf2,model,dev)
-       
-        ##############################
-        ##############################
-        ## 4. Do required essay structure pre-processing on this essay
-        ##############################
-        ##############################
-
-        text_se,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last = pre_process_struc(text,nf,nf2,dev)
-
-        #texttime = time() # Set current time to a variable for later calculations
-
-        ##############################
-        ##############################
-        ## 5. Construct the key sentence graph and do the graph analyses
-        ##############################
-        ##############################      
-        
-        gr_se,myarray_se,ranked_global_weights,reorganised_array,graphtime=process_essay_se(text_se,parasenttok,nf,nf2,dev)
-
-        ##############################
-        ##############################
-        ## 6. Construct the key word graph and do the graph analyses
-        ##############################
-        ##############################      
-        
-        text_ke,gr_ke,di,myarray_ke,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases=process_essay_ke(text_se,wordtok_text,nf,nf2,dev)
-
-        ##############################
-        ##############################
-        ## 7. Write to file whichever results you choose
-        ##############################
-        ##############################      
-
-        if dev == 'DGF':
-            # Write the key sentence results to file
-            debora_results_se(gr_se,text_se,ranked_global_weights,reorganised_array,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,filename, nf,nf2,dev)            
-            # Write the key lemma/word results to file
-            debora_results_ke(text_ke,text_se,gr_ke,di,myarray_ke,keylemmas,keywords,bigram_keyphrases, trigram_keyphrases,quadgram_keyphrases,ass_q_long,ass_q_short,nf,nf2,dev)    
-            # Have a look at Nicolas's potential results
-            essay, essay_id = nicolas_results_se(gr_se,ranked_global_weights,parasenttok, number_of_words,struc_feedback)
-            #nx.write_weighted_edgelist(gr, fullpath, comments="#", delimiter=' ', encoding='utf-8') # This writes edge list to temp dir instead of to cwd
-            #print_processing_times(startprogtime, endimporttime, startfiletime, texttime, graphtime, scorestime, nf2)
-            #print '\n\n', essay, '\n\n', essay_id , '\n\n'
-            
-            # DGF: Nicolas, 'nicolas_results' returns 'essay' ready for your 'jsonify' procedure, as it was a few months ago.
-            # I expect you will want to add some additional arguments from above. I have tried to make the arguments clear by their names. Let me know if you are not sure which ones you need.
-            # Also if you want any arguments that are not there, let me know.
-            # The difference between text_se and text_ke is that text_se has paragraph+sentence structure, but text_ke does not, it has been removed.
-            # Sorry, but I haven't had the time to do the derived graph with a smaller set of nodes, but I will do it soon.
-            # As before, I have not written a function to process the key lemma/word results as you want them.
-            # The arguments you want for the key lemma/word work are in 6. above. 
-        else: 
-            #True    
-            essay, essay_id = nicolas_results_se(gr_se,ranked_global_weights,parasenttok, number_of_words,struc_feedback)                    
-        
-        #scorestime = time() # Set current time to a variable for later calculations
-            
-        ###################################################
-        ###################################################
         
         nf.close() # Close the essay results file
 nf2.close() # Close the summary results file.

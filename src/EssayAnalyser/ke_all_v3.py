@@ -315,38 +315,16 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     bigram_keyphrases,newtext = keywords2ngrams(keywords,newtext,2)
     return text, gr,di,myarray,keylemmas, keywords,bigram_keyphrases, trigram_keyphrases, quadgram_keyphrases
 
-# Function: debora_results_ke(text_ke,text_se,gr,di,myarray,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,ass_q_long,ass_q_short,nf,nf2,dev):
-# Prints results that I am interested in.  
-def debora_results_ke(text_ke,text_se,gr,di,myarray,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,ass_q_long,ass_q_short,nf,nf2,dev):
-                    
-    # The next few lines are using the NLTK tools. This is done to make a comparisons.
 
-    # # Remove the POS tags from the fully processed text.
-    # t4 = [w[0] for w in text_ke] # Remove the tags so that the collocation finder is working on plain tokenised text that has the same content as the keywords text.
-
-    # # Run some NLTK analyses to compare with your results.
-    # bcf = BigramCollocationFinder.from_words(t4)
-    # bicolls = bcf.nbest(BigramAssocMeasures.likelihood_ratio, 200)
-
-    # tcf = TrigramCollocationFinder.from_words(t4)
-    # #tricolls = tcf.nbest(TrigramAssocMeasures.likelihood_ratio, 200)
-
-    # For each lemma, make a tuple containing the lemma, its centrality score, its centrality ranking, and its frequency.
-    z = len(di)
-    nums = range(z)
-    counter = 0    
-    scoresNfreqs = []
-    while 1:
-        if counter <= len(di)-1:
-            lemma = di[counter][0]
-            freqlemma = len(myarray[lemma]) # The frequency of the inflected forms of this lemma in the essay is the length of the list of inflected forms associated with this lemma in the array
-            # [('student', 0.3328931614802702, 0, 38), ('use', 0.18376249760232427, 1, 22), ('tool', 0.15331752034879637, 2, 14)
-            temp = (lemma,di[counter][1],nums[counter],freqlemma)
-            scoresNfreqs.append(temp)
-            counter+=1
-        else:
-            break       
-
+def debora_write_results_ke(text_ke,text_se,gr,di,myarray,\
+                     keylemmas,keywords,fivemostfreq,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,\
+                     ass_q_long,ass_q_short,\
+                     scoresNfreqs,avfreqsum,\
+                     kls_in_ass_q_long,sum_kls_in_ass_q_long,\
+                     kls_in_ass_q_short,sum_kls_in_ass_q_short,\
+                     bigrams_in_intro1,bigrams_in_intro2,\
+                     bigrams_in_concl1,bigrams_in_concl2,\
+                     all_bigrams,topbetscore,nf,nf2):
     nf.write('\nNumber of key lemmas (threshold top 20% & score >= .03): ')
     nf.write(str(len(keylemmas)))
     nf.write('\n')
@@ -360,13 +338,8 @@ def debora_results_ke(text_ke,text_se,gr,di,myarray,keylemmas,keywords,bigram_ke
 ##    nf.write('\nTop betw score:')
 ##    nf.write(str(topbetscore))
 ##    nf.write('\n')    
-    temp = sorted(scoresNfreqs, key = itemgetter(3))
-    list.reverse(temp)
-    temp1 = temp[:5]
-    freqs = [item[3] for item in temp1]
-    avfreqsum = sum(freqs)/5
     nf.write('\nThe five most freq lemmas: \n')
-    nf.write(str(temp1))
+    nf.write(str(fivemostfreq))
     nf.write('\n')
     nf.write('\nMean avg freq of five most freq lemmas: ')
     nf.write(str(avfreqsum))
@@ -381,12 +354,6 @@ def debora_results_ke(text_ke,text_se,gr,di,myarray,keylemmas,keywords,bigram_ke
     nf.write('\nBigrams:\n')
     nf.write(str(bigram_keyphrases))
     nf.write('\n')
-
-    kls_in_ass_q_long, sum_kls_in_ass_q_long = cf_ass_q_keylemmas(ass_q_long,keylemmas,scoresNfreqs)    
- 
-##    nf.write('\nAssignment question long version:\n"')
-##    nf.write(str(ass_q_long))
-##    nf.write('"\n')
     nf.write('\nNo. key lemmas occurring in assignment question: ')
     nf.write(str(len(kls_in_ass_q_long)))
     nf.write('\n')
@@ -396,12 +363,6 @@ def debora_results_ke(text_ke,text_se,gr,di,myarray,keylemmas,keywords,bigram_ke
     nf.write('\nSum of frequencies of key lemmas in ass_q_long: ')
     nf.write(str(sum_kls_in_ass_q_long))
     nf.write('\n')
-        
-    kls_in_ass_q_short, sum_kls_in_ass_q_short = cf_ass_q_keylemmas(ass_q_short,keylemmas,scoresNfreqs)    
- 
-##    nf.write('\nAssignment question short version:\n"')
-##    nf.write(str(ass_q_short))
-##    nf.write('"\n')
     nf.write('\nNo. key lemmas occurring in assignment question: ')
     nf.write(str(len(kls_in_ass_q_short)))
     nf.write('\n')
@@ -411,17 +372,12 @@ def debora_results_ke(text_ke,text_se,gr,di,myarray,keylemmas,keywords,bigram_ke
     nf.write('\nSum of frequencies of key lemmas in ass_q_short: ')
     nf.write(str(sum_kls_in_ass_q_short))
     nf.write('\n')            
- 
-    bigrams_in_intro1, bigrams_in_intro2 = cf_ngrams_section(keywords,bigram_keyphrases,text_se,'#+s:i#')
-    bigrams_in_concl1, bigrams_in_concl2 = cf_ngrams_section(keywords,bigram_keyphrases,text_se,'#+s:c#')
-    
     nf.write('Number of bigrams in the introduction section; ')
     nf.write(str(bigrams_in_intro1))
     nf.write('; ')
     nf.write('Number of bigrams in the conclusion section; ')
     nf.write(str(bigrams_in_concl1))
     nf.write('; ')
-
     s = str(scoresNfreqs)
     s = re.sub('\),'   ,  ',\n'   , s)
     s = re.sub('\)'    ,  ''   , s)
@@ -434,64 +390,8 @@ def debora_results_ke(text_ke,text_se,gr,di,myarray,keylemmas,keywords,bigram_ke
     nf.write(s)
     nf.write('\n')   
     nf.write('\n*******************************************************\n\n')    
-
-    temp = sorted(scoresNfreqs, key = itemgetter(3))
-    list.reverse(temp)
-    temp1 = temp[:5]
-    freqs = [item[3] for item in temp1]
-    avfreqsum = sum(freqs)/5
-    #print scoresNfreqs[:5]
-    
-    nf2.write('key lemmas; ') #(20 & >= .03%)
-    nf2.write(str(len(keylemmas)))
-    nf2.write('; ')
-    nf2.write('all lemmas; ')
-    nf2.write(str(len(di)))
-    nf2.write('; ')          
-    nf2.write('key words; ') #(20 & >= .03%)
-    nf2.write(str(len(keywords)))
-    nf2.write('; ')
-    nf2.write('avfreq top5freq; ') # Average frequency of the top five most frequent lemmas
-    nf2.write(str(avfreqsum))
-    nf2.write('; ')    
-    nf2.write('distinct bigrams; ') # the number of different bigrams made up from key words
-    nf2.write(str(len(bigram_keyphrases)))
-    nf2.write('; ')
-    #print 'This is bigram_keyphrases:\n', bigram_keyphrases
-    x = sum(item[1] for item in bigram_keyphrases) # the total number of bigrams made up from key words including repetitions of bigrams.
-    nf2.write('all bigrams; ')
-    nf2.write(str(x))
-    nf2.write('; ')
-    nf2.write('bigrams in intro; ')
-    nf2.write(str(bigrams_in_intro1))
-    nf2.write('; ')
-    #nf2.write('bigrams in intro2; ')
-    #nf2.write(str(bigrams_in_intro2))
-    #nf2.write('; ')
-    nf2.write('bigrams in concl; ')
-    nf2.write(str(bigrams_in_concl1))
-    nf2.write('; ')
-    #nf2.write('bigrams in concl2; ')
-    #nf2.write(str(bigrams_in_concl2))
-    #nf2.write('; ')
-    nf2.write('kl in ass_q_long; ') # Number of key lemmas also appearing in the ass_q_long
-    nf2.write(str(len(kls_in_ass_q_long)))
-    nf2.write('; ')
-    nf2.write('sum freq kl_in_ass_q_long; ') # Sum of frequencies of key lemmas that appear in the ass_q_long
-    nf2.write(str(sum_kls_in_ass_q_long))
-    nf2.write('; ')
-    nf2.write('kl in ass_q_short; ') # Number of key lemmas also appearing in the ass_q_short
-    nf2.write(str(len(kls_in_ass_q_short)))
-    nf2.write('; ')
-    nf2.write('sum freq kl_in_ass_q_short; ') # Sum of frequencies of key lemmas that appear in the ass_q_short
-    nf2.write(str(sum_kls_in_ass_q_short))
-    nf2.write(';')
-    nf2.write('ke top centr score; ')
-    x = scoresNfreqs[0][1]
-    topbetscore = round(x,3)
     nf2.write(str(topbetscore))
     nf2.write('\n') 
-
     # nf2.write('\nKey lemmas (in rank order):\n')
     # nf2.write(str(keylemmas))
     # nf2.write('\n')
@@ -517,23 +417,84 @@ def debora_results_ke(text_ke,text_se,gr,di,myarray,keylemmas,keywords,bigram_ke
     #nf2.write(s)
     #nf2.write('\n')
 
-##    nf.write('\nStraight frequency distribution (from NLTK) for comparison:\n\n')
-##    nf.write(str(x[:50]))
-##    nf.write('\n\n')
 
-##    nf.write('\nTop 10 trigram collocations (from NLTK) for comparison:\n\n')
-##    #nf.write(str(tricolls[:10]))
-##    nf.write('\n\n')        
+#def debora_get_stats_ke(di
+
+# Function: debora_results_ke(text_ke,text_se,gr,di,myarray,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,ass_q_long,ass_q_short,nf,nf2,dev):
+# Prints results that I am interested in.  
+def debora_get_stats_ke(text_se,gr,di,myarray,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,ass_q_long,ass_q_short):
+                    
+    # For each lemma, make a tuple containing the lemma, its centrality score, its centrality ranking, and its frequency.
+    z = len(di)
+    nums = range(z)
+    counter = 0    
+    scoresNfreqs = []
+    while 1:
+        if counter <= len(di)-1:
+            lemma = di[counter][0]
+            freqlemma = len(myarray[lemma]) # The frequency of the inflected forms of this lemma in the essay is the length of the list of inflected forms associated with this lemma in the array
+            # [('student', 0.3328931614802702, 0, 38), ('use', 0.18376249760232427, 1, 22), ('tool', 0.15331752034879637, 2, 14)
+            temp = (lemma,di[counter][1],nums[counter],freqlemma)
+            scoresNfreqs.append(temp)
+            counter+=1
+        else:
+            break       
+
+    temp = sorted(scoresNfreqs, key = itemgetter(3))
+    list.reverse(temp)
+    fivemostfreq = temp[:5]
+    freqs = [item[3] for item in fivemostfreq]
+    avfreqsum = sum(freqs)/5
+
+    kls_in_ass_q_long, sum_kls_in_ass_q_long = cf_ass_q_keylemmas(ass_q_long,keylemmas,scoresNfreqs)    
+ 
+##    nf.write('\nAssignment question long version:\n"')
+##    nf.write(str(ass_q_long))
+##    nf.write('"\n')
+        
+    kls_in_ass_q_short, sum_kls_in_ass_q_short = cf_ass_q_keylemmas(ass_q_short,keylemmas,scoresNfreqs)    
+ 
+##    nf.write('\nAssignment question short version:\n"')
+##    nf.write(str(ass_q_short))
+##    nf.write('"\n')
+ 
+    bigrams_in_intro1, bigrams_in_intro2 = cf_ngrams_section(keywords,bigram_keyphrases,text_se,'#+s:i#')
+    bigrams_in_concl1, bigrams_in_concl2 = cf_ngrams_section(keywords,bigram_keyphrases,text_se,'#+s:c#')
+    
+    #print 'This is bigram_keyphrases:\n', bigram_keyphrases
+    all_bigrams = sum(item[1] for item in bigram_keyphrases) # the total number of bigrams made up from key words including repetitions of bigrams.
+    x = scoresNfreqs[0][1]
+    topbetscore = round(x,3)
+
+    return scoresNfreqs,fivemostfreq,avfreqsum,kls_in_ass_q_long,sum_kls_in_ass_q_long,\
+           kls_in_ass_q_short,sum_kls_in_ass_q_short,\
+           bigrams_in_intro1,bigrams_in_intro2,\
+           bigrams_in_concl1,bigrams_in_concl2,\
+           all_bigrams,topbetscore
+
+##def debora_write results_ke(text_ke,text_se,gr,di,myarray,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,ass_q_long,ass_q_short,nf,nf2,dev):
 ##
+##    write_results_ke(text_ke,text_se,gr,di,myarray,\
+##                     keylemmas,keywords,fivemostfreq,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,\
+##                     ass_q_long,ass_q_short,\
+##                     scoresNfreqs,avfreqsum,\
+##                     kls_in_ass_q_long,sum_kls_in_ass_q_long,\
+##                     kls_in_ass_q_short,sum_kls_in_ass_q_short,\
+##                     bigrams_in_intro1,bigrams_in_intro2,\
+##                     bigrams_in_concl1,bigrams_in_concl2,\
+##                     all_bigrams,topbetscore,nf,nf2)
+    
+##    return keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,\
+##                     ass_q_long,ass_q_short,\
+##                     scoresNfreqs,avfreqsum,fivemostfreq,\
+##                     kls_in_ass_q_long,sum_kls_in_ass_q_long,\
+##                     kls_in_ass_q_short,sum_kls_in_ass_q_short,\
+##                     bigrams_in_intro1,bigrams_in_intro2,\
+##                     bigrams_in_concl1,bigrams_in_concl2,\
+##                     all_bigrams
+ 
 
-# unicode notes for later use
-##    nf.write('\nBigrams:\n\n')
-##    #a = str(bigram_keyphrases)
-##    #a.decode('unicode-escape')
-##    #nf.write(bigram_keyphrases)
-##    nf.write(str(bigram_keyphrases))
-##    #print 'IS THIS CODE OR CHARACTERS?', a
-##    #nf.write(a)
-##    nf.write('\n\n')
-   
+                    
 
+
+        
