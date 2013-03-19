@@ -13,26 +13,46 @@ Created on 14 Mar 2013
     essay['se_stats']['countTrueSent'] # Total number of true sentences (not headings, captions, title,  ass_q, toc)
     essay['se_stats']['number_of_words'] # Total number of words (I think this version includes every word that occurs before refs)
     essay['se_stats']['countAvSentLen'] # Mean average length of a tidysent
+    #### begin new ####
+    essay['se_stats']['countAssQSent'] # Number of sentences in the essay that occur in the assignment question.
+    essay['se_stats']['countTitleSent'] # Number of sentences in the essay that are identified as being in the essay's title.
+    #### end new ####
     essay['se_data']['se_ranked']  
     essay['se_graph']['nodes'] # Total number of nodes in the key sentence graph (not necessarily the same as 'all sents')
     essay['se_graph']['edges'] # Total number of edges in the key sentence graph
     essay['se_graph']['edges_over_sents'] # Number of edges in key sentence graph divided by number of true sentences
-    essay['refs']['refs_present'] # Boolean: Is there a references section?
+    #### begin new ####
+    essay['body']['b_last'] # Index: Last paragraph of the essay body
+    essay['body']['late_wc'] # Boolean: Is there a 'word count'-type phrase towards the end of the essay body?
+    #### end new ####
     essay['intro']['introheaded'] # Boolean: Is there an introduction heading?
     essay['intro']['i_first'] # Index: First paragraph of introduction section
     essay['intro']['i_last'] # Index: Last paragraph of introduction section
     essay['intro']['countIntroSent'] # Number of sentences in the introduction
     essay['intro']['percent_body_i'] # Percentage of the essay body that constitutes introduction
-    essay['intro']['i & toprank'] # Number of the top N key sentences that are in introduction section    
+    #### begin var name changed ####
+    essay['intro']['i_toprank'] # Number of the top N key sentences that are in introduction section
+    #### end var name changed ####
     essay['concl']['conclheaded'] # Boolean: Is there a conclusion heading?
     essay['concl']['c_first'] # Index: First paragraph of conclusion section
     essay['concl']['c_last'] # Index: Last paragraph of conclusion section
     essay['concl']['countConclSent'] # Number of sentences in the conclusion
     essay['concl']['percent_body_c'] # Percentage of the essay body that constitutes conclusion
-    essay['concl']['c & toprank'] # Number of the top 30 key sentences that are in conclusion section
+    #### begin var name changed ####
+    essay['concl']['c_toprank'] # Number of the top 30 key sentences that are in conclusion section
+    #### end var name changed ####
+    #### begin new ####
+    essay['refs']['len_refs'] # Number of paragraphs in the references section
+    essay['refs']['refsheaded'] # Boolean: Is there a references-type heading?
+    #### begin new ####
+    essay['appendix']['appendixheaded'] # Boolean: Is there an appendix-type heading?
+    #### end new ####
     essay['ke_data']['fivemostfreq'] # List of the five most frequent lemmas
-    essay['ke_data']['myarray_ke'] # list of lemmas and their associated inflected forms 
-    essay['ke_data']['keylemmas'] # List of key lemmas
+    essay['ke_data']['myarray_ke'] # list of lemmas and their associated inflected forms    
+    essay['ke_data']['keylemmas'] # List of key lemmas (in rank order)
+    #### begin new ####
+    essay['ke_data']['threshold_ke'] # Centrality score threshold_ke expressed as '(percentage_of_keylemmas, centrality_score)' tuple defining what qualifies as a key lemma
+    #### end new ####
     essay['ke_data']['keywords'] # List of distinct key words  
     essay['ke_data']['all_bigrams'] # List of bigrams
     essay['ke_data']['bigram_keyphrases'] # List of distinct bigrams
@@ -40,11 +60,16 @@ Created on 14 Mar 2013
     essay['ke_data']['quadgram_keyphrases'] # List of distinct quadgrams    
     essay['ke_data']['kls_in_ass_q_long'] # List of the essay's key lemmas that occur in assignment question (long version)
     essay['ke_data']['kls_in_ass_q_short'] # List of the essay's key lemmas occurring in assignment question (short version)
+    essay['ke_data']['kls_in_tb_index'] # List of distinct essay key lemmas that occur in the lemmas list for the assignment text book index
     essay['ke_data']['scoresNfreqs'] # List of all the key lemmas presented like: (lemma,score,rank,frequency): "('student', 0.332893, 0, 38)"
     essay['ke_stats']['avfreqsum'] # Mean average frequency of five most frequent lemmas
-    essay['ke_stats']['sum_kls_in_ass_q_long'] # Sum of the frequences of the essay's key lemmas that occur in the assignment question (long version)
-    essay['ke_stats']['sum_kls_in_ass_q_short'] # Sum of the frequences of the essay's key lemmas that occur in the assignment question (short version)
-
+    #### var name changed ####
+    essay['ke_stats']['sum_freq_kls_in_ass_q_long'] # Sum of the frequences of the essay's key lemmas that occur in the assignment question (long version)
+    #### var name changed ####
+    essay['ke_stats']['sum_freq_kls_in_ass_q_short'] # Sum of the frequences of the essay's key lemmas that occur in the assignment question (short version)
+    #### begin new ####
+    essay['ke_stats']['sum_freq_kls_in_tb_index'] # Sum of the frequences of the essay's key lemmas that occur in the lemmas list for the assignment text book index
+    #### end new ####
 
 '''
 from EssayAnalyser.se_main_v3 import top_level_procedure

@@ -338,7 +338,7 @@ def find_section_paras(text, section_name, headings, nf,nf2,dev):
         first_heading = list_this_heading[0][1] # So take it as heading for body intro section
         (first,last) = find_first_section_para_index(section_name, first_heading, text)
         if dev == 'DGF':
-            print 'A heading has been found for section name:', section_name
+            print '\nA heading has been found for section name:', section_name
             headingQ = True
     para_indices = (first, last)
     return (para_indices, title_indices, headingQ)

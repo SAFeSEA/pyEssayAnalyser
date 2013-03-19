@@ -36,6 +36,28 @@ dev = 'DGF'
 # The following model needs to be loaded if we use the alternative sentence splitter.
 #model = sbd.load_sbd_model('C:/Python27/Lib/site-packages/splitta.1.03/model_nb/', use_svm=False) # Playing with a different sentence splitter
 
+##############################
+##############################
+## 1. Read in assignment question and text book index.
+##############################
+##############################
+      
+cwdir = os.getcwd() # get current working directory
+assignment_question = cwdir + '\\EssayAnalyser\\assignment_extras\\H810_TMA01_ass_q_long.txt'
+f = codecs.open(assignment_question,'r',encoding='utf-8') # Open for reading the assignment question
+ass_q_txt = f.read() # Read in the assignment question and set to var 'ass_q_txt'
+#print '\n\nThis is ass_q_long_string', ass_q_long_string
+f.close() # Close the file
+tb_index = cwdir + '\\EssayAnalyser\\assignment_extras\\H810_TMA01_seale_textbook_index.txt'
+f = codecs.open(tb_index,'r',encoding='utf-8') # Open for reading the text book index
+tb_index_txt = f.read() # Read in the text book index
+f.close() # Close the file
+
+##############################
+##############################
+## 2. Do some file handling for all the essays to be read in and the results files to be written out.
+##############################
+##############################
 
 # Begin by deleting the temporary directory and files you created last time you ran this program.
 tempdir0 = tempfile.gettempdir() # This gets the path to the location of the temporary files and dirs.
@@ -47,10 +69,10 @@ for dirname in tempfilelist:
 		shutil.rmtree(fullpath) # Do the deletion
 
 tempdir1 = tempfile.mkdtemp(suffix='', prefix='AAA_SentExtrac_Results_', dir=None) # Create a new directory for the essay results files to go in. Make it a temporary directory. Temporary files are stored here: c:\\users\\debora\\appdata\\local\\temp		
-cwdir = os.getcwd()  # Get current working directory
+#cwdir = os.getcwd()  # Get current working directory
 filelist = os.listdir(cwdir) # Set var 'filelist' to a list of files in cwdir. 'listdir' reads the dir you've given it, and returns a list of files.
 newfilename2 = os.path.join(tempdir1, 'sent_extract_results_summary.txt') 
-nf2 = codecs.open(newfilename2, 'w',encoding='utf-8') # Open 'newfilename2' (for writing to) and set open file to var 'nf2'
+nf2 = open(newfilename2, 'w') # Open 'newfilename2' (for writing to) and set open file to var 'nf2'
 #nf2.write('\nProgram started running at: ') # Write to summary results file 'nf2' the start time of the program
 #nf2.write(str(startprogtime))
 #nf2.write('\n\n*********************************************************\n\n')
@@ -60,20 +82,26 @@ for essay_fname in filelist: # For each file in the current directory...
     #startfiletime = time() # Set current time to a variable for later calculations
     if essay_fname[-3:] == 'txt': # If a file name ends in 'txt'...
         print essay_fname # Print to shell to monitor progress
-        f = codecs.open(essay_fname, 'r',encoding='utf-8') # Open current essay file for reading
+        f = open(essay_fname, 'r') # Open current essay file for reading
         essay_txt = f.read() # Read in the essay and set to var 'essay_txt'
         f.close() # Close the essay file
         string = essay_fname[:-4] + '_results' + '.txt'
         newfilename = os.path.join(tempdir1, string)                     
-        nf = codecs.open(newfilename, 'w',encoding='utf-8') # Open 'newfilename' (for writing to) and set open file to var 'nf'
+        nf = open(newfilename, 'w') # Open 'newfilename' (for writing to) and set open file to var 'nf'
+
+        # DGF: Nicolas, hopefully you should be able to just lift everything between here and the next double row of hashes
+        # and substitute it for your two functions 'get_segmented_text' and 'process_essay' in your 'api.py' file.
+                
+        top_level_procedure(essay_txt,essay_fname,ass_q_txt,tb_index_txt,nf,nf2,dev)
 
         if dev == 'DGF':
             #nf2.write('\n') # Add blank lines to the essay results file            
             nf2.write(str(essay_fname)) # Write the new file name to the essay results file
             nf2.write('; ')
-
-        top_level_procedure(essay_txt,essay_fname,nf,nf2,dev)            
-
+            
+        #struc_feedback = {}
+        
+        
         nf.close() # Close the essay results file
 nf2.close() # Close the summary results file.
 

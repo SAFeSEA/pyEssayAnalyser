@@ -15,7 +15,7 @@ This file contains several long functions which specify the order in which the e
 The procedure for the key word/phrase graphs is not in here but is in the file ke_all.py.
 This file does not contain the functions for carrying out all the pre-processing and the sentence graph processing. Those are in files se_preprocess.py, se_struc.py, se_graph.py.
 Function names:
-# Function: pre_process_text(text0,nf,nf2,dev)
+# Function: pre_process_text_se(text0,nf,nf2,dev)
 # Function: pre_process_struc(text,nf,nf2,dev):
 # Function: pre_process_shorttext(ass_q,dev)
 # Function: process_essay_se(text, parasenttok, nf, nf2, dev)
@@ -23,7 +23,7 @@ Function names:
 # Function: pre_process_text_se(text0,nf,nf2,dev)
 # Carries out some of the text processing that is necessary before the graph can be constructed from the essay's sentences.
 # Called by se_main.py.
-def pre_process_text(text0,nf,nf2,dev):
+def pre_process_text_se(text0,nf,nf2,dev):
 #def pre_process_essay(text0,struc_feedback,nf,nf2,dev,model):    
     # Get the body of the essay. 
     # Currently this is everything occurring before the references section but it needs improvement/refinment.
@@ -61,7 +61,7 @@ def pre_process_text(text0,nf,nf2,dev):
     
     #print '###############################################'
     #print '###############################################'
-    b_last,parasenttok, len_refs, refsheaded, late_wc, appendixheaded = get_essay_body(temp3,nf,dev)
+    last_body_para_index,parasenttok, len_refs, refs_heading_present, late_wc_present, appendix_present = get_essay_body(temp3,nf,dev)
 
     #process_sents(print_function_name, parasenttok)  # xxxx only for printing function names.
 
@@ -93,7 +93,7 @@ def pre_process_text(text0,nf,nf2,dev):
     # I do not remove them at the beginning, because I do not yet know how interesting/significant numeric sentences are.
     text = process_sents(find_and_label_numeric_sents, text4)
 
-    return text,parasenttok,wordtok_text,b_last,len_refs,refsheaded,late_wc,appendixheaded
+    return text,parasenttok,wordtok_text,struc_feedback,last_body_para_index,len_refs,refs_heading_present,late_wc_present,appendix_present
 
 # Function: pre_process_struc(text,nf,nf2,dev):
 # Labels each sentence with its structural function.
@@ -187,7 +187,7 @@ def pre_process_struc(text,ass_q_long_words,nf,nf2,dev):
 # Called by se_main.py.
 
 def pre_process_shorttext(ass_q,dev):
-    ass_q,a01,a02,a03,a04,a05,a06,a07 = pre_process_text(ass_q,[],[],[]) 
+    ass_q,a01,a02,a03,a04,a05,a06,a07,a08 = pre_process_text_se(ass_q,[],[],[]) 
     # Finish processing of assignment title (without doing all the structural analysis)
     temp = process_sents(pos_tag, ass_q)
     temp = process_sents(lowercase_sents, temp)
@@ -288,5 +288,5 @@ def process_essay_se(text, parasenttok, nf, nf2, dev):
     # Make a structure containing the results, putting the WSVi rank first, 
     ranked_global_weights = sort_ranked_sentences(reorganised_array)
 
-    return gr, ranked_global_weights, reorganised_array, graphtime                      
+    return gr, myarray, ranked_global_weights, reorganised_array, graphtime                      
 

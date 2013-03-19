@@ -51,8 +51,8 @@ def fill_sentence_array(myarray, text, struc_labels):
     counter = 0 # Sentence counter to add as key in array
     for para in text:
         for sent in para:
-            #if sent != [] and sent[0] != '#-s:p#' and sent[0] != '#-s:n#' and sent[0] != '#-s:h#' and sent[0] != '#-s:t#' and sent[0] != '#-s:q#' and sent[0] != '#dummy#':            
-            if sent != [] and sent[0][0] != '#dummy#':  # 
+            #if sent != [] and sent[0] != '#-s:p#' and sent[0] != '#-s:n#' and sent[0] != '#-s:h#' and sent[0] != '#-s:t#' and sent[0] != '#dummy#':            
+            if sent != [] and sent[0][0] != '#dummy#':
                 place = struc_labels.index(sent[0][0]) # Get the label of the sentence
                 label = struc_labels[place]
                 temp = sent[1:] # Get everything in the sent after the label                                
@@ -82,9 +82,8 @@ def make_graph_building_arrays(myarray, myWarray, myCarray):
             if tidysent == []:
                 add_item_to_array(myWarray, sentencecounter, '$$$$EMPTY_SENT_TOKEN$$$$')
                 add_item_to_array(myCarray, sentencecounter, 0)
-            # xxxx This para takes punctuation, numbers, headings, and title and ass_q out of the graph. Done now to make visual graphics of graph. May keep.
-            # xxxx Next three lines messed about with for testing
-            elif label == '#-s:p#' or label == '#-s:n#' or label == '#-s:h#' or label == '#-s:t#' or label == '#-s:q#':
+            # xxxx This para takes punctuation, numbers, headings, and title out of the graph. Done now to make visual graphics of graph. May keep.
+            elif label == '#-s:p#' or label == '#-s:n#' or label == '#-s:h#' or label == '#-s:t#':
                 add_item_to_array(myWarray, sentencecounter, '$$$$NOT_A_TRUE_SENTENCE$$$$')
                 add_item_to_array(myCarray, sentencecounter, 0)
             else:
@@ -93,8 +92,7 @@ def make_graph_building_arrays(myarray, myWarray, myCarray):
                 for w in tidysent:
                     if w[1] not in monitorlist:
                         c = sum(1 for w in tidysent if w[1] == tidysent[wordcounter][1])
-                        #add_item_to_array(myWarray, sentencecounter, w[0]) # fill myWarray with the words
-                        add_item_to_array(myWarray, sentencecounter, w[1]) # fill myWarray with the lemmas
+                        add_item_to_array(myWarray, sentencecounter, w[1])
                         add_item_to_array(myCarray, sentencecounter, c)
                         monitorlist.append(w[1])
                         wordcounter += 1
@@ -164,7 +162,6 @@ def find_cosine_similarity(counter1,counter0,myWarray,myCarray,dev):
                 print myWarray[counter1], myWarray[counter0]
         else:
             result = mydotproduct / product_of_magnitudes # Cosine similarity
-    #print myWarray[counter1], myCarray[counter1], '\n'        
     return result 
 
 
@@ -181,8 +178,9 @@ def add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray,dev):
         if counter1 <= (len(myWarray) - 1) and counter1 != counter0: # Stop looping when counter1 (instantiated earlier) reaches the total number of sentences and make sure 'from' and 'to' nodes are not the same node.
             weight = float(find_cosine_similarity(counter1,counter0,myWarray,myCarray,dev))
             if weight > 0:
-                gr.add_weighted_edges_from([(counter1,counter0,weight)]) # Add the current edge with the weight you have calculated. This line adds the backwards-directed edges for the current node (counter0).
-                gr.add_weighted_edges_from([(counter0,counter1,weight)]) # Nicolas, this line adds forwards-directed edges. Use this line _and_ the previous line for an undirected graph. 
+                gr.add_weighted_edges_from([(counter1,counter0,weight)]) # Add the current edge with the weight you have calculated. Uses imported NetworkX.
+                #print 'This edge has been added to the graph:'
+                #print [(counter1,counter0,weight)]
             elif weight == 0: # Count the number of zero-weight edges you are making (for monitoring)
                 counterA += 1
             counter1 += 1
@@ -196,7 +194,7 @@ def add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray,dev):
 # and to which you have already added the appropriate nodes.
 # Note that this involves finding which nodes should be joined by an edge, which in turn
 # requires every pair of nodes/sentences in the graph to be compared in order to derive
-# a similarity score. That part is carried out by 'add_one_nodes_edges'.
+# a similarity score. That part is carried by 'add_one_nodes_edges'.
 # Called by process_essay_se in se_procedure.py.
 def add_all_node_edges(gr,myWarray,myCarray,nf2,dev):    
     mylist = []
@@ -206,14 +204,12 @@ def add_all_node_edges(gr,myWarray,myCarray,nf2,dev):
         if counter0 <= (len(myWarray) - 1) and counter1 > counter0: # Stop looping when the counter reaches the total number of sentences
             # ... plus the first/'from' node in a pair must be greater (later in the text/graph) than the second/'to' node in this case to reflect directedness: later nodes can point to earlier ones, but not vice versa
             zeroweights = add_one_nodes_edges(gr, counter1, counter0, myWarray,myCarray,dev) # Add all the edges for one node (the 'to' node)
-            #print '\n\nThis is counter 0 and counter 1: ', counter0, counter1
+            mylist.append(zeroweights) # For counting zero-weight edges
             counter0 += 1 # Increment the 'to' node
         elif counter1 <= counter0: # If the 'from' node is smaller/= the 'to' node
             counter1 += 1
         else:
             break
-    mylist.append(zeroweights) # For counting zero-weight edges
-    #print gr.edges() # Nicolas, this will show you the edges so you can see the difference that edge direction makes.
     sumzeroweights = sum(mylist) # Just keeping tabs on how many zero-weight edges there are.
     
 
@@ -228,16 +224,10 @@ def add_all_node_edges(gr,myWarray,myCarray,nf2,dev):
 # 'min_value' is (1.0-d)/graph_size.
 # i is just for monitoring.
 def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):  
-    #print 'Iteration:'
-    #print i
-    #print 'For Vi:'
-    #print Vi
     score = 0 # Set a temporary score to zero to enable calculations of the rhs of the TextRank equation
     list0 = gr.predecessors(Vi) # Find out which nodes point to Vi, i.e., ALL its predecessors.
     if list0 == []: # If Vi has no predecessors 
         WSVi = min_value # Set WSVi to the minimum value
-        #print 'If clause: No nodes point to this Vi so WSVi set to minimum value:'
-        #print '\n'
         return WSVi # Return the minimum value as the WSVi global weight score result
     else:    
         for Vj in list0: # For each node Vj that points to Vi
@@ -245,10 +235,6 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
             WoutVj = gr.out_degree(Vj,weight='weight') # Find each edge Vj->Vk that points out of Vj and sum their weights to give WoutVj.
             # (We know that at least one edge points out of Vj, the one towards Vi, so no need for empty list alternative)
             WSVj = scores_array[Vj] # Get the most recent WS score from 'scores_array' for Vj (these are seeded right at the beginning with an arbitrary value)
-            #print 'This is the most recent WSVj score:'
-            #print WSVj
-            #print 'in the calculation of WSVi for this node Vj:'
-            #print Vj
             score = score + ( (gr[Vj][Vi]['weight'] * WSVj) / WoutVj )    # Do the rhs of the TextRank equation calculation               
     WSVi = ((1 - d) + (d * score))/graph_size # Do the final calculations
     #rank += d * scores_array[Vj] / len(gr.successors(Vj) # The 'pagerank.py' version here for comparison (edges not weighted)
@@ -271,38 +257,22 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
 # Set a threshold 'max_iterations' to constrain the number of times find_all_gw_scores is consecutively called in order to calculate the WSVi scores.
 # Set a value 'min_delta' to help measure how different the current WSVi score is from the WSVi score at the last iteration.
 # Called by process_essay_se in se_procedure.py.
-#def find_all_gw_scores(gr, scores_array, nf2, dev, d = .85, max_iterations = 100, min_delta = 0.00001):
-def find_all_gw_scores(gr, scores_array, nf2, dev, d = .85, max_iterations = 100, min_delta = 0.0000000001):
+def find_all_gw_scores(gr, scores_array, nf2, dev, d = .85, max_iterations = 100, min_delta = 0.00001):
     nodes = gr.nodes() # Make a list of the graph's nodes
     graph_size = len(nodes) # Find the size of the graph, meaning the number of the graph's nodes. 
     min_value = (1.0-d)/graph_size # Set a minimum WSVi score value for nodes without inbound links, i.e., = .15/graph_size. This idea is taken directly from pagerank.py.
     #for i in range(3):  # Set low for testing purposes.
     for i in range(max_iterations):  # Only go round this loop max_iterations (100) times for each node.
-        #print '######################################'
-        #print '############ iteration number#########'
-        #print i, '\n'
-        counter = 0
         diff = 0 # Set a variable to keep track of the size of the difference between this score and the score in previous iteration.
-        #list.reverse(nodes) # xxxx temporary switch for testing
+        #list.reverse(nodes)
         for Vi in nodes: # For each node Vi in the graph...
             WSVi = find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i) # ...find its global weight score, i carried for printing/debugging.
-            #if Vi < 100:
-                #print '\nNode', Vi
-                #print 'This is min_delta', min_value
-                #print 'This is the old diff', diff
-                #print 'This is the old WSVi score)', scores_array[Vi]
-                #print 'This is the new WSVi score)', WSVi
             diff += abs(scores_array[Vi] - WSVi) # Increment 'diff' with the difference between this score and the score calculated in the last iteration.
-            # Note that 'diff' is the sum of _all_ the differences for _every_ node in this iteration. Only when the sum of these is very small is convergence achieved.
             scores_array[Vi] = WSVi # Update the scores_array with this new score value in place of the old one.
-            #if Vi < 100:
-                #print 'This is the new diff, which is incremented by the old WSVi score minus the new WSVi score', diff
-                #print 'This is min_delta', min_delta 
-            counter += 1
         if diff < min_delta: # If the difference between this score and score in previous iteration is less than .00001 (min_delta)...
             if dev == 'DGF':
-                print '############ iteration number#########', i
-                #print 'SUCCEEDS: diff < min_delta', diff, min_delta
+                print 'Final iteration number:'
+                print i+1
             break # ... stop
     return scores_array
 
@@ -341,12 +311,8 @@ def reorganise_array(myarray):
 # Returns the list of true sentences in descending rank order.
 # Called by process_essay_se in se_procedure.py.
 def sort_ranked_sentences(mylist):
-    # xxxx next line commented out for testing
-    mylist = [item for item in mylist if item[2] == '#+s#' or item[2] == '#dummy#' or item[2] == '#+s:i#' or item[2] == '#+s:c#']# or item[2] == '#-s:h#']    # or item[2] == '#-s:t#'or item[2] == '#-s:q#']
-    mylist.sort() # ... and sort the structure according to its first argument (WSVi score)
-    #print '\n\n\nTHIS IS mylist', mylist
-    list.reverse(mylist)
-    #values = set(map(lambda x:x[1], mylist)) # This routine groups the things sorted into lists if they have the same sort value
-    #newlist = [[y for y in mylist if y[1]==x] for x in values]
-    #print '\n\n\nTHIS IS newlist', newlist
-    return mylist
+    temp = [item for item in mylist if item[2] == '#-s:p#' or item[2] == '#-s:n#' or item[2] == '#-s:h#' or item[2] == '#-s:t#']
+    sorted_list = [item for item in mylist if item not in temp]
+    sorted_list.sort() # ... and sort the structure according to its first argument (WSVi score)
+    list.reverse(sorted_list)
+    return sorted_list
