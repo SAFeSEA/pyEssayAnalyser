@@ -110,7 +110,7 @@ def ngramToTree(ngram_list):
 
 
 def Flask_process_text(text0):
-    essay = top_level_procedure(text0, None, None, None, "NVL")
+    essay = top_level_procedure(text0, None, None, None, "NVL","H810","TMA01")
     
     # Build an associative array out of the keywords list    
     
@@ -126,7 +126,7 @@ def Flask_process_text(text0):
 
 
 if __name__ == '__main__':
-    import json
+    import json,os
     import textwrap, string, pprint
 
     text = u'''The resource had some accessibility features that were achieved by keeping the document Microsoft® Office Word based, 
@@ -142,4 +142,3 @@ if __name__ == '__main__':
     essay = Flask_process_text(string.replace(textwrap.dedent(text),'\n',' '))
 
     print(json.dumps(essay, indent=4))
-

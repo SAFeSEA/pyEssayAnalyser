@@ -72,7 +72,7 @@ for essay_fname in filelist: # For each file in the current directory...
             nf2.write(str(essay_fname)) # Write the new file name to the essay results file
             nf2.write('; ')
 
-        top_level_procedure(essay_txt,essay_fname,nf,nf2,dev)            
+        top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")            
 
         nf.close() # Close the essay results file
 nf2.close() # Close the summary results file.

@@ -63,7 +63,7 @@ def make_results_array(parasenttok,myarray_ke,\
     top_ranked_global_weights = ranked_global_weights[:15]    
     for (a,b,c,d,e) in top_ranked_global_weights: # Get only the sentence key numbers from the sorted scores list...
         mylist2.append((a,b,c))        
-    se_data['se_ranked'] = mylist2
+    essay['se_ranked'] = mylist2
     essay['se_stats'] = se_stats
 
     se_graph = OrderedDict()

@@ -14,28 +14,46 @@ from EssayAnalyser.ea_results_v3 import make_results_array
 ##############################
 ##############################
       
-cwdir = os.getcwd() # get current working directory
-assignment_question = cwdir + '\\EssayAnalyser\\assignment_extras\\H810_TMA01_ass_q_long.txt'
-f = codecs.open(assignment_question,'r',encoding='utf-8') # Open for reading the assignment question
-ass_q_txt = f.read() # Read in the assignment question and set to var 'ass_q_txt'
+#cwdir = os.getcwd() # get current working directory
+#cwdir = os.path.abspath(os.path.dirname(__file__))
+#assignment_question = cwdir + '\\assignment_extras\\H810_TMA01_ass_q_long.txt'
+#f = codecs.open(assignment_question,'r',encoding='utf-8') # Open for reading the assignment question
+#ass_q_txt = f.read() # Read in the assignment question and set to var 'ass_q_txt'
 #print '\n\nThis is ass_q_long_string', ass_q_long_string
-f.close() # Close the file
-tb_index = cwdir + '\\EssayAnalyser\\assignment_extras\\H810_TMA01_seale_textbook_index.txt'
-f = codecs.open(tb_index,'r',encoding='utf-8') # Open for reading the text book index
-tb_index_txt = f.read() # Read in the text book index
-f.close() # Close the file
+#f.close() # Close the file
+#tb_index = cwdir + '\\assignment_extras\\H810_TMA01_seale_textbook_index.txt'
+#f = codecs.open(tb_index,'r',encoding='utf-8') # Open for reading the text book index
+#tb_index_txt = f.read() # Read in the text book index
+#f.close() # Close the file
 
 
-def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev):
+def getAssignmentData(module,assignment):
+    # get path of current file
+    cwdir = os.path.abspath(os.path.dirname(__file__))
+    # build path to data file
+    assignment_question = os.path.join(cwdir,'..\\data\\',module + '_' + assignment + '_ass_q_long.txt')
+    assignment_question = os.path.normpath(assignment_question)
+    f = codecs.open(assignment_question,'r',encoding='utf-8') # Open for reading the assignment question
+    ass_q_txt = f.read() # Read in the assignment question and set to var 'ass_q_txt'
+    f.close() # Close the file
+ 
+    tb_index = os.path.join(cwdir,'..\\data\\',module + '_textbook_index.txt')
+    f = codecs.open(tb_index,'r',encoding='utf-8') # Open for reading the text book index
+    tb_index_txt = f.read() # Read in the text book index
+    f.close() # Close the file
 
+    return ass_q_txt, tb_index_txt
 
+def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
+    
+    # Get the data associated with module/course
+    ass_q_txt, tb_index_txt = getAssignmentData(module,assignment)
+    
 ##    ass_q_long = "Write a report explaining the main accessibility challenges for disabled learners that you work with or support in your own work context(s). Use examples from your own experience, supported by the research and practice literature. If you're not a practitioner, write from the perspective of a person in a relevant context. Critically evaluate the influence of the context (e.g. country, institution, educational sector, perceived role of online learning within education) on: the identified challenges particular to your own context. the influence of legislation and local policies. the roles and responsibilities of key individuals. the role of assistive technologies in addressing these challenges."
 ##    ass_q_short = "Write a report explaining the main accessibility challenges for disabled learners that you work with or support in your own work context(s)"
 ##
 ##    ass_q_long = pre_process_ass_q(ass_q_long,dev)
 ##    ass_q_short = pre_process_ass_q(ass_q_short,dev)
-
-
     ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd = pre_process_shorttext(ass_q_txt,'NOPRINT')
 
     # Note there are two versions of the text book index. First, the original text file 'H810_TMA01_seale_textbook_index.txt'
@@ -153,7 +171,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev):
                      bigrams_in_concl1,bigrams_in_concl2,\
                      bigrams_in_assq1,bigrams_in_assq2,\
                      all_bigrams,topbetscore,nf,nf2)
-                     #ass_q_long,ass_q_short,\
+			     	 #ass_q_long,ass_q_short,\
                      #tb_index_lemmd, tb_index_lemmd2,\
 
         # Have a look at Nicolas's potential results
