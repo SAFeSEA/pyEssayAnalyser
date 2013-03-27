@@ -179,7 +179,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
                                paras,number_of_words,
                                countTrueSent,countAvSentLen,\
                                nodes,edges,edges_over_sents,\
-                               ranked_global_weights,threshold_ke,\
+                               ranked_global_weights,reorganised_array,threshold_ke,\
                                len_headings,\
                                countAssQSent,countTitleSent,\
                                b_last,len_body,len_refs,refsheaded,late_wc,appendixheaded,\
