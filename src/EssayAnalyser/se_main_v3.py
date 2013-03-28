@@ -31,13 +31,13 @@ def getAssignmentData(module,assignment):
     # get path of current file
     cwdir = os.path.abspath(os.path.dirname(__file__))
     # build path to data file
-    assignment_question = os.path.join(cwdir,'..\\data\\',module + '_' + assignment + '_ass_q_long.txt')
+    assignment_question = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long.txt')
     assignment_question = os.path.normpath(assignment_question)
     f = codecs.open(assignment_question,'r',encoding='utf-8') # Open for reading the assignment question
     ass_q_txt = f.read() # Read in the assignment question and set to var 'ass_q_txt'
     f.close() # Close the file
  
-    tb_index = os.path.join(cwdir,'..\\data\\',module + '_textbook_index.txt')
+    tb_index = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_textbook_index.txt')
     f = codecs.open(tb_index,'r',encoding='utf-8') # Open for reading the text book index
     tb_index_txt = f.read() # Read in the text book index
     f.close() # Close the file
