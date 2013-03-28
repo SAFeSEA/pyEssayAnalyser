@@ -46,6 +46,18 @@ def make_results_array(parasenttok,myarray_ke,\
     
     ### Add paragraph/sentence structure
     essay['parasenttok'] = parasenttok    
+    
+    reorpar = []
+    inc=0
+    for par in parasenttok:
+        newpar = []
+        for sent in par:
+            newsent = [{'text': sent,'id':inc,'tag': reorganised_array[inc][2]}]
+            newpar.append(newsent)
+            inc+=1
+        reorpar.append(newsent)
+    
+            
     ### Add statistics on essay
     se_stats = OrderedDict()
     se_stats['paras'] = paras
@@ -61,12 +73,13 @@ def make_results_array(parasenttok,myarray_ke,\
     se_data = OrderedDict()
     mylist2 = []
     top_ranked_global_weights = ranked_global_weights[:15]    
-    for (a,b,c,d,e) in ranked_global_weights: # Get only the sentence key numbers from the sorted scores list...
+    for (a,b,c,d,e) in top_ranked_global_weights: # Get only the sentence key numbers from the sorted scores list...
         mylist2.append((a,b,c))        
     essay['se_ranked'] = mylist2
     essay['se_reotg_array'] = reorganised_array
     essay['se_stats'] = se_stats
 
+    f = 1/0
     se_graph = OrderedDict()
     se_graph['nodes'] = nodes
     se_graph['edges'] = edges
