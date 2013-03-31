@@ -294,19 +294,20 @@ def find_section_paras(text, section_name, headings, nf,nf2,dev):
     headingQ = []
     if heading_count == 0 and section_name == 'Summary':
         if dev == 'DGF':
-           headingQ = False
+            print 'No "Summary" heading has been found'
+        headingQ = False
         True # Don't do anything, para indices remain empty. Not assuming that there is unlabelled Summary section, as we do with Introduction and Conclusion.        
     elif heading_count == 0 and section_name == 'Introduction': # If no 'Introduction' section heading has been found
         (first,last) = find_no_intro_heading_indices(text, headings)
         title_indices = find_title_indices(first, text)
         if dev == 'DGF':
             print 'No "Introduction" heading has been found'
-            headingQ = False
+        headingQ = False
     elif heading_count == 0 and section_name == 'Conclusion': # If no 'Conclusion' section heading has been found
         (first,last) = find_no_concl_heading_indices(section_name, headings, text,nf,nf2,dev)
         if dev == 'DGF':
             print 'No "Conclusion" heading has been found'
-            headingQ = False
+        headingQ = False
     elif heading_count == 2 and section_name == 'Introduction': # If there are two occurrences of 'Introduction' heading, first is prob contents page, and second prob body section
         first_heading = list_this_heading[1][1] # So take second occurrence as heading of body intro section
         (first,last) = find_first_section_para_index(section_name, first_heading, text)
@@ -314,32 +315,32 @@ def find_section_paras(text, section_name, headings, nf,nf2,dev):
         title_indices = find_title_indices(contents_heading_index, text)
         if dev == 'DGF':
             print 'An "Introduction" heading has been found (1)'
-            headingQ = True
+        headingQ = True
     elif heading_count == 2 and section_name == 'Conclusion': # If there are two occurrences of 'Conclusion' heading, first is prob contents page, and second prob body section
         first_heading = list_this_heading[1][1] # So take second occurrence as heading of body intro section
         (first,last) = find_first_section_para_index(section_name, first_heading, text)
         if dev == 'DGF':
             print 'A "Conclusion" heading has been found'
-            headingQ = True
+        headingQ = True
     elif section_name == 'Introduction': # In all other Introduction cases
         first_heading = list_this_heading[0][1] # So take it as heading for body intro section
         (first,last) = find_first_intro_para_index(section_name, first_heading, text, headings)
         title_indices = find_title_indices(first, text)
         if dev == 'DGF':
             headingQ = True
-            print 'A heading has been found for section name:', section_name             
+        print 'A heading has been found for section name:', section_name             
     elif section_name == 'Conclusion': # In all other 'conclusion' cases
         first_heading = list_this_heading[0][1] # So take it as heading for body intro section
         (first,last) = find_first_section_para_index(section_name, first_heading, text)
         if dev == 'DGF':
-            headingQ = True
             print 'A heading has been found for section name:', section_name     
+        headingQ = True
     else: # In all other cases
         first_heading = list_this_heading[0][1] # So take it as heading for body intro section
         (first,last) = find_first_section_para_index(section_name, first_heading, text)
         if dev == 'DGF':
             print 'A heading has been found for section name:', section_name
-            headingQ = True
+        headingQ = True
     para_indices = (first, last)
     return (para_indices, title_indices, headingQ)
 
