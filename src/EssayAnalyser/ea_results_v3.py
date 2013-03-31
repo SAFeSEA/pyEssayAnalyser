@@ -1,5 +1,7 @@
 '''
-
+@todo OrderedDict does not exist in Python 2.6, running on Linux.
+An alternative needs to be installed manually: https://pypi.python.org/pypi/ordereddict
+Or switch back to standard Dict.
 '''
 from collections import OrderedDict
 
@@ -15,9 +17,9 @@ increases the patch version (e.g. changing from 3.1.5 to 3.1.6)
 
 @change: 
 3.0.0    Initial version of the data structure
+3.1.0    Added mashup of parasenttok (se_parasenttok) to contains all info (id, text, toprank, tag, raking)
 '''
-ANALYTICS_VERSION = "3.0.0"
-
+ANALYTICS_VERSION = "3.1.0"
 
 def make_results_array(parasenttok,myarray_ke,\
                                paras,number_of_words,
@@ -40,23 +42,49 @@ def make_results_array(parasenttok,myarray_ke,\
     @return: A dictionary containing various elements of the text analytics
     """
     essay = OrderedDict()
-    ### Add version of data structure 
-    essay['version'] = ANALYTICS_VERSION
     
+    '''
+    @todo: What limit should we implement for the top ranked sentence? Hard-coded? Threshold-based? Parameter to process?
+    '''
+    top_ranked_global_weights = ranked_global_weights[:15]  
+
+    # Index sentence ID by rank
+    mylist2 = {}
+    for idx,val in enumerate(top_ranked_global_weights): 
+        mylist2[val[1]]=idx         
     
-    ### Add paragraph/sentence structure
-    essay['parasenttok'] = parasenttok    
-    
+    # Restructure parasenttok with text,ID, structure tag (and score?)
     reorpar = []
     inc=0
     for par in parasenttok:
         newpar = []
         for sent in par:
-            newsent = [{'text': sent,'id':inc,'tag': reorganised_array[inc][2]}]
+            newsent = {
+                'text': sent,                       ## sentence text
+                'id':inc,                           ## sentence ID
+                'tag': reorganised_array[inc][2]    ## structural tag
+            }
+            if inc in mylist2:
+                newsent['rank'] = mylist2[inc]      ## rank if in top 15
             newpar.append(newsent)
             inc+=1
-        reorpar.append(newsent)
-    
+        reorpar.append(newpar)
+
+    ### Add version of data structure 
+    essay['version'] = ANALYTICS_VERSION
+        
+    ### Add paragraph/sentence structure
+    essay['parasenttok'] = parasenttok    
+
+    ### Add data on sentences 
+    se_data = OrderedDict()
+    mylist2 = []
+    for (a,b,c,d,e) in top_ranked_global_weights:
+        mylist2.append((a,b,c))        
+    se_data['se_ranked'] = mylist2
+    se_data['se_parasenttok'] = reorpar
+    essay['se_data'] = se_data
+   
             
     ### Add statistics on essay
     se_stats = OrderedDict()
@@ -69,17 +97,8 @@ def make_results_array(parasenttok,myarray_ke,\
     se_stats['countAvSentLen'] = countAvSentLen
     se_stats['countAssQSent'] = countAssQSent # new
     se_stats['countTitleSent'] = countTitleSent # new
-    
-    se_data = OrderedDict()
-    mylist2 = []
-    top_ranked_global_weights = ranked_global_weights[:15]    
-    for (a,b,c,d,e) in top_ranked_global_weights: # Get only the sentence key numbers from the sorted scores list...
-        mylist2.append((a,b,c))        
-    essay['se_ranked'] = mylist2
-    essay['se_reotg_array'] = reorganised_array
     essay['se_stats'] = se_stats
 
-    f = 1/0
     se_graph = OrderedDict()
     se_graph['nodes'] = nodes
     se_graph['edges'] = edges
