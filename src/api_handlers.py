@@ -6,7 +6,15 @@ Created on 14 Mar 2013
 
 '''
 from EssayAnalyser.se_main_v3 import top_level_procedure
-from collections import Counter
+
+## @todo: Added for backward compatibility with Python 2.6 (linux)
+import sys
+if sys.version_info < (2, 7):
+    from EssayAnalyser.utils.counter import Counter
+else:
+    from collections import Counter
+
+
 
 __mapkeyscore = {}
 

@@ -13,6 +13,8 @@ from decimal import getcontext, Decimal
 ##from EssayAnalyser import _apiLogger
 ##from collections import Counter
 
+import sys
+
 
 """
 This file contains the functions for writing desired sentence extraction results to file.
@@ -229,13 +231,15 @@ def get_essay_stats_se(gr,text,headings,ranked_global_weights,reorganised_array)
 
     getcontext().prec = 3
     if countIntroSent > 0: 
-        percent_body_i = 100 * Decimal(1.0/(countTrueSent / countIntroSent)) # y is the percentage of the essay body taken up by the introduction
+        ## @todo: added str() to ensure backward compatibility with Python 2.6
+        percent_body_i = 100 * Decimal(str(1.0/(countTrueSent / countIntroSent))) # y is the percentage of the essay body taken up by the introduction
     else: # xxxx This condition should not succeed for any essay, but some test files don't return a result for intro section, in which case countIntroSent == 0, which returns an error on the previous line. Needs a better fix. 
         percent_body_i = 0
     percent_body_i = float(percent_body_i)
 
     if countConclSent > 0:
-        percent_body_c = 100 * Decimal(1.0/(countTrueSent / countConclSent)) # y is the percentage of the essay body taken up by the introduction
+        ## @todo: added str() to ensure backward compatibility with Python 2.6
+        percent_body_c = 100 * Decimal(str(1.0/(countTrueSent / countConclSent))) # y is the percentage of the essay body taken up by the introduction
     else:
         percent_body_c = 0
     percent_body_c = float(percent_body_c)

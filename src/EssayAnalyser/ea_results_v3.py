@@ -3,7 +3,12 @@
 An alternative needs to be installed manually: https://pypi.python.org/pypi/ordereddict
 Or switch back to standard Dict.
 '''
-from collections import OrderedDict
+## @todo: Added for backward compatibility with Python 2.6 (linux)
+import sys
+if sys.version_info < (2, 7):
+    from ordereddict import OrderedDict
+else:
+    from collections import OrderedDict
 
 '''
 This is to keep track of changes made in the data output of the analyser.
