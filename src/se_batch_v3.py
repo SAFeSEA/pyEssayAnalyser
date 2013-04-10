@@ -1,11 +1,16 @@
 from __future__ import division # This enables Python to use floating point division (otherwise division of smaller integer by greater = 0)
 from time import time # For calculating processing times
+#from operator import itemgetter
+#import itertools
 import os # This is for file handling
 import tempfile
 import shutil
 import codecs
+#import networkx as nx
 from EssayAnalyser.se_main_v3 import top_level_procedure
-#import networkx as nx  # Leave this in. For testing.
+import networkx as nx  # For drawing the sample graph.
+import matplotlib.pyplot as plt # For drawing the sample graph.
+import pylab
 #import sbd # This is an alternative sentence splitter
 #import profile # For running the Python profiler to see which functions are hogging the time
 
@@ -59,7 +64,7 @@ nf2 = codecs.open(newfilename2, 'w',encoding='utf-8') # Open 'newfilename2' (for
 for essay_fname in filelist: # For each file in the current directory...
     #startfiletime = time() # Set current time to a variable for later calculations
     if essay_fname[-3:] == 'txt': # If a file name ends in 'txt'...
-        print essay_fname # Print to shell to monitor progress
+        print '\n', essay_fname # Print to shell to monitor progress
         f = codecs.open(essay_fname, 'r',encoding='utf-8') # Open current essay file for reading
         essay_txt = f.read() # Read in the essay and set to var 'essay_txt'
         f.close() # Close the essay file
@@ -67,13 +72,52 @@ for essay_fname in filelist: # For each file in the current directory...
         newfilename = os.path.join(tempdir1, string)                     
         nf = codecs.open(newfilename, 'w',encoding='utf-8') # Open 'newfilename' (for writing to) and set open file to var 'nf'
 
-        if dev == 'DGF':
+        #if dev == 'DGF':
             #nf2.write('\n') # Add blank lines to the essay results file            
-            nf2.write(str(essay_fname)) # Write the new file name to the essay results file
-            nf2.write('; ')
+        nf2.write(str(essay_fname)) # Write the new file name to the essay results file
+        nf2.write('; ')        
+        essay = top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")
 
-        top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")            
+        #############################
+        #############################
+        ### This section is for drawing figures. Comment it in, and comment out previous line. Also change 'return' line in 'top_level_procedure'.
+        #############################
+        #############################
+##        essay, gr_se_sample, gr_ke_sample = top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")
+##        string = essay_fname[:-4] + '_gr_se_sample' + '.png'
+##        figurefilename = os.path.join(tempdir1, string)
+##        plt.figure(1, figsize=(8,8))
+##        nx.draw(gr_se_sample, font_size=14, font_color='k', font_weight='normal',\
+##                node_size=500, linewidths=.2,node_shape='o',node_color='c',\
+##                edge_color='k',width=.2,style='solid',arrows=False) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
+##        ##plt.show() # Use this line if you want to print to a pop-up window from the shell
+##        plt.savefig(figurefilename)
+##        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.
+##
+##        string = essay_fname[:-4] + '_gr_ke_sample' + '.png'
+##        figurefilename = os.path.join(tempdir1, string)
+##        pos=nx.circular_layout(gr_ke_sample)
+##        plt.figure(2,figsize=(14,10))        
+##        nx.draw(gr_ke_sample, pos, font_size=14, font_color='b',\
+##                node_size=300, linewidths=0,node_shape='o', node_color='w',\
+##                edge_color='g',width=.2,style='solid',arrows=False) # circular figure in which the edges cross the middle like spokes            #nx.draw(gr_ke_sample) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
+##        ##plt.show() # Use this line if you want to print to a pop-up window from the shell
+##        plt.savefig(figurefilename)
+##        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.        
+        #############################
+        #############################
+        ### End of figures section
+        #############################
+        #############################
 
+
+
+        #nx.write_weighted_edgelist(gr_se, fullpath, comments="#", delimiter=' ', encoding='utf-8') # This writes edge list to temp dir instead of to cwd
+        #print_processing_times(startprogtime, endimporttime, startfiletime, texttime, graphtime, scorestime, nf2)
+        #print '\n\n', essay, '\n\n', essay_id , '\n\n'
+
+        #print gr_se.edges(data = True)
+        
         nf.close() # Close the essay results file
 nf2.close() # Close the summary results file.
 

@@ -247,14 +247,14 @@ def process_essay_se(text, parasenttok, nf, nf2, dev):
     # Now we start to build the graph in which the index key to each sentence (from 'myarray') is a node representing that sentence. 
     # We build a graph so that we can work out how strongly connected each sentence is to every other sentence in the graph/text on the basis of similarity of pairs of sentences.
 
-    # Initiate an empty directed graph 'gr'.
+    # Initiate an empty directed graph 'gr_se'.
     # A graph of class 'directed graph' meaning edges are directed, i.e., an edge points like an arrow from one node to another node. This class and 'nx' are from the package 'networkx' which needs to be imported at the start.
     # We use a directed graph encoded in a backwards direction (a node can only point to an earlier node) following some discussion on the penultimate page of (Mihalcea and Tarau, 2005). 
-    gr=nx.DiGraph() # xxxx Note you do not need to change this in order to test an undirected graph. The changes are made at the point you add the edges to the graph.
+    gr_se=nx.DiGraph() # xxxx Note you do not need to change this in order to test an undirected graph. The changes are made at the point you add the edges to the graph.
 
     # Add the appropriate nodes to the empty graph.	
-    # 'list(myarray)' lists only the keys from 'myarray', so this adds the keys from 'myarray' as nodes to the graph 'gr' that we have already defined and filled with the essay's sentences, one per key/node.
-    gr.add_nodes_from(list(myarray)) 
+    # 'list(myarray)' lists only the keys from 'myarray', so this adds the keys from 'myarray' as nodes to the graph 'gr_se' that we have already defined and filled with the essay's sentences, one per key/node.
+    gr_se.add_nodes_from(list(myarray)) 
                 
     # Initialise some empty arrays.
     myWarray = {} 
@@ -264,22 +264,24 @@ def process_essay_se(text, parasenttok, nf, nf2, dev):
     # This is done to speed up the graph-building process. In an essay with 280 sentences, every sentence is compared to every sentence that precedes it, that's about 39,200 comparisons. The arrays are used as look-up tables by the cosine similarity function that measures the similarity of a pair of sentences.
     make_graph_building_arrays(myarray, myWarray, myCarray)
     # Add all the appropriate weighted and directed edges to the graph that you have already initiated, and to which you have added the appropriate nodes. This requires comparison of pairs of sentences/nodes in order to calculate the weight of the edge that joins them.
-    add_all_node_edges(gr,myWarray,myCarray,nf2,dev)
+    add_all_node_edges(gr_se,myWarray,myCarray,nf2,dev)
+    
+    #print '\n\nThis is sample_gr_se', sample_gr_se
 
     #print 'Writing weighted edge list'
-    #nx.write_weighted_edgelist(gr, 'test.weighted.edgelist.txt') # For graphics purposes. This writes out all the nodes and edges with weights to a text file in current working dir. Used it for graph making.    
+    #nx.write_weighted_edgelist(gr_se, 'test.weighted.edgelist.txt') # For graphics purposes. This writes out all the nodes and edges with weights to a text file in current working dir. Used it for graph making.    
     
-    possible_number_of_edges = ((len(myarray))**2)/2
+    #possible_number_of_edges = ((len(myarray))**2)/2
     
     graphtime = time() # Set current time to a variable for later calculations
 
     # Initialise an array with WSVi score set to 1/graph_size (no. nodes) for all nodes.
     # The decision to use this number to seed scores_array is copied directly from pagerank.py. Beware the problem of massive numbers coming up in WSVi scores if initial scores are too high.
-    scores_array = dict.fromkeys(gr.nodes(),1.0/len(gr.nodes()))
+    scores_array = dict.fromkeys(gr_se.nodes(),1.0/len(gr_se.nodes()))
     
     # And finally we get to calculate the WSVi global weight score for each node in the graph using parameters set above.
     # This function relies on all the processing done so far (the building of a directed graph with weighted edges using an essay as input).    
-    find_all_gw_scores(gr, scores_array, nf2, dev)        
+    find_all_gw_scores(gr_se, scores_array, nf2, dev)        
     # Add the WSVi scores to the array created earlier that contains the original text before word-tokenisation. For printing the results out.       
     update_array(myarray,scores_array)
 
@@ -287,6 +289,6 @@ def process_essay_se(text, parasenttok, nf, nf2, dev):
     
     # Make a structure containing the results, putting the WSVi rank first, 
     ranked_global_weights = sort_ranked_sentences(reorganised_array)
-
-    return gr, ranked_global_weights, reorganised_array, graphtime                      
+    
+    return gr_se, ranked_global_weights, reorganised_array, graphtime                      
 

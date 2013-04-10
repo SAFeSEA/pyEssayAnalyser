@@ -26,10 +26,10 @@ increases the patch version (e.g. changing from 3.1.5 to 3.1.6)
 '''
 ANALYTICS_VERSION = "3.1.0"
 
-def make_results_array(parasenttok,myarray_ke,\
+def make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
                                paras,number_of_words,
                                countTrueSent,countAvSentLen,\
-                               nodes,edges,edges_over_sents,\
+                               nodes,edges,gr_se_sample,edges_over_sents,\
                                ranked_global_weights,reorganised_array,threshold_ke,\
                                len_headings,\
                                countAssQSent,countTitleSent,\
@@ -110,7 +110,10 @@ def make_results_array(parasenttok,myarray_ke,\
     se_graph['edges_over_sents'] = edges_over_sents
     essay['se_graph'] = se_graph
 
-
+    se_sample_graph = OrderedDict()
+    se_sample_graph['gr_se_sample'] = gr_se_sample
+    essay['se_sample_graph'] = se_sample_graph
+    
     body = OrderedDict()
     body['late_wc'] = late_wc # new    
     body['b_last'] = b_last # new
@@ -159,6 +162,10 @@ def make_results_array(parasenttok,myarray_ke,\
     ke_data['kls_in_tb_index'] = kls_in_tb_index # new
     ke_data['scoresNfreqs'] = scoresNfreqs
     essay['ke_data'] = ke_data
+
+    ke_sample_graph = OrderedDict()
+    ke_sample_graph['gr_ke_sample'] = gr_ke_sample
+    essay['ke_sample_graph'] = ke_sample_graph
 
     ke_stats = OrderedDict()
     ke_stats['avfreqsum'] = avfreqsum

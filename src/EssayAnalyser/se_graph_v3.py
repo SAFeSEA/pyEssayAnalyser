@@ -1,4 +1,7 @@
 import networkx as nx # This is for implementing networks/graphs
+import itertools
+from operator import itemgetter
+
 """
 This file contains the functions for building and analysing the sentence graph.
 Functions names:
@@ -15,6 +18,7 @@ Functions names:
 # Function: update_array(myarray,scores_array)
 # Function: reorganise_array(myarray)
 # Function: sort_ranked_sentences(mylist)
+# Function: sample_nodes_for_figure(graph,nodes,cat)
 
 """
 # Function: add_item_to_array(myarray, num, item)
@@ -175,6 +179,11 @@ def find_cosine_similarity(counter1,counter0,myWarray,myCarray,dev):
 # If the calculated similarity weight is zero, do not add an edge.
 # I have tried a number of different ways of calculating the weight of an edge.
 # Currently I am using cosine similarity.
+# xxxx Note that, rather than an undirected graph, we have a graph that is
+# a combination of a bias towards the beginning (backwards-directed)
+# and a bias towards the end (forwards-directed).
+# This was necessary, because the TextRank equation relies on the directed nature of edges.
+# This needs further thought.
 def add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray,dev):
     counterA = 0 # For counting zero-weight edges
     while 1:
@@ -350,3 +359,30 @@ def sort_ranked_sentences(mylist):
     #newlist = [[y for y in mylist if y[1]==x] for x in values]
     #print '\n\n\nTHIS IS newlist', newlist
     return mylist
+
+# Function: sample_nodes_for_figure(graph,nodes,cat)
+# Derives a smaller sample graph from the main graph
+# for the purposes of making a graphic.
+# Called both to make a smaller sentence graph and a smaller key word graph.
+# In the case of the sentence graph, 'nodes' is the true sentences.
+# There are too many key sentences to make a nice figure, so these are cut down in a systematic way.
+# In the case of the the key word graph, 'nodes' is the key lemmas.
+# These are also cut down but in a different way from the key sentences.
+def sample_nodes_for_figure(graph,nodes,cat):
+    #all_edges = graph.edges(data = True) # Get a list of all the graph's edges (expressed like '(21, 47, {'weight': 0.2891574659831202})')
+    mylist = []
+    for item in nodes:
+        successors = len(graph.successors(item)) # Get the length of the list of successors for each node
+        #if successors > 0:  # Currently I am including nodes that don't have any successors, so they would appear in the graph as unconnected nodes.
+        mylist.append([item,successors])
+    #print mylist # [17, 45], [18, 39], [19, 45],
+    temp0 = sorted(mylist, key = itemgetter(1)) # Sort the list of nodes in order of length of list of successors
+    list.reverse(temp0) # Re-sort from greatest to smallest so that the sample graph contains the node with the most successors
+    temp1 = [i[0] for i in temp0] # Make a new list with just the nodes in.
+    if cat == 'se': # If this function is called to sample the sentence graph
+        temp2 = temp1[::4] # Get every Nth node item in temp1, starting with the first. These are going to be the nodes in the sentence sample graph.
+    elif cat == 'ke': # If this function is called to sample the key word graph
+        x = len(nodes)/3
+        temp2 = nodes # Get the top third of the key lemmas sorted in order of centrality score. These are going to be the nodes in the key word sample graph.
+    graph_sample = graph.subgraph(temp2) # Make a subgraph using only the nodes you want for the figure
+    return graph_sample

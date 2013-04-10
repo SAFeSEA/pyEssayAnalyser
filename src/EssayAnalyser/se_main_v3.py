@@ -1,12 +1,15 @@
 import os # This is for file handling
 import shutil
 import codecs
+import matplotlib.pyplot as plt
+import networkx as nx
 
 from EssayAnalyser.se_procedure_v3 import pre_process_shorttext, pre_process_text,\
 	pre_process_struc, process_essay_se
 from EssayAnalyser.ke_all_v3 import process_essay_ke, get_essay_stats_ke, debora_write_results_ke
 from EssayAnalyser.se_print_v3 import get_essay_stats_se, debora_write_results_se
 from EssayAnalyser.ea_results_v3 import make_results_array
+from EssayAnalyser.se_graph_v3 import sample_nodes_for_figure
 
 ##############################
 ##############################
@@ -120,10 +123,15 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     ##############################      
 
 
-    paras, rankorder,len_body,len_headings,countSentLen,countTrueSent,countAvSentLen,\
+    paras, rankorder,len_body,len_headings,countSentLen,truesents,countTrueSent,countAvSentLen,\
     countIntroSent,countConclSent,countAssQSent,countTitleSent,\
     percent_body_i,i_toprank,percent_body_c,c_toprank,nodes,edges,edges_over_sents = \
-    get_essay_stats_se(gr_se,text_se,headings,ranked_global_weights,reorganised_array)        
+    get_essay_stats_se(gr_se,text_se,headings,ranked_global_weights,reorganised_array)
+    
+    #print '\nSE sample graph start'
+    gr_se_sample = sample_nodes_for_figure(gr_se,truesents,'se') # Get a sample of the nodes from the sentence graph to make a figure with later
+    print '\nSE sample graph'
+    print(gr_se_sample.adj)    # This is how you print a networkx graph
 
     scoresNfreqs,fivemostfreq,avfreqsum,\
     uls_in_ass_q_long,kls_in_ass_q_long,sum_freq_kls_in_ass_q_long,\
@@ -137,7 +145,11 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
                         bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,\
                         ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd,\
                         tb_index_lemmd, tb_index_lemmd2)
-                        #ass_q_long,ass_q_short)
+                        #ass_q_long,ass_q_short) 
+    #print '\nKE sample graph start'
+    gr_ke_sample = sample_nodes_for_figure(gr_ke,keylemmas, 'ke') # Get a sample of the nodes from the sentence graph to make a figure with later
+    print '\nKE sample graph'
+    print(gr_ke_sample.adj)    # This is how you print a networkx graph
 
 
     ##############################
@@ -174,11 +186,19 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
 			     	 #ass_q_long,ass_q_short,\
                      #tb_index_lemmd, tb_index_lemmd2,\
 
-        # Have a look at Nicolas's potential results
-    essay = make_results_array(parasenttok,myarray_ke,\
+
+
+
+    ##############################
+    ##############################
+    ## 7. Send to Nicolas the results he wants
+    ##############################
+    ##############################      
+
+    essay = make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
                                paras,number_of_words,
                                countTrueSent,countAvSentLen,\
-                               nodes,edges,edges_over_sents,\
+                               nodes,edges,gr_se_sample,edges_over_sents,\
                                ranked_global_weights,reorganised_array,threshold_ke,\
                                len_headings,\
                                countAssQSent,countTitleSent,\
@@ -191,15 +211,14 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
                                kls_in_ass_q_short,sum_freq_kls_in_ass_q_short,\
                                kls_in_tb_index, sum_freq_kls_in_tb_index,
                                all_bigrams)
-        #nx.write_weighted_edgelist(gr, fullpath, comments="#", delimiter=' ', encoding='utf-8') # This writes edge list to temp dir instead of to cwd
-        #print_processing_times(startprogtime, endimporttime, startfiletime, texttime, graphtime, scorestime, nf2)
-        #print '\n\n', essay, '\n\n', essay_id , '\n\n'
 
     #print '\n\nThis is essay[ke_stats][bigram_keyphrases]\n'
-    #print essay['ke_data']
+    print essay['ke_sample_graph']
+    print essay['se_sample_graph']
     #print essay['ke_stats']
 
-    return essay    
+    #return essay, gr_se_sample, gr_ke_sample
+    return essay
     #scorestime = time() # Set current time to a variable for later calculations
         
     ###################################################

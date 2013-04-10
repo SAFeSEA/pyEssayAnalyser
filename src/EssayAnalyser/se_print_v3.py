@@ -197,15 +197,17 @@ def get_essay_stats_se(gr,text,headings,ranked_global_weights,reorganised_array)
     
     countTrueSent = 0
     countSentLen = 0
+    truesents = []
     for item in reorganised_array: # For each member of the list/array (each sentence)
         tidysent = item[4]
         countSentLen += len(tidysent) # the sum of the lengths of all true tidysents
         label = item[2]
         if label == '#+s#' or label == '#+s:i#' or label == '#+s:c#' or label == '#+s:s#' or label == '#+s:p#':
             countTrueSent += 1
+            truesents.append(item[1]) # Get a list of the node numbers for the true sentences to use later in making a sample graph
         else:
             countTrueSent = countTrueSent
-
+    #print '\n\nTHIS IS REORGANISED ARRAY ITEM: ', item
     countIntroSent = 0
     countConclSent = 0
     countTitleSent = 0
@@ -252,7 +254,7 @@ def get_essay_stats_se(gr,text,headings,ranked_global_weights,reorganised_array)
 
     i_toprank,c_toprank = cf_keysents_sections(ranked_global_weights)
 
-    return paras, rankorder,len_body,len_headings,countSentLen,countTrueSent,countAvSentLen,countIntroSent,countConclSent,countAssQSent,countTitleSent,percent_body_i,i_toprank,percent_body_c,c_toprank,nodes,edges,edges_over_sents
+    return paras, rankorder,len_body,len_headings,countSentLen,truesents,countTrueSent,countAvSentLen,countIntroSent,countConclSent,countAssQSent,countTitleSent,percent_body_i,i_toprank,percent_body_c,c_toprank,nodes,edges,edges_over_sents
 
 # Function: print_processing_times(startprogtime, endimporttime, startfiletime, texttime, graphtime, scorestime, nf2)
 # Takes different recorded times, does some arithmetic, and prints/writes process times.
