@@ -10,6 +10,8 @@ if sys.version_info < (2, 7):
 else:
     from collections import OrderedDict
 
+from networkx.readwrite import json_graph
+
 '''
 This is to keep track of changes made in the data output of the analyser.
 The version number is based on "semantic versioning" (http://semver.org/) and is constituted of three-parts:
@@ -110,9 +112,10 @@ def make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
     se_graph['edges_over_sents'] = edges_over_sents
     essay['se_graph'] = se_graph
 
-    se_sample_graph = OrderedDict()
-    se_sample_graph['gr_se_sample'] = gr_se_sample
-    essay['se_sample_graph'] = se_sample_graph
+    ##se_sample_graph = OrderedDict()
+    ##se_sample_graph['gr_se_sample'] = gr_se_sample
+    ##essay['se_sample_graph'] = se_sample_graph
+    essay['se_sample_graph'] = json_graph.dumps(gr_se_sample)
     
     body = OrderedDict()
     body['late_wc'] = late_wc # new    
@@ -163,9 +166,10 @@ def make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
     ke_data['scoresNfreqs'] = scoresNfreqs
     essay['ke_data'] = ke_data
 
-    ke_sample_graph = OrderedDict()
-    ke_sample_graph['gr_ke_sample'] = gr_ke_sample
-    essay['ke_sample_graph'] = ke_sample_graph
+    ##ke_sample_graph = OrderedDict()
+    ##ke_sample_graph['gr_ke_sample'] = gr_ke_sample
+    ##essay['ke_sample_graph'] = ke_sample_graph
+    essay['ke_sample_graph'] = json_graph.dumps(gr_ke_sample)
 
     ke_stats = OrderedDict()
     ke_stats['avfreqsum'] = avfreqsum
@@ -181,4 +185,95 @@ def make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
     #print essay['ranked']
     
     #pprint.pprint(essay)
+    return essay
+
+def make_results_docs():
+    essay = OrderedDict()
+
+    essay['version'] =         u"The version of the result structure"
+    essay['parasenttok'] =     u"The whole text (up to the references) tokenised for paragraphs and sentences."
+    
+    essay['se_data'] = {
+        'se_ranked':           u"Ranked list (top 15) of sentences",
+        'se_parasenttok':      u"Re-labelled parasenttok, each sentence with  attributes {text,id,tag,rank}",
+        }
+    
+    essay['se_stats'] = {
+        'paras':               u"Total number of paragraphs (includes everything that occurs before refs)",
+        'len_body':            u"Total number of paragraphs minus the total number of headings",
+        'len_headings':        u"Total number of headings",
+        'all sents':           u"Total number of sentences (up to refs, including all headings, captions, etc.)",
+        'countTrueSent':       u"Total number of true sentences (not headings, captions, title,  ass_q, toc)",
+        'number_of_words':     u"Total number of words (I think this version includes every word that occurs before refs)",
+        'countAvSentLen':      u"Mean average length of a tidysent",
+        'countAssQSent':       u"",
+        'countTitleSent':      u"",
+        'countAvSentLen':      u"",
+        }
+    
+    essay['se_graph'] = {
+        'nodes':               u"Total number of nodes in the key sentence graph (not necessarily the same as 'all sents')",
+        'edges':               u"Total number of edges in the key sentence graph",
+        'edges_over_sents':    u"Number of edges in key sentence graph divided by number of true sentences",
+        }
+    
+    essay['se_sample_graph'] = u""
+    essay['ke_sample_graph'] = u""
+    
+    
+    essay['body'] = {
+        'late_wc':             u"",
+        'b_last':              u"",
+        }
+    
+    essay['intro'] = {
+        'introheaded':         u"Boolean: Is there an introduction heading?",
+        'i_first':             u"Index: First paragraph of introduction section",
+        'i_last':              u"Index: Last paragraph of introduction section",
+        'countIntroSent':      u"Number of sentences in the introduction",
+        'percent_body_i':      u"Percentage of the essay body that constitutes introduction",
+        'i_toprank':           u"Number of the top N key sentences that are in introduction section    ",
+        }
+    
+    essay['concl'] = {
+        'conclheaded':         u"Boolean: Is there a conclusion heading?",
+        'c_first':             u"Index: First paragraph of conclusion section",
+        'c_last':              u"Index: Last paragraph of conclusion section",
+        'countConclSent':      u"Number of sentences in the conclusion",
+        'percent_body_c':      u"Percentage of the essay body that constitutes conclusion",
+        'c_toprank':           u"Number of the top 30 key sentences that are in conclusion section",
+        }
+    
+    essay['refs'] = {
+        'len_refs':            u"",
+        'refsheaded':          u"Boolean: Is there a references section?",
+        }
+
+    essay['appendix'] = {
+        'appendixheaded':      u"",
+        }
+
+    essay['ke_data'] = {
+        'myarray_ke':          u"list of lemmas and their associated inflected forms ",
+        'fivemostfreq':        u"List of the five most frequent lemmas",
+        'keylemmas':           u"List of key lemmas",
+        'threshold_ke':        u"",
+        'keywords':            u"List of distinct key words  ",
+        'all_bigrams':         u"List of bigrams",
+        'bigram_keyphrases':   u"List of distinct bigrams",
+        'trigram_keyphrases':  u"List  of distinct trigrams",
+        'quadgram_keyphrases': u"List of distinct quadgrams    ",
+        'kls_in_ass_q_long':   u"List of the essay's key lemmas that occur in assignment question (long version)",
+        'kls_in_ass_q_short':  u"List of the essay's key lemmas occurring in assignment question (short version)",
+        'kls_in_tb_index':     u"",
+        'scoresNfreqs':        u"List of all the key lemmas presented like: (lemma,score,rank,frequency): ('student', 0.332893, 0, 38)",
+        }
+    
+    essay['ke_stats'] = {
+        'avfreqsum':                u"Mean average frequency of five most frequent lemmas",
+        'sum_kls_in_ass_q_long':    u"Sum of the frequences of the essay's key lemmas that occur in the assignment question (long version)",
+        'sum_kls_in_ass_q_short':   u"Sum of the frequences of the essay's key lemmas that occur in the assignment question (short version)",
+        'sum_freq_kls_in_tb_index': u"",
+        }
+    
     return essay
