@@ -25,8 +25,9 @@ increases the patch version (e.g. changing from 3.1.5 to 3.1.6)
 @change: 
 3.0.0    Initial version of the data structure
 3.1.0    Added mashup of parasenttok (se_parasenttok) to contains all info (id, text, toprank, tag, raking)
+3.2.0    Added graphs for sentences and keywords (se_sample_graph, ke_sample_graph)
 '''
-ANALYTICS_VERSION = "3.1.0"
+ANALYTICS_VERSION = "3.2.0"
 
 def make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
                                paras,number_of_words,
