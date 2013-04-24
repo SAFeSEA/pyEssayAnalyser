@@ -411,6 +411,9 @@ def find_and_label_headings(text,ass_q_long_words):
                     elif firstword.startswith('Figure') and counter_s == 0:  # If first word of sentence is 'Figure' and this is the first sentence of the paragraph
                         temp = ['#-s:h#'] + sent[1:] # label the sentence 'not a sentence' (replace dummy label) currently meaning probably a heading
                         mylist1.append(temp)
+                    elif firstword.startswith('Afterword') and counter_s == 0:  # If first word of sentence is 'Figure' and this is the first sentence of the paragraph
+                        temp = ['#-s:h#'] + sent[1:] # label the sentence 'not a sentence' (replace dummy label) currently meaning probably a heading
+                        mylist1.append(temp)
                     elif re.search(p, untokend) or re.search(q, untokend): # This concerns 'table of contents' and 'word count' headings. Added for one essay TMA01_H810_CG4535_Griffiths_latin9 whose last sentence is not part of the conclusion, but it was not being picked up as a heading
                         temp = ['#-s:h#'] + sent[1:]
                         mylist1.append(temp)
