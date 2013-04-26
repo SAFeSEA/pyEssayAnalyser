@@ -3,11 +3,12 @@ import shutil
 import codecs
 import matplotlib.pyplot as plt
 import networkx as nx
+from time import time # For calculating processing times
 
 from EssayAnalyser.se_procedure_v3 import pre_process_shorttext, pre_process_text,\
 	pre_process_struc, process_essay_se
 from EssayAnalyser.ke_all_v3 import process_essay_ke, get_essay_stats_ke, debora_write_results_ke
-from EssayAnalyser.se_print_v3 import get_essay_stats_se, debora_write_results_se
+from EssayAnalyser.se_print_v3 import get_essay_stats_se, debora_write_results_se, print_processing_times
 from EssayAnalyser.ea_results_v3 import make_results_array
 from EssayAnalyser.se_graph_v3 import sample_nodes_for_figure
 
@@ -48,9 +49,10 @@ def getAssignmentData(module,assignment):
     return ass_q_txt, tb_index_txt
 
 def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
-    
+    startassdatatime = time()
     # Get the data associated with module/course
     ass_q_txt, tb_index_txt = getAssignmentData(module,assignment)
+    getassdatatime = time()
     
 ##    ass_q_long = "Write a report explaining the main accessibility challenges for disabled learners that you work with or support in your own work context(s). Use examples from your own experience, supported by the research and practice literature. If you're not a practitioner, write from the perspective of a person in a relevant context. Critically evaluate the influence of the context (e.g. country, institution, educational sector, perceived role of online learning within education) on: the identified challenges particular to your own context. the influence of legislation and local policies. the roles and responsibilities of key individuals. the role of assistive technologies in addressing these challenges."
 ##    ass_q_short = "Write a report explaining the main accessibility challenges for disabled learners that you work with or support in your own work context(s)"
@@ -58,6 +60,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
 ##    ass_q_long = pre_process_ass_q(ass_q_long,dev)
 ##    ass_q_short = pre_process_ass_q(ass_q_short,dev)
     ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd = pre_process_shorttext(ass_q_txt,'NOPRINT')
+    processasstexttime = time()
 
     # Note there are two versions of the text book index. First, the original text file 'H810_TMA01_seale_textbook_index.txt'
     # as copied and pasted from the internet version of the book. That text file is used as input to function 'pre_process_shorttext'
@@ -67,6 +70,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     # This distinction is critically important. We must not use EssayAnalyser to produce
     # the text book index that we use to decide which stop words should and should not be used by EssayAnalyser.
     a1,tb_index_lemmd, tb_index_lemmd2,a2 = pre_process_shorttext(tb_index_txt,'NOPRINT') # a1 and a2 are dummies. We don't want to create an index using the same process (the same stop words) as we use for the essays and assignment question. We also don't want the first sentence only of the index.
+    processtbindextime = time()
 
     #print '\n\nThis is ass_q_long_words', ass_q_long_words
     #print '\n\nThis is ass_q_long_lemmd2', ass_q_long_lemmd2
@@ -81,10 +85,15 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     ##############################
     ##############################
 
+
+    startfiletime = time() # Set current time to a variable for later calculations   
     #text,parasenttok,wordtok_text,number_of_words,refs_present = pre_process_text_se(essay_txt,nf,nf2,dev)
     text,parasenttok,wordtok_text,b_last,len_refs,refsheaded,late_wc,appendixheaded = pre_process_text(essay_txt,nf,nf2,dev)
     # Next line is needed instead of above line if we are using sbd sentence splitter.
     #text,parasenttok,wordtok_text,number_of_words,struc_feedback = pre_process_text_se(essay_txt,nf,nf2,model,dev)
+
+    texttime = time() # Set current time to a variable for later calculations
+
    
     ##############################
     ##############################
@@ -95,7 +104,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     text_se,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,number_of_words = \
     pre_process_struc(text,ass_q_long_words,nf,nf2,dev)
 
-    #texttime = time() # Set current time to a variable for later calculations
+    structime = time() # Set current time to a variable for later calculations
 
     ##############################
     ##############################
@@ -106,6 +115,9 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     gr_se,ranked_global_weights,reorganised_array,graphtime = \
     process_essay_se(text_se,parasenttok,nf,nf2,dev)
 
+    se_scorestime = time() # Set current time to a variable for later calculations
+
+
     ##############################
     ##############################
     ## 4. Construct the key word graph and do the graph analyses
@@ -114,6 +126,8 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     
     text_ke,gr_ke,di,myarray_ke,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,threshold_ke = \
     process_essay_ke(text_se,wordtok_text,nf,nf2,dev)
+
+    ke_scorestime = time() # Set current time to a variable for later calculations
 
 
     ##############################
@@ -130,8 +144,8 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     
     #print '\nSE sample graph start'
     gr_se_sample = sample_nodes_for_figure(gr_se,truesents,'se') # Get a sample of the nodes from the sentence graph to make a figure with later
-    print '\nSE sample graph'
-    print(gr_se_sample.adj)    # This is how you print a networkx graph
+    #print '\nSE sample graph'
+    #print(gr_se_sample.adj)    # This is how you print a networkx graph
 
     scoresNfreqs,fivemostfreq,avfreqsum,\
     uls_in_ass_q_long,kls_in_ass_q_long,sum_freq_kls_in_ass_q_long,\
@@ -148,8 +162,8 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
                         #ass_q_long,ass_q_short) 
     #print '\nKE sample graph start'
     gr_ke_sample = sample_nodes_for_figure(gr_ke,keylemmas, 'ke') # Get a sample of the nodes from the sentence graph to make a figure with later
-    print '\nKE sample graph'
-    print(gr_ke_sample.adj)    # This is how you print a networkx graph
+    #print '\nKE sample graph'
+    #print(gr_ke_sample.adj)    # This is how you print a networkx graph
 
 
     ##############################
@@ -186,6 +200,9 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
 			     	 #ass_q_long,ass_q_short,\
                      #tb_index_lemmd, tb_index_lemmd2,\
 
+        print_processing_times(getassdatatime,processasstexttime,processtbindextime,\
+                               startassdatatime,startfiletime, texttime, structime, \
+                               se_scorestime, ke_scorestime, nf2)
 
 
 
@@ -213,13 +230,12 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
                                all_bigrams)
 
     #print '\n\nThis is essay[ke_stats][bigram_keyphrases]\n'
-    print essay['ke_sample_graph']
-    print essay['se_sample_graph']
+    #print essay['ke_sample_graph']
+    #print essay['se_sample_graph']
     #print essay['ke_stats']
 
     #return essay, gr_se_sample, gr_ke_sample
     return essay
-    #scorestime = time() # Set current time to a variable for later calculations
         
     ###################################################
     ###################################################

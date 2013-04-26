@@ -260,8 +260,8 @@ def get_essay_stats_se(gr,text,headings,ranked_global_weights,reorganised_array)
 # Takes different recorded times, does some arithmetic, and prints/writes process times.
 # For monitoring and improving program efficiency.
 # Commented out at the moment because I don't want to focus on timings for now.
-def print_processing_times(startprogtime, endimporttime, startfiletime, texttime, graphtime, scorestime, nf2):
-    textproctime = texttime - startfiletime # Work out how long different parts of the program took to run...
+##def print_processing_times(startprogtime, endimporttime, startfiletime, texttime, graphtime, scorestime, nf2):
+##    textproctime = texttime - startfiletime # Work out how long different parts of the program took to run...
 ##    graphproctime = graphtime - texttime
 ##    scoresproctime = scorestime - graphtime
 ##    totalproctime = scorestime - startfiletime
@@ -284,6 +284,46 @@ def print_processing_times(startprogtime, endimporttime, startfiletime, texttime
 ##    totalprogtime = stopprogtime - startprogtime
 ##    nf2.write('\nTotal program processing time: ')
 ##    nf2.write(str(totalprogtime))
+
+def print_processing_times(getassdatatime,processasstexttime,processtbindextime,startassdatatime,startfiletime, texttime, structime, se_scorestime, ke_scorestime, nf2):
+    getassdataproctime  = getassdatatime - startassdatatime
+    processasstextproctime = processasstexttime - getassdatatime 
+    processtbindexproctime = processtbindextime - processasstexttime
+
+
+    totalassdataproctime =  processtbindextime - startassdatatime
+    textproctime = texttime - processtbindextime # Work out how long different parts of the program took to run...
+    strucproctime = structime - texttime
+    se_scoresproctime = se_scorestime - structime
+    ke_scoresproctime = ke_scorestime - se_scorestime
+    totalproctime = ke_scorestime - startassdatatime
+    
+##    graphproctime = graphtime - texttime
+##    scoresproctime = scorestime - graphtime
+##    totalproctime = scorestime - startfiletime
+##    importproctime = endimporttime - startprogtime # Get some more processing timings   
+    nf2.write('\ngetassdata processing time: ')
+    nf2.write(str(getassdataproctime))
+    nf2.write('\nprocessasstext processing time: ')
+    nf2.write(str(processasstextproctime))
+    nf2.write('\nprocesstbindex processing time: ')
+    nf2.write(str(processtbindexproctime))
+    nf2.write('\nTOTAL ASS DATA PROC TIME: ')
+    nf2.write(str(totalassdataproctime))
+    nf2.write('\nEssay pre-processing time: ')
+    nf2.write(str(textproctime))
+    nf2.write('\nStruc processing time: ')
+    nf2.write(str(strucproctime))
+    nf2.write('\nSE scores processing time: ')
+    nf2.write(str(se_scoresproctime))
+    nf2.write('\nKE scores processing time: ')
+    nf2.write(str(ke_scoresproctime))
+    nf2.write('\nTotal processing time: ')
+    nf2.write(str(totalproctime))
+    nf2.write('\n\n*********************************************************\n\n')
+    #nf2.write('\n\n')
+
+
 
 # Function: cf_keysents_sections(sorted_list)
 # Makes some comparisons between the sentences that constitute the introduction, and the sentences sorted according to global weight.

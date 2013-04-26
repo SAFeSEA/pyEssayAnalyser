@@ -17,7 +17,7 @@ This file does not contain the functions for carrying out all the pre-processing
 Function names:
 # Function: pre_process_text(text0,nf,nf2,dev)
 # Function: pre_process_struc(text,nf,nf2,dev):
-# Function: pre_process_shorttext(ass_q,dev)
+# Function: pre_process_shorttext(shorttxt,dev)
 # Function: process_essay_se(text, parasenttok, nf, nf2, dev)
 """
 # Function: pre_process_text_se(text0,nf,nf2,dev)
@@ -183,46 +183,59 @@ def pre_process_struc(text,ass_q_long_words,nf,nf2,dev):
 
 
 # Function: pre_process_shorttext(ass_q,dev)
-# Get the lemmas of the assignment question so the question can be compared to the essay for overlap.
+# Get the lemmas of a short text (currently called with assignment question and text book index)
+# so the short text can be compared with the essay for overlap.
 # Called by se_main.py.
 
-def pre_process_shorttext(ass_q,dev):
-    ass_q,a01,a02,a03,a04,a05,a06,a07 = pre_process_text(ass_q,[],[],[]) 
+def pre_process_shorttext(shorttxt,dev):
+    #print time()
+    shorttxt,a01,a02,a03,a04,a05,a06,a07 = pre_process_text(shorttxt,[],[],[])
+    # I've moved getting rid of digits up to here, because there are hundreds of them in the textbook index, and as POS tagging and lemmatising are slow, better to get rid of them as early as possible.
+    # For full essays, we get rid of digits after structural analysis, but struc analysis isn't relevant for these short texts.
+    # xxxx But getting rid of digits before POS tagging may affect the POS tagging results. This needs watching.
+    shorttxt2 = []
+    for para in shorttxt:
+        mylist1 = []
+        for sent in para:
+            temp = [item for item in sent if not re.match('^\d+$',item)]
+            mylist1.append(temp)
+        shorttxt2.append(mylist1)    
+    #print '\n\nThis is beginning of shorttext: ', shorttxt2[:30]
+    #print 'Time before pos tagging: ', time()
     # Finish processing of assignment title (without doing all the structural analysis)
-    temp = process_sents(pos_tag, ass_q)
-    temp = process_sents(lowercase_sents, temp)
-    temp = process_sents(remove_stops_fm_sents, temp)
-    temp = process_sents(remove_unwanted_pos,temp)
-    ass_q_lemmd = process_sents(get_lemmas, temp) # Get the list of all the lemmas in the assignment question.
-    ass_q_short = [[ass_q_lemmd[0][0]]] # The short version of the assignment question is the first sentence of the long version. But need to preserve sentence,para, and text structure.
-    #print '\n\n~~~~~~~~~~~THIS IS ass_q_short in pre_process_shorttext~~~~~~~~~~~~\n', ass_q_short
-    ass_q_words = []
-    for para in temp: # Get rid of the pos_tag to make a simpler structure for find_and_label_headings
+    temp = process_sents(pos_tag, shorttxt)
+    #print 'Time after pos tagging: ', time()
+    #print time()
+    temp2 = process_sents(lowercase_sents, temp)
+    #print 'Time after lowercasing: ', time()
+    temp3 = process_sents(remove_stops_fm_sents, temp2)
+    #print 'Time after removing stops: ', time()
+    temp4 = process_sents(remove_unwanted_pos,temp3)
+    #print 'Time after removing unwanted pos: ', time()
+    shorttxt_lemmd = process_sents(get_lemmas, temp4) # Get the list of all the lemmas in the assignment question.
+    #print 'Time after lemmatising: ', time()    
+    shorttxt_short = [[shorttxt_lemmd[0][0]]] # The short version of the assignment question is the first sentence of the long version. But need to preserve sentence,para, and text structure.
+    #print '\n\n~~~~~~~~~~~THIS IS shorttxt_short in pre_process_shorttext~~~~~~~~~~~~\n', shorttxt_short
+    shorttxt_words = []
+    for para in temp4: # Get rid of the pos_tag to make a simpler structure 
         mylist1 = []
         for sent in para:
             temp2 = [i[0] for i in sent]
             # Also need to do some further pre-processing included in get_lemmas.
-            temp2 = [w for w in temp2 if not re.match('^[o0-9]+$',w)] # Gets rid of single letter 'o' (used as a bullet point) and integers.
+            #temp2 = [w for w in temp2 if not re.match('^[o0-9]+$',w)] # Gets rid of single letter 'o' (used as a bullet point) and integers.
             temp2 = [w for w in temp2 if not re.match(u'\u2022',w[0])] # Gets rid of bullet points.
             mylist1.append(temp2)
-        ass_q_words.append(mylist1)
-    #ass_q_words = [x for y in ass_q_words for x in y] # Unnest paragraph level of nesting in ass_q
-    #print '\n\n~~~~~~~~~~~THIS IS ass_q_lemmd~~~~~~~~~~~~\n', ass_q_lemmd
-    #print '\n\n~~~~~~~~~~~THIS IS ass_q_words~~~~~~~~~~~~\n', ass_q_words
-##    temp = [x for y in ass_q for x in y] # Unnest paragraph level of nesting in text
-##    temp2 = [x[1:] for x in temp] # Get rid of structure label at head of each sentence
-##    ass_q = [x for y in temp2 for x in y] # Unnest sentence level of nesting
-    ass_q_lemmd2 = []   # Get the list of unique lemmas in the assignment question.
+        shorttxt_words.append(mylist1)
+    shorttxt_lemmd2 = []   # Get the list of unique lemmas in the assignment question.
     mylist3 = []
-    for para in ass_q_lemmd:
+    for para in shorttxt_lemmd:
         mylist = []
         for sent in para:
             temp = [w[1] for w in sent[1:] if w[1] not in mylist3]
             mylist.append(temp)
             mylist3.extend(temp)
-        ass_q_lemmd2.append(mylist)
-    #print '\n\n~~~~~~~~~~~THIS IS ass_q_lemmd2~~~~~~~~~~~~\n', ass_q_lemmd2        
-    return ass_q_words, ass_q_lemmd, ass_q_lemmd2, ass_q_short
+        shorttxt_lemmd2.append(mylist)
+    return shorttxt_words, shorttxt_lemmd, shorttxt_lemmd2, shorttxt_short
 
 
 # Function: process_essay_se(text, parasenttok, nf, nf2, dev)
@@ -250,7 +263,8 @@ def process_essay_se(text, parasenttok, nf, nf2, dev):
     # Initiate an empty directed graph 'gr_se'.
     # A graph of class 'directed graph' meaning edges are directed, i.e., an edge points like an arrow from one node to another node. This class and 'nx' are from the package 'networkx' which needs to be imported at the start.
     # We use a directed graph encoded in a backwards direction (a node can only point to an earlier node) following some discussion on the penultimate page of (Mihalcea and Tarau, 2005). 
-    gr_se=nx.DiGraph() # xxxx Note you do not need to change this in order to test an undirected graph. The changes are made at the point you add the edges to the graph.
+    #gr_se=nx.DiGraph() # xxxx Do not delete. Directed graph version.
+    gr_se=nx.Graph() # xxxx Undirected graph version.
 
     # Add the appropriate nodes to the empty graph.	
     # 'list(myarray)' lists only the keys from 'myarray', so this adds the keys from 'myarray' as nodes to the graph 'gr_se' that we have already defined and filled with the essay's sentences, one per key/node.

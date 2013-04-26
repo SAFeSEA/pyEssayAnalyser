@@ -316,13 +316,19 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     # Add directed edges to the graph to which you have alreaded added nodes. 
     # A directed (and unweighted) edge is added from each node to the node whose corresponding inflected lemma follows it in the prepared text.
     # Note that, owing to the repetition of lemmas in the text, some nodes will have many edges linking them, while many will have only one.
-    add_all_node_edges_ke(gr_ke,text)
+    add_all_node_edges_ke(gr_ke,text)   
 
-    # Calculate the betweenness centrality score for each node in the graph.
+
+##    # Calculate the betweenness centrality score for each node in the graph.
     betweenness_scores = betweenness_centrality(gr_ke)    
+    # 'calculated_page_rank' is the unsorted set of all scores, each with its word.
+    # 'pagerank' is imported from 'pygraph\algorithms\pagerank', which also sets various parameters (damping factor, initial scores, minimum score, etc.) 
+    #calculated_page_rank = pagerank(gr_ke, nf) # pagerank version
     
-    # Sort the scores into order.
+##    # Sort the scores into order.
     di = sort_betweenness_scores(betweenness_scores, nf) # Leave this in for the betweenness centrality version.
+#    di = sorted(calculated_page_rank.iteritems(), key=itemgetter(1)) # pagerank version
+
 
     # How many of the key lemmas are key as opposed to not key? TextRank paper says a third of unique wordset are key words.
     # Get only those key lemmas that have a score greater than x and that are in the top y per cent of words ranked by score 
@@ -336,6 +342,7 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     threshold_ke = (y,x)
     b = int(a * y)
     temp = di[0:b]
+    # print temp # xxxx Check this when testing pagerank version
     keylemmas = []
     for item in temp:  # 'item' has pair structure: ('students', 0.3138429126331271)
         if item[1] > x:

@@ -14,7 +14,7 @@ import pylab
 #import sbd # This is an alternative sentence splitter
 #import profile # For running the Python profiler to see which functions are hogging the time
 
-startprogtime = time() # Set current time to a variable for later calculations
+#startproctime = time() # Set current time to a variable for later calculations
 
 
 """
@@ -113,13 +113,17 @@ for essay_fname in filelist: # For each file in the current directory...
 
 
         #nx.write_weighted_edgelist(gr_se, fullpath, comments="#", delimiter=' ', encoding='utf-8') # This writes edge list to temp dir instead of to cwd
-        #print_processing_times(startprogtime, endimporttime, startfiletime, texttime, graphtime, scorestime, nf2)
         #print '\n\n', essay, '\n\n', essay_id , '\n\n'
 
         #print gr_se.edges(data = True)
         
         nf.close() # Close the essay results file
 nf2.close() # Close the summary results file.
+
+#endproctime = time()
+#proctime = endproctime - startproctime
+#print '\n\n\nThis is proctime for all files: ', proctime
+
 
 #main()
 #profile.run('main(); print') #  Swap these two lines if you want to profile this program (see how many times functions are called, etc. NB profiler runs slowly.)

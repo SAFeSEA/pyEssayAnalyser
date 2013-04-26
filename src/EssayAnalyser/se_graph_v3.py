@@ -179,11 +179,20 @@ def find_cosine_similarity(counter1,counter0,myWarray,myCarray,dev):
 # If the calculated similarity weight is zero, do not add an edge.
 # I have tried a number of different ways of calculating the weight of an edge.
 # Currently I am using cosine similarity.
-# xxxx Note that, rather than an undirected graph, we have a graph that is
+# xxxx Note that, rather than an undirected graph, I was using
 # a combination of a bias towards the beginning (backwards-directed)
 # and a bias towards the end (forwards-directed).
-# This was necessary, because the TextRank equation relies on the directed nature of edges.
-# This needs further thought.
+# This meant that there were two edges going between all linked nodes, which was hardly ideal.
+# I did this, because the original TextRank equation relies on the directed nature of edges.
+# I have now changed the code to produce an undirected graph.
+# I have had to amend the TextRank algorithm accordingly.
+# Instead of 'predecessors' and 'out-degree' I am using 'neighbours' and 'degree'.
+# The results of using an undirected graph with the amended TextRank algorithm
+# are exactly the same as using a directed graph biased in both directions by using two sets of directed edges,
+# Processing times for the directed version and the undirected version are very similar.
+# For TMA01 essays, directed is slightly faster than undirected.
+# For EMA essays (much longer), undirected is slightly faster than directed.
+
 def add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray,dev):
     counterA = 0 # For counting zero-weight edges
     while 1:
@@ -191,7 +200,7 @@ def add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray,dev):
             weight = float(find_cosine_similarity(counter1,counter0,myWarray,myCarray,dev))
             if weight > 0:
                 gr.add_weighted_edges_from([(counter1,counter0,weight)]) # Add the current edge with the weight you have calculated. This line adds the backwards-directed edges for the current node (counter0).
-                gr.add_weighted_edges_from([(counter0,counter1,weight)]) # Nicolas, this line adds forwards-directed edges. Use this line _and_ the previous line for an undirected graph. 
+                #gr.add_weighted_edges_from([(counter0,counter1,weight)]) # xxxx Do not delete. This line adds forwards-directed edges in a directed graph. The above line adds backwards edges.  Directed graph version.
             elif weight == 0: # Count the number of zero-weight edges you are making (for monitoring)
                 counterA += 1
             counter1 += 1
@@ -242,7 +251,8 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
     #print 'For Vi:'
     #print Vi
     score = 0 # Set a temporary score to zero to enable calculations of the rhs of the TextRank equation
-    list0 = gr.predecessors(Vi) # Find out which nodes point to Vi, i.e., ALL its predecessors.
+    #list0 = gr.predecessors(Vi) # xxxx Do not delete. Find out which nodes point to Vi, i.e., ALL its predecessors. Directed graph.
+    list0 = gr.neighbors(Vi) # xxxx Find out which nodes link Vi to other nodes, i.e., ALL its NEIGHBOURS. Undirected graph.
     if list0 == []: # If Vi has no predecessors 
         WSVi = min_value # Set WSVi to the minimum value
         #print 'If clause: No nodes point to this Vi so WSVi set to minimum value:'
@@ -251,7 +261,8 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
     else:    
         for Vj in list0: # For each node Vj that points to Vi
             w = gr[Vj][Vi]['weight'] # Get the weight of the edge Vj->Vi from the graph
-            WoutVj = gr.out_degree(Vj,weight='weight') # Find each edge Vj->Vk that points out of Vj and sum their weights to give WoutVj.
+            #WoutVj = gr.out_degree(Vj,weight='weight') # xxxx Do not delete. Find each edge Vj->Vk that points out of Vj and sum their weights to give WoutVj. Directed graph version.
+            WoutVj = gr.degree(Vj,weight='weight') # xxxx Find each edge Vj->Vk that links Vj to other nodes and sum their weights to give WoutVj. Undirected graph.
             # (We know that at least one edge points out of Vj, the one towards Vi, so no need for empty list alternative)
             WSVj = scores_array[Vj] # Get the most recent WS score from 'scores_array' for Vj (these are seeded right at the beginning with an arbitrary value)
             #print 'This is the most recent WSVj score:'
@@ -372,7 +383,8 @@ def sample_nodes_for_figure(graph,nodes,cat):
     #all_edges = graph.edges(data = True) # Get a list of all the graph's edges (expressed like '(21, 47, {'weight': 0.2891574659831202})')
     mylist = []
     for item in nodes:
-        successors = len(graph.successors(item)) # Get the length of the list of successors for each node
+        #successors = len(graph.successors(item)) # xxxx Do not delete. Get the length of the list of successors for each node. Directed graph version.
+        successors = len(graph.neighbors(item)) # xxxx Get the length of the list of neighbours for each node        
         #if successors > 0:  # Currently I am including nodes that don't have any successors, so they would appear in the graph as unconnected nodes.
         mylist.append([item,successors])
     #print mylist # [17, 45], [18, 39], [19, 45],

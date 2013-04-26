@@ -5,7 +5,7 @@ from nltk.corpus import stopwords # For removing uninteresting words from the te
 from nltk.tokenize import WordPunctTokenizer # Word tokeniser that separates punctuation marks from words
 from nltk.stem.wordnet import WordNetLemmatizer
 from se_stops import essay_stop_words
-from H810_TMA01_textbook_seale_index import textbook_index_terms
+#from H810_TMA01_textbook_seale_index import textbook_index_terms
 """
 This file contains the functions for doing all the NLP pre-processing, but not the structure pre-processing.
 Functions names:
@@ -354,21 +354,14 @@ def lowercase_sents(sent):
     return mylist
     #return [w[0].lower() for w[0] in sent]
 
-
-
 # Function: remove_stops_fm_sents(sent)
-# Given a sentence, remove all word tokens that are stopwords
-# (uninteresting and usually very frequent words).
-# Also removes some other tokens I consider unimportant.
-# xxxx Needs watching.
+# Given a sentence, remove all word tokens that are stopwords (essay_stop_words).
 # Called by pre_process_struc in file se_procedure.py.
+# I _was_ checking that none of the stop words was in the index terms ('textbook_index_terms')
+# but the result was nil, and it was taking a lot of time, so it has gone for now.
+
 def remove_stops_fm_sents(sent):
-    #eng_stopwords=stopwords.words('english')
-    #temp = [w for w in sent if w[0] not in eng_stopwords]
-    #mylist = ['eg', 'ie', 'etc',
-    #mystopwords
-    temp = [i for i in essay_stop_words if i not in textbook_index_terms] # Check that none of the stop words is in the index terms
-    return [w for w in sent if w[0] not in temp]
+    return [w for w in sent if w[0] not in essay_stop_words]
 
     # 'o' is missing, because it is used as a bullet point sometimes in Latin9. I take it out later for the key word graph.
     #return [w for w in temp if w[0] not in mylist]
