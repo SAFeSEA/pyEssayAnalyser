@@ -1,7 +1,7 @@
 import os # This is for file handling
 import shutil
 import codecs
-import matplotlib.pyplot as plt
+
 import networkx as nx
 from time import time # For calculating processing times
 
