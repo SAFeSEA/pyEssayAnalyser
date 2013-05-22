@@ -392,7 +392,7 @@ def sample_nodes_for_figure(graph,nodes,cat):
     list.reverse(temp0) # Re-sort from greatest to smallest so that the sample graph contains the node with the most successors
     temp1 = [i[0] for i in temp0] # Make a new list with just the nodes in.
     if cat == 'se': # If this function is called to sample the sentence graph
-        temp2 = temp1[::4] # Get every Nth node item in temp1, starting with the first. These are going to be the nodes in the sentence sample graph.
+        temp2 = temp1 # Get every Nth node item in temp1, starting with the first. These are going to be the nodes in the sentence sample graph.
     elif cat == 'ke': # If this function is called to sample the key word graph
         x = len(nodes)/3
         temp2 = nodes # Get the top third of the key lemmas sorted in order of centrality score. These are going to be the nodes in the key word sample graph.
