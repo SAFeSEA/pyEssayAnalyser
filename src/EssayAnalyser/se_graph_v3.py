@@ -1,25 +1,24 @@
 import networkx as nx # This is for implementing networks/graphs
 import itertools
+import re
 from operator import itemgetter
 
 """
 This file contains the functions for building and analysing the sentence graph.
 Functions names:
-# Function: add_item_to_array(myarray, num, item)
-# Function: add_to_sentence_array(myarray, text)
-# Function: fill_sentence_array(myarray, text, struc_labels)
-# Function: make_scores_array
-# Function: make_graph_building_arrays(myarray, myWarray, myCarray)
-# Function: find_cosine_similarity(counter1,counter0,myWarray,myCarray,dev)
-# Function: add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray,dev)
-# Function: add_all_node_edges(gr,myWarray,myCarray,nf2,dev)
-# Function: find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i)
-# Function: find_all_gw_scores(gr, scores_array, nf2, dev, d = .85, max_iterations = 100, min_delta = 0.00001)
-# Function: update_array(myarray,scores_array)
-# Function: reorganise_array(myarray)
-# Function: sort_ranked_sentences(mylist)
-# Function: sample_nodes_for_figure(graph,nodes,cat)
-
+def add_item_to_array(myarray, num, item):
+def add_to_sentence_array(myarray, text):
+def fill_sentence_array(myarray, text, struc_labels):
+def make_graph_building_arrays(myarray, myWarray, myCarray):
+def find_cosine_similarity(counter1,counter0,myWarray,myCarray,dev):
+def add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray,dev):
+def add_all_node_edges(gr,myWarray,myCarray,nf2,dev):    
+def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):  
+def find_all_gw_scores(gr, scores_array, nf2, dev, d = .85, max_iterations = 100, min_delta = 0.0000000001):
+def update_array(myarray,scores_array):
+def reorganise_array(myarray):
+def sort_ranked_sentences(ranked_sents):
+def sample_nodes_for_figure(graph,nodes,cat):
 """
 # Function: add_item_to_array(myarray, num, item)
 # Add single item 'item' as a new item in 'myarray',
@@ -56,18 +55,19 @@ def fill_sentence_array(myarray, text, struc_labels):
     for para in text:
         for sent in para:
             #if sent != [] and sent[0] != '#-s:p#' and sent[0] != '#-s:n#' and sent[0] != '#-s:h#' and sent[0] != '#-s:t#' and sent[0] != '#-s:q#' and sent[0] != '#dummy#':            
-            if sent != [] and sent[0][0] != '#dummy#':  # 
+            if sent != [] and sent[0][0] != '#dummy#':  # If sent is anything but a true sentence
                 place = struc_labels.index(sent[0][0]) # Get the label of the sentence
                 label = struc_labels[place]
-                temp = sent[1:] # Get everything in the sent after the label                                
+                temp = sent[1:] # Get everything in the sent after the label
                 add_item_to_array(myarray, counter, temp) # Add the sent to the array
                 add_item_to_array(myarray, counter, label) # add the label to the array at the same key
-            elif sent != [] and sent[0][0] == '#dummy#': # I am keeping 'dummy' for the time being but may get rid of it. Everything is labelled 'dummy' in the first instance, but I could label everything '#+s#'.
-                temp = sent[1:]                
+            # Everything is labelled 'dummy' in the first instance. Here things still labelled 'dummy' are relabelled '#+s#' for 'true sentence'.                
+            elif sent != [] and sent[0][0] == '#dummy#': # I am keeping 'dummy' for the time being but may get rid of it. 
+                temp = sent[1:]
                 add_item_to_array(myarray, counter, temp)
                 add_item_to_array(myarray, counter, '#+s#')                  
             counter += 1
-                
+    #print myarray
 # Function:  make_graph_building_arrays(myarray, myWarray, myCarray)
 # Fill the empty array 'myWarray' with the unique lemmas for each sentence
 # and fill the other empty array 'myCarray' with their numbers of occurrences.
@@ -86,7 +86,8 @@ def make_graph_building_arrays(myarray, myWarray, myCarray):
             if tidysent == []:
                 add_item_to_array(myWarray, sentencecounter, '$$$$EMPTY_SENT_TOKEN$$$$')
                 add_item_to_array(myCarray, sentencecounter, 0)
-            # xxxx This para takes punctuation, numbers, headings, and title and ass_q out of the graph. Done now to make visual graphics of graph. May keep.
+            # xxxx This para takes punctuation, numbers, headings, and title and ass_q out of the graph.
+            # xxxx Done now to make visual graphics of graph. May keep.
             # xxxx Next three lines messed about with for testing
             elif label == '#-s:p#' or label == '#-s:n#' or label == '#-s:h#' or label == '#-s:t#' or label == '#-s:q#':
                 add_item_to_array(myWarray, sentencecounter, '$$$$NOT_A_TRUE_SENTENCE$$$$')
@@ -340,11 +341,14 @@ def update_array(myarray,scores_array):
 # Make a structure containing the results presented with the WSVi score
 # first, then the array key, then the original sentence.
 # Called by process_essay_se in se_procedure.py.
+# {0: [[(u'introduction', u'introduction')], ('#-s:h#', '0'), u'Introduction', 0.0025862068965517245], 
 def reorganise_array(myarray):
+    #print '\n\n\nreorganise_array'
+    #print myarray
     mylist = []
     counter = 0
     while 1:
-        if counter <= len(myarray)-1:
+        if counter <= len(myarray)-1: # 0: [[(u'introduction', u'introduction')], '#-s:h#', u'Introduction', 0.0025862068965517245]
             temp = myarray.items() # Retrieve the contents of the array in a different format.
                      # rank               # array key       # category           # original sentence  # processed sentence
             temp1 = (round(temp[counter][1][3],7), temp[counter][0], temp[counter][1][1], temp[counter][1][2], temp[counter][1][0] ) # Put rank first, then key, then category label, then original sentence (before word tokenisation ff.), then processed sentence.
@@ -352,11 +356,13 @@ def reorganise_array(myarray):
             counter += 1
         else:
             break
+    #for item in mylist:
+    #    print item
     return mylist
 
-# Function: sort_ranked_sentences(mylist)
+# Function: sort_ranked_sentences(ranked_sents)
 # The array has now been turned into a list for results purposes.
-# This function now removes from the list all items labelled as 'not a sentence': '#-s...#'
+# This function now removes from the list all items except for introduction, discussion, conclusion items.
 # Then sorts the remaining sentences into descending WSVi rank order. 
 # Returns the list of true sentences in descending rank order.
 # Called by process_essay_se in se_procedure.py.
@@ -380,21 +386,32 @@ def sort_ranked_sentences(mylist):
 # In the case of the the key word graph, 'nodes' is the key lemmas.
 # These are also cut down but in a different way from the key sentences.
 def sample_nodes_for_figure(graph,nodes,cat):
+    if cat == 'se':
+        print graph.nodes()
+        print nodes
     #all_edges = graph.edges(data = True) # Get a list of all the graph's edges (expressed like '(21, 47, {'weight': 0.2891574659831202})')
     mylist = []
     for item in nodes:
         #successors = len(graph.successors(item)) # xxxx Do not delete. Get the length of the list of successors for each node. Directed graph version.
         successors = len(graph.neighbors(item)) # xxxx Get the length of the list of neighbours for each node        
-        #if successors > 0:  # Currently I am including nodes that don't have any successors, so they would appear in the graph as unconnected nodes.
-        mylist.append([item,successors])
+        #print 'Number of neighbours for node: ', item, ' : ', successors
+        if successors > 2: #>= 0:  # > 2 # Currently I am including nodes that don't have any successors, so they would appear in the graph as unconnected nodes.
+            mylist.append([item,successors])
     #print mylist # [17, 45], [18, 39], [19, 45],
-    temp0 = sorted(mylist, key = itemgetter(1)) # Sort the list of nodes in order of length of list of successors
+    temp0 = sorted(mylist, key = itemgetter(1)) # Sort the list of nodes in order of length of list of successors    
     list.reverse(temp0) # Re-sort from greatest to smallest so that the sample graph contains the node with the most successors
-    temp1 = [i[0] for i in temp0] # Make a new list with just the nodes in.
+    #temp1 = [i[0] for i in temp0] # Make a new list with just the nodes in.
+    temp1 = [i[0] for i in mylist] # Make a new list with just the nodes in.
     if cat == 'se': # If this function is called to sample the sentence graph
-        temp2 = temp1[::4] # Get every Nth node item in temp1, starting with the first. These are going to be the nodes in the sentence sample graph.
+        #temp2 = temp1[::4] # Get every Nth node item in temp1, starting with the first. These are going to be the nodes in the sentence sample graph.
+        #x = (len(nodes) / 6)# + (len(nodes) / 4)
+        #y = x*5
+        #temp2 = nodes[x:y] # gets the middle 2/3 portion of the essay (so without the intro and the concl)
+        #temp2 = temp1
+        #temp2 = nodes
+        temp2 = temp1
     elif cat == 'ke': # If this function is called to sample the key word graph
-        x = len(nodes)/3
+        x = len(nodes)#/3
         temp2 = nodes # Get the top third of the key lemmas sorted in order of centrality score. These are going to be the nodes in the key word sample graph.
     graph_sample = graph.subgraph(temp2) # Make a subgraph using only the nodes you want for the figure
     return graph_sample

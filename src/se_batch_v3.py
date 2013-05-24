@@ -1,46 +1,48 @@
-from __future__ import division # This enables Python to use floating point division (otherwise division of smaller integer by greater = 0)
 from time import time # For calculating processing times
-#from operator import itemgetter
-#import itertools
-import os # This is for file handling
-import tempfile
-import shutil
-import codecs
-#import networkx as nx
+#from operator import itemgetter # For sorting by particular arguments etc.
+#import itertools # For working with multiple arguments that are iterators
+import os.path # This is for file handling
+import tempfile # For handling OS's temporary files directories
+import shutil # For file operations
+import codecs # For handling encoding 
 from EssayAnalyser.se_main_v3 import top_level_procedure
 import networkx as nx  # For drawing the sample graph.
 import matplotlib.pyplot as plt # For drawing the sample graph.
-import pylab
+#import pylab
 #import sbd # This is an alternative sentence splitter
 #import profile # For running the Python profiler to see which functions are hogging the time
+#from __future__ import division # This enables Python to use floating point division (otherwise division of smaller integer by greater = 0)
+
+"""
+Filename: se_batch_v3.py
+Run this file to invoke EssayAnalyser. All files with extension .txt located in
+ the same folder as this file will be analysed. Results will be put into a new
+ temporary folder in the 'Temp' directory on the hard disk 
+ (e.g., C:\users\debora\appdata\local\temp\...).
+Before running a new version to generate a test set of data, check:
+ - directedness of the sentence graph
+ - key lemma threshold -  Does Nicolas want all the lemmas ranked, or the top N?
+ - key sentence threshold -  Do you want all the sentences ranked, or the top N?
+ - values defining the subgraphs
+ - algorithm (betweenness or pagerank) of the key word graph
+Before uploading to Github:
+ - empty the data folder in src
+ - remove any text files from src
+ - remove any other files you have added to src
+ # -*- coding: ascii -*-
+ 
+"""
 
 #startproctime = time() # Set current time to a variable for later calculations
 
-
-"""
-This is the top-level script for a program which implements a version of the TextRank algorithm for extractive summaries (based on sentence extraction) and key word/phrase extraction from (Mihalcea and Tarau, 2005, 2004). Ibid uses the PageRank algorithm (Brin and Page 1998) and applies it to the extraction of key sentences, words, and phrases from a text (extractive summarisation). This program follows ibid's basic design, but with some differences. This file-handling script processes every file in its current working directory that ends in 'txt', and puts a results file for each file processed in a newly created temporary directory. A single summary results file is also generated that contains results information on all the files that have been processed. The program is split over seven different files: se_main.py, se_procedure.py, se_preprocess.py, se_struc.py, se_graph.py, se_print.py, and ke_all.py. For each file ending in 'txt', the program does the following. It assumes the file has been saved in Latin9 encoding. First it does some pre-processing: latin9 tidy-up, paragraph, sentence, and then word tokenisation, removal of punctuation. Then structural parts are identified and each sentence is labelled with its structural function in the essay. Then some more NLP pre-processing is done: POS-tagging, lowercasing, removal of stop words, lemmatisation. Then the program performs two independent analyses using the same pre-processed text. 
-First it does extractive summarisation through sentence extraction. It builds a graph using sentences as nodes. The actual sentences are not the nodes, a Python dictionary is used to store the sentences using a key, and the key is used for the nodes. Directed edges are drawn between pairs of sentences that are similar. The similarity of a pair of sentences/nodes is represented by the weight of the edge that joins them. In this version of the program the similarity measure is cosine similarity. Edges point only from a later/greater sentence/node to an earlier one. A global weight score WSVi for each node is then calculated. The WSVi score for a node Vi represents how important the sentence Vi is compared to the whole essay. A sentence is important if it is similar to other sentences that are similar to other sentences that are similar to other sentences that are similar... Initially, an arbitrary WSVi value is set for every node in order to enable the program to work out the 'real' value. It is necessary to set arbitrary values for WSVi in the first instance because the procedure for finding a WSVi score requires you to find a WSVi score, i.e., it is recursive. So you need some values in order to be able to start. The arbitrary values move closer towards the real values at every iteration until very little difference is made by further iterations. Once the scores are derived, all the sentences with their WSVi scores are sorted according to the scores, and written to the results file. The highest-scoring sentences are those that are the most important/representative in the text.
-Next the program builds a separate graph to identify the key lemmas/words and phrases in an essay. In this procedure (unlike for sentence extraction) the actual lemmas are the nodes, there is no an array storing the lemmas with a key, as with the sentence extraction procedure. Directed edges are drawn between pairs of lemmas/nodes (from earlier to later ones). Each pair of linked lemmas/nodes must co-occur within a window of N (I use N = 2) in the processed version of the text. Once the graph is built, a centrality algorithm is applied to it to find the 'important' words. In this version, I use 'betweenness centrality'. In a different version I use PageRank, a version of Eigenvector centrality. 'Important words' are those that are important with respect to the entire text. A word is important (is a key word) if it co-occurs with lots of words that co-occur with lots of words that co-occur... The centrality algorithm attributes an 'importance' score to every word in the text. These are then sorted in descending order of score. The words that are considered to be the key words are those that are in the top X per cent of words and that have a centrality score of above a certain threshold. An additional procedure takes the key words and looks for within-sentence sequences of them in the original text, and these are considered to be key phrases. 
-
-
-Refs:
-Brin, S. and L. Page, (1998). The Anatomy of a Large-Scale Hypertextual Web Search Engine. In Seventh International World-Wide Web Conference (WWW 1998), Brisbane, Australia, 14-18 April 1998.
-
-R. Mihalcea and P. Tarau (2004). Textrank: Bringing order into texts. In L. Dekang and W. Dekai (eds.), Proceedings of Empirical Methods in Natural Language Processing (EMNLP) 2004, pp. 404–-411, Association for Computational Linguistics, Barcelona, Spain, July 2004.
-
-R. Mihalcea and P. Tarau (2005). A language independent algorithm for single and multiple document summarization. In Proceedings of the Second International Joint Conference Natural Language Processing (IJCNLP’05), Korea, pp. 602–-607, 11–-13 October 2005.
-"""
-
 #def main():
 
-
-# DGF: Nicolas, toggle between developer initials. My initials set to 'dev' switches on printing and writing to file. 
+# Toggle between developer initials. My initials set to 'dev' switches on printing in a handful of cases.
 dev = 'DGF'
 #dev = 'NVL'
 
 # The following model needs to be loaded if we use the alternative sentence splitter.
 #model = sbd.load_sbd_model('C:/Python27/Lib/site-packages/splitta.1.03/model_nb/', use_svm=False) # Playing with a different sentence splitter
-
 
 # Begin by deleting the temporary directory and files you created last time you ran this program.
 tempdir0 = tempfile.gettempdir() # This gets the path to the location of the temporary files and dirs.
@@ -76,34 +78,79 @@ for essay_fname in filelist: # For each file in the current directory...
             #nf2.write('\n') # Add blank lines to the essay results file            
         nf2.write(str(essay_fname)) # Write the new file name to the essay results file
         nf2.write('; ')        
-        essay = top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")
+        #essay = top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")
 
         #############################
         #############################
         ### This section is for drawing figures. Comment it in, and comment out previous line. Also change 'return' line in 'top_level_procedure'.
         #############################
         #############################
-##        essay, gr_se_sample, gr_ke_sample = top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")
-##        string = essay_fname[:-4] + '_gr_se_sample' + '.png'
+        essay, gr_se_sample, gr_ke_sample = top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")
+        string = essay_fname[:-4] + '_gr_se_sample_nodes' + '.png'
+        figurefilename = os.path.join(tempdir1, string)
+        #pos=nx.circular_layout(gr_se_sample)
+        #pos=nx.graphviz_layout(gr_se_sample,prog="neato")
+        plt.figure(1, figsize=(8,8))
+        x = gr_se_sample.nodes()
+        #plt.title(essay_fname)
+        nx.draw(gr_se_sample, font_size=0, font_color='c', font_weight='normal',\
+        #nx.draw(gr_se_sample, font_size=3, font_color='k', font_weight='normal',\
+                node_size=500,
+                #stretch_factor=100,
+                #node_size=gr_se_sample.degree().values(), # node size proportional to node degree
+                alpha = 0.25, # transparency of the node               
+                linewidths=.2,
+                node_shape='o',
+                #node_color='c',
+                node_color=range(len(x)),
+                cmap=plt.cm.rainbow, # Blues,
+                edge_color='k',width=.1,style='solid',arrows=False) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
+        ##plt.show() # Use this line if you want to print to a pop-up window from the shell
+        plt.savefig(figurefilename)#, dpi=1000)
+        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.
+
+##        string = essay_fname[:-4] + '_gr_se_sample_edges' + '.png'
 ##        figurefilename = os.path.join(tempdir1, string)
 ##        plt.figure(1, figsize=(8,8))
-##        nx.draw(gr_se_sample, font_size=14, font_color='k', font_weight='normal',\
-##                node_size=500, linewidths=.2,node_shape='o',node_color='c',\
-##                edge_color='k',width=.2,style='solid',arrows=False) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
+##        #nx.draw(gr_se_sample, font_size=0, font_color='c', font_weight='normal',\
+##        nx.draw(gr_se_sample, font_size=0, font_color='k', font_weight='normal',\
+##                node_size=0.01,                
+##                #node_size=gr_se_sample.degree().values(),                
+##                linewidths=0,node_shape='o',node_color='c',
+##                alpha = 0.5, # total transparency of node
+##                edge_color='k',width=.09,style='solid',arrows=False) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
 ##        ##plt.show() # Use this line if you want to print to a pop-up window from the shell
-##        plt.savefig(figurefilename)
+##        plt.savefig(figurefilename, dpi=1000)
 ##        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.
-##
-##        string = essay_fname[:-4] + '_gr_ke_sample' + '.png'
+
+##        string = essay_fname[:-4] + '_gr_se_sample_labels' + '.png'
 ##        figurefilename = os.path.join(tempdir1, string)
-##        pos=nx.circular_layout(gr_ke_sample)
-##        plt.figure(2,figsize=(14,10))        
-##        nx.draw(gr_ke_sample, pos, font_size=14, font_color='b',\
-##                node_size=300, linewidths=0,node_shape='o', node_color='w',\
-##                edge_color='g',width=.2,style='solid',arrows=False) # circular figure in which the edges cross the middle like spokes            #nx.draw(gr_ke_sample) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
+##        plt.figure(1, figsize=(8,8))
+##        #nx.draw(gr_se_sample, font_size=0, font_color='c', font_weight='normal',\
+##        nx.draw(gr_se_sample, font_size=2, font_color='k', font_weight='normal',\
+##                node_size=0.01,                
+##                #node_size=gr_se_sample.degree().values(),                
+##                linewidths=0,node_shape='o',node_color='c',
+##                alpha = 0.5, # transparency of node
+##                edge_color='c',width=.09,style='solid',arrows=False) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
 ##        ##plt.show() # Use this line if you want to print to a pop-up window from the shell
-##        plt.savefig(figurefilename)
-##        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.        
+##        plt.savefig(figurefilename, dpi=1000)
+##        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.
+
+
+
+        string = essay_fname[:-4] + '_gr_ke_sample' + '.png' # can use pdf but don't specify dpi in plt.savefig
+        figurefilename = os.path.join(tempdir1, string)
+        pos=nx.circular_layout(gr_ke_sample)
+        plt.figure(2,figsize=(14,10))        
+        nx.draw(gr_ke_sample, pos, font_size=14, font_color='b',\
+                node_size=0,
+                #node_size=gr_se_sample.degree().values(), alpha = 0.25,
+                linewidths=.001,node_shape='o', node_color='w',\
+                edge_color='c',width=.2,style='solid',arrows=False) # circular figure in which the edges cross the middle like spokes            #nx.draw(gr_ke_sample) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
+        ##plt.show() # Use this line if you want to print to a pop-up window from the shell
+        plt.savefig(figurefilename)#,dpi=1000) #
+        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.        
         #############################
         #############################
         ### End of figures section
@@ -126,7 +173,7 @@ nf2.close() # Close the summary results file.
 
 
 #main()
-#profile.run('main(); print') #  Swap these two lines if you want to profile this program (see how many times functions are called, etc. NB profiler runs slowly.)
+#profile.run('main(); print') # These lines concern profiling this program (see how many times functions are called, etc. NB profiler runs slowly.) but the indentation is wrong for this at the moment.
 
-# Copyright (c) 2012 Debora Georgia Field <deboraf7@aol.com>
+# Copyright (c) 2013 Debora Georgia Field <deboraf7@aol.com>
 

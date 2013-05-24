@@ -3,6 +3,8 @@ import itertools
 import networkx as nx
 import codecs
 from operator import itemgetter
+from pygraph.algorithms.pagerank import pagerank
+
 
 #from decimal import getcontext, Decimal
 #from betweenness import *    '''@todo remove it '''
@@ -19,21 +21,23 @@ from operator import itemgetter
 from networkx.algorithms.centrality.betweenness import betweenness_centrality
 
 """
-This file contains all the functions that do the key word and key phrase analysis, apart from the NLP pre-processing of the text.
-The principal procedure function 'process_essay_ke' and the results function 'debora_results_ke' in this file are called in se_main.py.
+This file contains all the functions that do the key word and key
+phrase analysis, apart from the NLP pre-processing of the text.
+The principal procedure function 'process_essay_ke' and the results
+function 'get_essay_stats_ke' in this file are called in se_main.py.
 Function names:
-# Function: flatten(nested_list)
-# Function: unique_everseen(iterable, key=None)
-# Function: add_item_to_array_ke(myarray_ke, num, item)
-# Function: add_all_node_edges_ke(gr_ke, text)
-# Function: keywords2ngrams(keywords,text,n)
-# Function: keywords2ngrams_i(keywords, sent, n)
-# Function: sort_betweenness_scores(betweenness_scores, nf)
-# Function: cf_ass_q_keylemmas(ass_q,keylemmas,scoresNfreqs)
-# Function: cf_ngrams_section(keywords,ngrams,text_se,label)
-# Function: process_essay_ke(text,wordtok_text,nf,nf2,dev)  
-# Function: get_essay_stats_ke(text_se,gr_ke,di,myarray_ke,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,ass_q_long,ass_q_short):
-# Function: debora_write_results_ke
+def flatten(nested_list):
+def unique_everseen(iterable, key=None):
+def add_item_to_array_ke(myarray_ke, num, item):
+def add_all_node_edges_ke(gr_ke, text):
+def keywords2ngrams(keywords,text,n):
+def keywords2ngrams_i(keywords, sent, n):
+def sort_betweenness_scores(betweenness_scores, nf):
+def cf_ass_q_keylemmas(ass_q,keylemmas,scoresNfreqs):
+def cf_ngrams_section(keywords,ngrams,text_se,label):
+def process_essay_ke(text,wordtok_text,nf,nf2,dev):
+def debora_write_results_ke(text_ke,text_se,gr_ke,di,myarray_ke,threshold_ke,...)
+def get_essay_stats_ke(text_se,gr_ke,di,myarray_ke,keylemmas,keywords,...)
 """
 
 # Function: flatten(nested_list)
@@ -198,6 +202,7 @@ def keywords2ngrams_i(keywords, sent, n):
 # Sort the key lemmas in descending order of importance.
 # Called by 'process_essay_ke' (in this file).
 def sort_betweenness_scores(betweenness_scores, nf):
+    #print betweenness_scores
     temp0 = betweenness_scores.items()
     temp1 = [x for x in temp0]
     temp = sorted(temp1, key = itemgetter(1))
@@ -212,11 +217,13 @@ def sort_betweenness_scores(betweenness_scores, nf):
 # Called by debora_results_ke (in this file).
 def cf_ass_q_keylemmas(ass_q,keylemmas,scoresNfreqs):
     #print '\n\n~~~~~~~~~~~THIS IS keylemmas in cf_ass_q_keylemmas~~~~~~~~~~~~\n', keylemmas
-    #print '\n\n~~~~~~~~~~~THIS IS ass_q 1 in cf_ass_q_keylemmas~~~~~~~~~~~~\n', ass_q    
+    #print '\n\n~~~~~~~~~~~THIS IS ass_q 1 in cf_ass_q_keylemmas~~~~~~~~~~~~\n', ass_q[:3]   
     temp = [x for y in ass_q for x in y] # Unnest paragraph level of nesting in text
+    #print '\n\n~~~~~~~~~~~THIS IS temp[:2] in cf_ass_q_keylemmas~~~~~~~~~~~~\n', temp[:3]  
     temp2 = [x[1:] for x in temp] # Get rid of structure label at head of each sentence
+    #print '\n\n~~~~~~~~~~~THIS IS temp2[:2] in cf_ass_q_keylemmas~~~~~~~~~~~~\n', temp2[:3]
     ass_q = [x for y in temp2 for x in y] # Unnest sentence level of nesting
-    #print '\n\n~~~~~~~~~~~THIS IS ass_q 2 in cf_ass_q_keylemmas~~~~~~~~~~~~\n', ass_q    
+    #print '\n\n~~~~~~~~~~~THIS IS ass_q 2 in cf_ass_q_keylemmas~~~~~~~~~~~~\n', ass_q[:3]    
     kls_in_ass_q = []
     mylist3 = []
     for mytuple in ass_q: # 
@@ -229,6 +236,7 @@ def cf_ass_q_keylemmas(ass_q,keylemmas,scoresNfreqs):
     for item in kls_in_ass_q:
         mylist.append(item[3])
     sum_freq_kls_in_ass_q = sum(mylist)
+    #print '\n\n~~~~~~~~~~~THIS IS kls_in_ass_q, in cf_ass_q_keylemmas~~~~~~~~~~~~\n', kls_in_ass_q
     return kls_in_ass_q, sum_freq_kls_in_ass_q
 
 
@@ -284,6 +292,7 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     # Currently I am not deriving/carrying the index number for each key word and each n-gram.
     temp = [x for y in text for x in y] # Unnest paragraph level of nesting in text
 
+    #print temp[0:3]
     # Temporarily playing around with using only TRUE sentences to derive key words. This because I am now attempting to exclude the assignment question from the true sentences.
     # I suppose I could include headings if the results are strange??
     mylabels = ['#dummy#','#+s:i#','#+s:c#','#+s:s#','#+s:p#']
@@ -295,15 +304,26 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     text = [x for y in temp2 for x in y] # Unnest sentence level of nesting  
 
     # Get the lemma set for the essay.
-    unique_lemma_set = unique_everseen([x[1] for x in text ])    
+    unique_lemma_set = unique_everseen([x[1] for x in text ])
+
+    #hyphenated_lemmas = [re.sub(r'(^[a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2' , w) for w in unique_lemma_set] # 'facehhhhhoff' with 'face-off'
+
     #unique_word_set = unique_everseen([x[0] for x in text])
 
     myarray_ke = {} # Initiate an array 
     
     # Fill the array with each lemma as a key, and a list of its inflections as an entry. 
+##    for item in hyphenated_lemmas:  # item: fox
+##        temp = re.sub(r'(^[a-zA-Z]+)-([a-zA-Z]+)-([a-zA-Z]+)', r'\1hhhhh\2hhhhh\3' , item) # 'face-to-face' with 'facehhhhhtohhhhhface'  
+##        temp = re.sub(r'(^[a-zA-Z]+)-([a-zA-Z]+)', r'\1hhhhh\2' , temp) # 'face-off' with 'facehhhhhoff'
+##        temp2 = [w[0] for w in text if temp == w[1]] # temp: ['foxes', 'foxes', 'foxes', 'fox', 'foxes', 'foxes', 'foxes', 'fox']
+##        hyphenated_inflections = [re.sub(r'(^[a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2' , w) for w in temp2]
+##        add_item_to_array_ke(myarray_ke, item, hyphenated_inflections)
     for item in unique_lemma_set:  # item: fox 
         temp = [w[0] for w in text if item == w[1]] # temp: ['foxes', 'foxes', 'foxes', 'fox', 'foxes', 'foxes', 'foxes', 'fox']
         add_item_to_array_ke(myarray_ke, item, temp)
+
+    #print myarray_ke
 
     # Initiate an empty directed graph 'gr_ke' of 'digraph' class  
     gr_ke=nx.DiGraph()
@@ -312,6 +332,10 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     # Add nodes to the directed graph 'gr_ke', one node for each unique lemma.
     # If you are filtering out certain parts of speech, or stop words, or..., you will add a node only for those remaining unique words.
     gr_ke.add_nodes_from(unique_lemma_set)
+    #gr_ke.add_nodes_from(hyphenated_lemmas)
+    #print gr_ke.nodes()
+
+    #text = process_sents(reinstate_hyphens, text)
     
     # Add directed edges to the graph to which you have alreaded added nodes. 
     # A directed (and unweighted) edge is added from each node to the node whose corresponding inflected lemma follows it in the prepared text.
@@ -327,7 +351,8 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     
 ##    # Sort the scores into order.
     di = sort_betweenness_scores(betweenness_scores, nf) # Leave this in for the betweenness centrality version.
-#    di = sorted(calculated_page_rank.iteritems(), key=itemgetter(1)) # pagerank version
+    #di = sorted(calculated_page_rank.iteritems(), key=itemgetter(1)) # pagerank version
+    #list.reverse(di) # pagerank version
 
 
     # How many of the key lemmas are key as opposed to not key? TextRank paper says a third of unique wordset are key words.
@@ -335,21 +360,21 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     a = len(di)
     y = 0.20 # y is going to be the percentage threshold. .03 will get us the top 3 per cent.
     x = 0.03 # x is going to be the score threshold. 0.1 will get us every word that scores more than 0.1.
-    #y = 0.10 # xxxx temporary threshold for testing purposes
-    #x = .0001 # xxxx temporarily very low for testing purposes
-    #x = 0.02 # xxxx temporarily very low for testing purposes
+    #x = 0.0001 # xxxx temporarily very low for testing purposes: pagerank
     #print a, y, x
     threshold_ke = (y,x)
     b = int(a * y)
     temp = di[0:b]
-    # print temp # xxxx Check this when testing pagerank version
+    #print temp # xxxx Check this when testing pagerank version
     keylemmas = []
     for item in temp:  # 'item' has pair structure: ('students', 0.3138429126331271)
         if item[1] > x:
             keylemmas.append(item[0])        
-    # Get a flat list of all the key words that actually appear in the text (not the key lemmas) 
+    # Get a flat list of all the key words that actually appear in the text (not the key lemmas)
+    #print myarray_ke
     keywords = []
     for item in keylemmas:
+        #print item
         wordlist = myarray_ke[item] # by looking up in myarray_ke the values of the key lemmas
         monitorlist = []
         for w in wordlist:
@@ -602,9 +627,14 @@ def get_essay_stats_ke(text_se,gr_ke,di,myarray_ke,keylemmas,keywords,\
     nums = range(z)
     counter = 0    
     scoresNfreqs = []
+    #print '\n\n\n\n\n#############This is myarray_ke', myarray_ke # Yes, the hyphenated forms are in the array
+
     while 1:
         if counter <= len(di)-1:
+            #print di[counter]
             lemma = di[counter][0]
+            #print 'This is lemma', lemma
+            #print 'This is myarray_ke[lemma]', myarray_ke[lemma]
             freqlemma = len(myarray_ke[lemma]) # The frequency of the inflected forms of this lemma in the essay is the length of the list of inflected forms associated with this lemma in the array
             # [('student', 0.3328931614802702, 0, 38), ('use', 0.18376249760232427, 1, 22), ('tool', 0.15331752034879637, 2, 14)
             temp = (lemma,di[counter][1],nums[counter],freqlemma)
@@ -618,6 +648,8 @@ def get_essay_stats_ke(text_se,gr_ke,di,myarray_ke,keylemmas,keywords,\
     fivemostfreq = temp[:5]
     freqs = [item[3] for item in fivemostfreq]
     avfreqsum = sum(freqs)/5
+
+    # cf_ass_q_keylemmas is called three times: (i) with long assignment q; (ii) short assignment q; (iii) textbook index
 
     kls_in_ass_q_long, sum_freq_kls_in_ass_q_long = cf_ass_q_keylemmas(ass_q_long_lemmd,keylemmas,scoresNfreqs)
     #kls_in_ass_q_long, sum_kls_in_ass_q_long = cf_ass_q_keylemmas(ass_q_long,keylemmas,scoresNfreqs)

@@ -1,30 +1,37 @@
 import re # For regular expressions
 
-from nltk.corpus import stopwords # For removing uninteresting words from the text
+#from nltk.corpus import stopwords # For removing uninteresting words from the text
 #from nltk import PunktSentenceTokenizer 
 from nltk.tokenize import WordPunctTokenizer # Word tokeniser that separates punctuation marks from words
 from nltk.stem.wordnet import WordNetLemmatizer
 from se_stops import essay_stop_words
 #from H810_TMA01_textbook_seale_index import textbook_index_terms
 """
-This file contains the functions for doing all the NLP pre-processing, but not the structure pre-processing.
+This file contains the functions for doing all the NLP pre-processing,
+but not the structure pre-processing.
 Functions names:
-# Function: get_essay_body(text2,nf,dev)
-# Function: update_text(text, x, y, counter)
-# Function: restore_quote(text, counter)
-# Function: edit_text_detail(text)
-# Function: sentence_tokenize(model,text)
-# Function: word_tokenize(text)
-# Function: remove_punc_fm_sents(sent)
-# Function: count_words(text)
-# Function: process_sents(do_this, text)
-# Function: remove_stops_fm_sents(sent)
-# Function: find_and_label_numeric_sents
-# Function: get_lemmas(sent)
+def remove_unwanted_pos(text):
+def print_function_name(sent):
+def print_unicode_name(sent):
+def get_essay_body(parasenttok,nf,dev):
+def find_appendix_head(parasenttok,refs_head_index,nf,dev):       
+def find_word_count_index(parasenttok,nf,dev):
+def find_refs_heading(parasenttok,nf,dev):
+def edit_text_detail(text):
+def replace_hyphens(sent):
+def sentence_tokenize(model,text):
+def process_sents(do_this, text):
+def word_tokenize(text):
+def remove_punc_fm_sents(sent):
+def count_words(text):
+def find_and_label_numeric_sents(sent):
+def lowercase_sents(sent):
+def remove_stops_fm_sents(sent):
+def get_lemmas(sent):
 
 """
 
-# This is used for testing purposes only at the moment.
+# Function: 
 def remove_unwanted_pos(text):
     #tags=['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'NNP', 'NNPS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
     #newtext = [item for item in text if item[1] in tags]
@@ -34,11 +41,12 @@ def remove_unwanted_pos(text):
     #print item[1]
     return newtext
 
+# Function:
+def print_function_name(sent):
+    if sent.startswith('def '):        
+        print sent
 
-##def print_function_name(sent):
-##    if sent.startswith('# Function:'):        
-##        print sent
-
+# Function:
 def print_unicode_name(sent):
     c = unicode(sent)
     #print c
@@ -65,6 +73,7 @@ def print_unicode_name(sent):
 # Called by pre_process_text_se in file se_procedure.py.
 def get_essay_body(parasenttok,nf,dev):
     refs_head_index,newtext,responseR = find_refs_heading(parasenttok,nf,dev)
+    #responseR = False # xxxx Need to swap this line with above line when printing function names
     if responseR == True:
         last_body_para_index = refs_head_index - 1
         appendix_head_index, responseA = find_appendix_head(parasenttok,refs_head_index,nf,dev) # See if there is an appendix following the refs section
@@ -183,17 +192,33 @@ def find_refs_heading(parasenttok,nf,dev):
 # Function: edit_text_detail(text)
 # Returns updated text.
 # Called by pre_process_text_se in file se_procedure.py.
-# Used to be called 'tidy_up_latin9', but most of that function now obsolete under Unicode.
-# Not sure if I want to edit text in this way, but keeping in for now.
+# Includs regexs to replace hyphens with 'hhhhh'. Hyphens are put back in after word tokenisation and punctuation removal.
+#[\|\+\(\{\}\[\]\^\$\\/\-\=%\*@\&\<\>\[\]\{\}~#\^]+
+
 def edit_text_detail(text):
+    #print text[-1000:]
     counter = 0
+    #print '\n'
+    #for w in text:
+     #   if re.match('^[a-zA-Z]+-[a-zA-Z]+', w): # xxxx Do not delete. To match a single or double-hyphenated word to print results to screen for identification of hyphenated words in a corpus. Note that this will match u're-prioritised.\r\nThere' from 2012 essay C1264876, and 'There' will be printed on the following line. If I make the test tighter than this, I lose valid candidates.
+      #      print w
+    text = [re.sub(r'(^[a-zA-Z]+)-([a-zA-Z]+)-([a-zA-Z]+)', r'\1hhhhh\2hhhhh\3' , w) for w in text] # 'face-to-face' with 'facehhhhhtohhhhhface'  
+    text = [re.sub(r'(^[a-zA-Z]+)-([a-zA-Z]+)', r'\1hhhhh\2' , w) for w in text]# 'face-off' with 'facehhhhhoff'
+    #text = [re.sub(r'(^[a-zA-Z]+)#([a-zA-Z]+)#([a-zA-Z]+)', r'\1-\2-\3' , w) for w in text] # for putting back the hyphens. Carried out in fill_sentence_array.
+    #text = [re.sub(r'(^[a-zA-Z]+)#([a-zA-Z]+)', r'\1-\2' , w) for w in text]
+
+    text = [re.sub('^p\.', "p ", w) for w in text] # 'p.' with 'p '
+    text = [re.sub('^vs\.', "vs", w) for w in text] # 'vs.' with 'vs'
+    text = [re.sub('^cf\.', "cf", w) for w in text] # 'cf.' with 'cf'
+    text = [re.sub('^ie\.', "ie", w) for w in text] # 'ie.' with 'ie'
     text = [re.sub('^i\.e\.', "ie", w) for w in text] # 'i.e.' with 'ie'
     text = [re.sub('^\(e\.g\.', "eg", w) for w in text] # '(e.g.' with '(eg'
+    text = [re.sub('^\(eg\.', "eg", w) for w in text] # '(eg.' with '(eg'
     text = [re.sub('^,\we\.g\.', "eg", w) for w in text] # ', e.g.' with ', eg'
-    text = [re.sub('^e-', "e", w) for w in text] # 'e-' with 'e'
-    text = [re.sub('^on-', "on", w) for w in text] # 'on-' with 'on' (for 'on-line')
-    text = [re.sub('^self-', "self", w) for w in text] # 'self-' with 'self' (for 'self-motivated') TMA01_H810_V_1.0_T5218396_Romers_utf8.txt
-    text = [re.sub('-based', "based", w) for w in text] # TMA001_Blase_utf8_E29.txt
+    text = [re.sub('^,\weg\.', "eg", w) for w in text] # ', eg.' with ', eg'
+    #text = [re.sub("^\\\\section{Introduction}", "Introduction", w) for w in text] # xxxx for latex paper processing xxxx this doesn't work
+    #text = [re.sub("^\\\\section{Discussion}", "Discussion", w) for w in text] # xxxx for latex paper processing
+
 #text = [re.sub('\n', "", w) for w in text] # Just getting rid of '\n' characters that are attached to words    
     #text = [re.sub('\t', " ", w) for w in text] # Just getting rid of tab characters that are attached to words
     #text = [re.sub('\r', " ", w) for w in text] # Just getting rid of '\r' characters that are attached to words
@@ -207,6 +232,19 @@ def edit_text_detail(text):
 ##    #text = [re.sub('\\xa0', " ", w) for w in text] 
     
     return text
+
+def reinstate_hyphens1(sent):
+    temp = [re.sub(r'(^[a-zA-Z]+)hhhhh([a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2-\3' , w) for w in sent] # 'facehhhhhtohhhhhface' with 'face-to-face' with 
+    temp = [re.sub(r'(^[a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2' , w) for w in temp] # 'facehhhhhoff' with 'face-off'
+    return temp
+
+def reinstate_hyphens2(sent):
+    sent = re.split(r' ', sent)
+    temp = [re.sub(r'(^[a-zA-Z]+)hhhhh([a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2-\3' , w) for w in sent] # 'facehhhhhtohhhhhface' with 'face-to-face' with 
+    temp = [re.sub(r'(^[a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2' , w) for w in temp] # 'facehhhhhoff' with 'face-off'
+    temp = ' '.join(temp)
+    return temp
+
 
 ### Function: sentence_tokenize(model,text)
 ### An alternative sentence tokenizer that does a better job with abbreviations,
@@ -322,7 +360,7 @@ def count_words(text):
     for para in text:
         for sent in para:
             if sent[0] in mylabels: # Only count the words of the true sentences, not headings, not tables, not title
-                x = sum(1 for w in sent[1:]) # Don't count the structure label in the word count!
+                x = sum(1 for w in sent[1:]) # Don't count the structure label in the wrd count!
                 mylist.append(x)
                 y = sum(mylist)
     return y
@@ -393,3 +431,6 @@ def get_lemmas(sent):
 	mylist.append((t[0],unicode(temp))) # A few of the lemmas in Wordnet lemmatizer are not in unicode, so I am forcing it here.
     mylist.insert(0,sent[0]) # Put the label back at the beginning ofs the sentence
     return mylist
+
+    
+# Copyright (c) 2013 Debora Georgia Field <deboraf7@aol.com>

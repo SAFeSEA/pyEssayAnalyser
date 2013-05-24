@@ -1,37 +1,27 @@
 import re # For regular expressions
+#import sys
 from time import time # For calculating processing times
 from decimal import getcontext, Decimal
-#from uuid import uuid4
-#import random
-#from collections import OrderedDict
-#import pprint
-#from decimal import *
-##from EssayAnalyser.se_procedure_v3 import pre_process_text_se, pre_process_struc,\
-##    process_essay_se
-##from EssayAnalyser.ke_all_v3 import process_essay_ke
-##
-##from EssayAnalyser import _apiLogger
-##from collections import Counter
 
-import sys
 
 
 """
-This file contains the functions for writing desired sentence extraction results to file.
-The functions for the key word/phrase results are in file ke_all.py.
-The principal functions debora_results_se and nicolas_results_se are called in file se_main.py.
+This file contains the functions for selecting data structures to be
+passed to ea_results.py, and for writing desired sentence extraction
+results to file. Similar functions for the key word/phrase results
+are in file ke_all.py.
 Function names:
-# Function: write_to_details_file
-# Function: write_to_summary_file
-# Function: get_essay_stats_se
-# Function: print_processing_times
-# Function: cf_keysents_sections(sorted_list)
-# Function: debora_write_results_se(gr,text,ranked_global_weights,reorganised_array,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,essay_fname,nf,nf2,dev)
+def write_to_details_file(essay_fname,paras,rankorder,number_of_words,\
+def write_to_summary_file(essay_fname,paras,number_of_words,\
+def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_array):
+def print_processing_times(getassdatatime,processasstexttime,processtbindextime,startassdatatime,startfiletime, texttime, structime, se_scorestime, ke_scorestime, nf2):
+def cf_keysents_sections(sorted_list):
+def debora_write_results_se(essay_fname,paras,rankorder,number_of_words,\
 """
 
-# Function: write_to_details_file(essay_fname,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr,ranked_global_weights,reorganised_array,i_toprank,c_toprank,nf,nf2):
+# Function: write_to_details_file(essay_fname,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr_se,ranked_global_weights,reorganised_array,i_toprank,c_toprank,nf,nf2):
 # Called by debora_results_se in this file.
-#def write_to_details_file(essay_fname,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr,ranked_global_weights,reorganised_array,i_toprank,c_toprank,nf,nf2):
+#def write_to_details_file(essay_fname,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr_se,ranked_global_weights,reorganised_array,i_toprank,c_toprank,nf,nf2):
 def write_to_details_file(essay_fname,paras,rankorder,number_of_words,\
     section_names,section_labels,headings,\
     conclheaded,c_first,c_last,introheaded,i_first,i_last,\
@@ -45,9 +35,14 @@ def write_to_details_file(essay_fname,paras,rankorder,number_of_words,\
     nf.write(str(essay_fname)) # Write the new file name to the essay results file
     nf.write('\n') # Add blank lines to the essay results file
 
-    nf.write('\nRanked importance ("key-ness") order of true sentences: \n') 
+    #nf.write('\nKey sentences in descending rank order: \n')
+    nf.write('\nSentences ranked in key-ness order (descending): \n')
+    # xxxx Do you want all the sentences or do you want the top N?
     s = str(rankorder) # ...and write them to the results file so you can see the order at a glance.
-    c = s.decode('unicode-escape')
+    #s = str(rankorder[:25]) # ...and write them to the results file so you can see the order at a glance.
+    w = re.sub('u\'', 'u\'\n\n', s) # Add a new line at the end of every result so that each result is written to a separate line
+
+    c = w.decode('unicode-escape')
     nf.write(c)
     nf.write('\n')    
 
@@ -75,16 +70,17 @@ def write_to_details_file(essay_fname,paras,rankorder,number_of_words,\
     # WRITE DETAILED SCORES AND SENTS AT THE END
     ########    
     # Write detailed results to the essay results file.
-    r = ranked_global_weights[:30]
+    r = ranked_global_weights # [:30] xxxx Do you want all the sentences ranked, or just the top N?
     s = str(r) # Map the results into a string so you can write the string to the output file
     w = re.sub('\]\),', ']),\n', s) # Add a new line at the end of every result so that each result is written to a separate line
     y = re.sub('\"\),', '\'),\n', w) # Be careful, because Python sometimes uses double quotes instead of single ones          
-    nf.write('\n\nTop 30 key sentences: \n')
+    #nf.write('\n\nTop 30 key sentences: \n')
+    nf.write('\n\nAll sentences ranked in key-ness order (descending): \n')
     c = y.decode('unicode-escape')
     nf.write(c)                
     nf.write('\n')
 
-# Function: write_to_summary_file(essay_fname,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr,ranked_global_weights,reorganised_array,i_toprank,c_toprank,nf,nf2)    
+# Function: write_to_summary_file(essay_fname,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr_se,ranked_global_weights,reorganised_array,i_toprank,c_toprank,nf,nf2)    
 # Called by debora_results_se in this file.
 def write_to_summary_file(essay_fname,paras,number_of_words,\
                           countTrueSent,countSentLen,countAvSentLen,\
@@ -187,10 +183,11 @@ def write_to_summary_file(essay_fname,paras,number_of_words,\
     nf2.write('; ')
     
 
-def get_essay_stats_se(gr,text,headings,ranked_global_weights,reorganised_array):
+def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_array):
     rankorder = []
     for item in ranked_global_weights: # Get only the sentence key numbers from the sorted scores list...
-        key = item[1]
+        key = item[1] # xxxx this line if you want a list of integers (ranked sentence numbers) with no other info
+        #key = item[3] # xxxx this line is you want a list of sentences only (for producing clean results for testing purposes)
         rankorder.append(key)
         
     paras = len(text)   
@@ -246,44 +243,22 @@ def get_essay_stats_se(gr,text,headings,ranked_global_weights,reorganised_array)
         percent_body_c = 0
     percent_body_c = float(percent_body_c)
 
-    edges = len(gr.edges())   
-    nodes = len(gr.nodes())
-    
-    x = float(edges) / float(countTrueSent)
+    edges = len(gr_se.edges())   
+    nodes = len(gr_se.nodes())
+
+    #print 'This is float(edges)', float(edges)
+    #print 'This is float(countTrueSent)', float(countTrueSent)
+    if countTrueSent > 0:
+        x = float(edges) / float(countTrueSent)
+    else:
+        x = 0
+    #print 'This is float(edges) / float(countTrueSent) ', x  
     edges_over_sents = round(x, 2)
 
     i_toprank,c_toprank = cf_keysents_sections(ranked_global_weights)
 
     return paras, rankorder,len_body,len_headings,countSentLen,truesents,countTrueSent,countAvSentLen,countIntroSent,countConclSent,countAssQSent,countTitleSent,percent_body_i,i_toprank,percent_body_c,c_toprank,nodes,edges,edges_over_sents
 
-# Function: print_processing_times(startprogtime, endimporttime, startfiletime, texttime, graphtime, scorestime, nf2)
-# Takes different recorded times, does some arithmetic, and prints/writes process times.
-# For monitoring and improving program efficiency.
-# Commented out at the moment because I don't want to focus on timings for now.
-##def print_processing_times(startprogtime, endimporttime, startfiletime, texttime, graphtime, scorestime, nf2):
-##    textproctime = texttime - startfiletime # Work out how long different parts of the program took to run...
-##    graphproctime = graphtime - texttime
-##    scoresproctime = scorestime - graphtime
-##    totalproctime = scorestime - startfiletime
-##    importproctime = endimporttime - startprogtime # Get some more processing timings   
-##    nf2.write('\nText processing time: ')
-##    nf2.write(str(textproctime))
-##    nf2.write('\nGraph processing time: ')
-##    nf2.write(str(graphproctime))
-##    nf2.write('\nScores processing time: ')
-##    nf2.write(str(scoresproctime))
-##    nf2.write('\nTotal essay processing time: ')
-##    nf2.write(str(totalproctime))
-##    nf2.write('\n\n*********************************************************\n\n')
-##    #nf2.write('\n\n')
-##    nf2.write('\nCompilation and import processing time: ')
-##    nf2.write(str(importproctime))
-##    stopprogtime = time()
-##    nf2.write('\nProgram stopped running at: ')
-##    nf2.write(str(stopprogtime))
-##    totalprogtime = stopprogtime - startprogtime
-##    nf2.write('\nTotal program processing time: ')
-##    nf2.write(str(totalprogtime))
 
 def print_processing_times(getassdatatime,processasstexttime,processtbindextime,startassdatatime,startfiletime, texttime, structime, se_scorestime, ke_scorestime, nf2):
     getassdataproctime  = getassdatatime - startassdatatime
@@ -348,7 +323,7 @@ def cf_keysents_sections(sorted_list):
 
 
 
-# Function: debora_results_se(gr,text,ranked_global_weights,reorganised_array,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,essay_fname,nf,nf2,dev)
+# Function: debora_write_results_se(essay_fname,paras,rankorder,number_of_words,...)
 # Prints and writes to file various results I want to see.
 # Called in se_main.py.
 def debora_write_results_se(essay_fname,\
@@ -381,4 +356,4 @@ def debora_write_results_se(essay_fname,\
 
 
         
-# Copyright (c) 2012 Debora Georgia Field <deboraf7@aol.com>
+# Copyright (c) 2013 Debora Georgia Field <deboraf7@aol.com>

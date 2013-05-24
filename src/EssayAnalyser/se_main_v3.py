@@ -1,12 +1,15 @@
-import os # This is for file handling
-import shutil
-import codecs
+import os.path # This is for file handling
+import shutil # For file operations
+import codecs # For encoding handling
+import pickle
+import tempfile # For handling OS's temporary files directories
 
-import networkx as nx
+#import networkx as nx
 from time import time # For calculating processing times
 
 from EssayAnalyser.se_procedure_v3 import pre_process_shorttext, pre_process_text,\
 	pre_process_struc, process_essay_se
+#from EssayAnalyser.se_procedure_v3 import pre_process_text, pre_process_struc, process_essay_se    
 from EssayAnalyser.ke_all_v3 import process_essay_ke, get_essay_stats_ke, debora_write_results_ke
 from EssayAnalyser.se_print_v3 import get_essay_stats_se, debora_write_results_se, print_processing_times
 from EssayAnalyser.ea_results_v3 import make_results_array
@@ -14,70 +17,70 @@ from EssayAnalyser.se_graph_v3 import sample_nodes_for_figure
 
 ##############################
 ##############################
-## 1. Read in assignment question and text book index.
+## 0. Read in assignment question and text book index pre-processed files.
 ##############################
 ##############################
-      
-#cwdir = os.getcwd() # get current working directory
-#cwdir = os.path.abspath(os.path.dirname(__file__))
-#assignment_question = cwdir + '\\assignment_extras\\H810_TMA01_ass_q_long.txt'
-#f = codecs.open(assignment_question,'r',encoding='utf-8') # Open for reading the assignment question
-#ass_q_txt = f.read() # Read in the assignment question and set to var 'ass_q_txt'
-#print '\n\nThis is ass_q_long_string', ass_q_long_string
-#f.close() # Close the file
-#tb_index = cwdir + '\\assignment_extras\\H810_TMA01_seale_textbook_index.txt'
-#f = codecs.open(tb_index,'r',encoding='utf-8') # Open for reading the text book index
-#tb_index_txt = f.read() # Read in the text book index
-#f.close() # Close the file
 
+##def getAssignmentData(module,assignment):
+##    # get path of current file
+##    cwdir = os.path.abspath(os.path.dirname(__file__))
+##    # build path to data file
+##    assignment_question = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long.txt')
+##    assignment_question = os.path.normpath(assignment_question)
+##    f = codecs.open(assignment_question,'r',encoding='utf-8') # Open for reading the assignment question
+##    ass_q_txt = f.read() # Read in the assignment question and set to var 'ass_q_txt'
+##    f.close() # Close the file
+##       
 
 def getAssignmentData(module,assignment):
     # get path of current file
     cwdir = os.path.abspath(os.path.dirname(__file__))
     # build path to data file
-    assignment_question = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long.txt')
-    assignment_question = os.path.normpath(assignment_question)
-    f = codecs.open(assignment_question,'r',encoding='utf-8') # Open for reading the assignment question
-    ass_q_txt = f.read() # Read in the assignment question and set to var 'ass_q_txt'
-    f.close() # Close the file
- 
-    tb_index = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_textbook_index.txt')
-    f = codecs.open(tb_index,'r',encoding='utf-8') # Open for reading the text book index
-    tb_index_txt = f.read() # Read in the text book index
-    f.close() # Close the file
+    
+    ass_q_long_w = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long_w.txt')
+    ass_q_long_w = os.path.normpath(ass_q_long_w)
+    f = pickle.load(open(ass_q_long_w,'rb')) # Open for reading and unpickle the assignment question long version
+    ass_q_long_words = f # which is stored in 'data' dir in the same dir as 'se_batch.py'
 
-    return ass_q_txt, tb_index_txt
+    ass_q_long_le = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long_le.txt')
+    f = pickle.load(open(ass_q_long_le,'rb')) 
+    ass_q_long_lemmd = f 
+
+    ass_q_long_le2 = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long_le2.txt')
+    f = pickle.load(open(ass_q_long_le2,'rb')) 
+    ass_q_long_lemmd2 = f 
+
+    ass_q_short_le = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_short_le.txt')
+    f = pickle.load(open(ass_q_short_le,'rb')) 
+    ass_q_short_lemmd = f 
+
+    tb_index_le = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_tb_index_le.txt')
+    f = pickle.load(open(tb_index_le,'rb')) 
+    tb_index_lemmd = f 
+
+    tb_index_le2 = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_tb_index_le2.txt')
+    f = codecs.open(tb_index_le2,'rb') 
+    tb_index_lemmd2 = f 
+
+    #return ass_q_txt, tb_index_txt
+    return ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd,tb_index_lemmd, tb_index_lemmd2
 
 def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     startassdatatime = time()
-    # Get the data associated with module/course
-    ass_q_txt, tb_index_txt = getAssignmentData(module,assignment)
+
+    ##############################
+    ##############################
+    ## 0. Do the assignment/module data associated with this essay
+    ##############################
+    ##############################
+
+    #ass_q_txt, tb_index_txt = getAssignmentData(module,assignment)
+    ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd,tb_index_lemmd, tb_index_lemmd2 = \
+                      getAssignmentData(module,assignment)
+
     getassdatatime = time()
-    
-##    ass_q_long = "Write a report explaining the main accessibility challenges for disabled learners that you work with or support in your own work context(s). Use examples from your own experience, supported by the research and practice literature. If you're not a practitioner, write from the perspective of a person in a relevant context. Critically evaluate the influence of the context (e.g. country, institution, educational sector, perceived role of online learning within education) on: the identified challenges particular to your own context. the influence of legislation and local policies. the roles and responsibilities of key individuals. the role of assistive technologies in addressing these challenges."
-##    ass_q_short = "Write a report explaining the main accessibility challenges for disabled learners that you work with or support in your own work context(s)"
-##
-##    ass_q_long = pre_process_ass_q(ass_q_long,dev)
-##    ass_q_short = pre_process_ass_q(ass_q_short,dev)
-    ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd = pre_process_shorttext(ass_q_txt,'NOPRINT')
-    processasstexttime = time()
-
-    # Note there are two versions of the text book index. First, the original text file 'H810_TMA01_seale_textbook_index.txt'
-    # as copied and pasted from the internet version of the book. That text file is used as input to function 'pre_process_shorttext'
-    # to create a list of text book lemmas which is then used in a comparison with the essay's key lemmas.
-    # The second file 'H810_TMA01_textbook_seale_index.py' has been pre-processed prior to run-time to derive a text book index
-    # that has had a few stop words removed, but not all the stop words that get removed by EssayAnalyser.
-    # This distinction is critically important. We must not use EssayAnalyser to produce
-    # the text book index that we use to decide which stop words should and should not be used by EssayAnalyser.
-    a1,tb_index_lemmd, tb_index_lemmd2,a2 = pre_process_shorttext(tb_index_txt,'NOPRINT') # a1 and a2 are dummies. We don't want to create an index using the same process (the same stop words) as we use for the essays and assignment question. We also don't want the first sentence only of the index.
-    processtbindextime = time()
-
-    #print '\n\nThis is ass_q_long_words', ass_q_long_words
-    #print '\n\nThis is ass_q_long_lemmd2', ass_q_long_lemmd2
-
-    #print '\n\nThis is tb_index_lemmd', tb_index_lemmd
-    #print '\n\nThis is tb_index_lemmd2', tb_index_lemmd2
-  
+    processasstexttime = time() # This is obselete now, because processing has been done beforehand
+    processtbindextime = time() # This is obselete now, because processing has been done beforehand
 
     ##############################
     ##############################
@@ -87,17 +90,15 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
 
 
     startfiletime = time() # Set current time to a variable for later calculations   
-    #text,parasenttok,wordtok_text,number_of_words,refs_present = pre_process_text_se(essay_txt,nf,nf2,dev)
     text,parasenttok,wordtok_text,b_last,len_refs,refsheaded,late_wc,appendixheaded = pre_process_text(essay_txt,nf,nf2,dev)
-    # Next line is needed instead of above line if we are using sbd sentence splitter.
+    # Next line is needed instead of above line if we are using sbd sentence splitter. xxxx now needs updating
     #text,parasenttok,wordtok_text,number_of_words,struc_feedback = pre_process_text_se(essay_txt,nf,nf2,model,dev)
 
     texttime = time() # Set current time to a variable for later calculations
-
    
     ##############################
     ##############################
-    ## 2. Do required essay structure pre-processing on this essay
+    ## 2. Do required essay structure analysis on this essay
     ##############################
     ##############################
 
@@ -129,24 +130,17 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
 
     ke_scorestime = time() # Set current time to a variable for later calculations
 
-
     ##############################
     ##############################
-    ## 5. Get some stats to pass to Nicolas and to write to file
+    ## 5. Get some stats for passing to ea_results/openEssayist and for writing to file
     ##############################
     ##############################      
-
 
     paras, rankorder,len_body,len_headings,countSentLen,truesents,countTrueSent,countAvSentLen,\
     countIntroSent,countConclSent,countAssQSent,countTitleSent,\
     percent_body_i,i_toprank,percent_body_c,c_toprank,nodes,edges,edges_over_sents = \
     get_essay_stats_se(gr_se,text_se,headings,ranked_global_weights,reorganised_array)
     
-    #print '\nSE sample graph start'
-    gr_se_sample = sample_nodes_for_figure(gr_se,truesents,'se') # Get a sample of the nodes from the sentence graph to make a figure with later
-    #print '\nSE sample graph'
-    #print(gr_se_sample.adj)    # This is how you print a networkx graph
-
     scoresNfreqs,fivemostfreq,avfreqsum,\
     uls_in_ass_q_long,kls_in_ass_q_long,sum_freq_kls_in_ass_q_long,\
     kls_in_ass_q_short,sum_freq_kls_in_ass_q_short,\
@@ -160,6 +154,17 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
                         ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd,\
                         tb_index_lemmd, tb_index_lemmd2)
                         #ass_q_long,ass_q_short) 
+    ##############################
+    ##############################
+    ## 6. Derive some SE and KE subgraphs for passing to ea_results/openEssayist
+    ##############################
+    ##############################      
+
+    #print '\nSE sample graph start'
+    gr_se_sample = sample_nodes_for_figure(gr_se,truesents,'se') # Get a sample of the nodes from the sentence graph to make a figure with later
+    #print '\nSE sample graph'
+    #print(gr_se_sample.adj)    # This is how you print a networkx graph
+
     #print '\nKE sample graph start'
     gr_ke_sample = sample_nodes_for_figure(gr_ke,keylemmas, 'ke') # Get a sample of the nodes from the sentence graph to make a figure with later
     #print '\nKE sample graph'
@@ -168,7 +173,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
 
     ##############################
     ##############################
-    ## 6. Write to file whichever results you choose
+    ## 7. Write to file whichever results are wanted for essay characterisitcs development scrutiny
     ##############################
     ##############################      
 
@@ -208,7 +213,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
 
     ##############################
     ##############################
-    ## 7. Send to Nicolas the results he wants
+    ## 8. Make an array containing the paramaters Nicolas wants for ea_results/openEssayist and call it 'essay'
     ##############################
     ##############################      
 
@@ -234,8 +239,11 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     #print essay['se_sample_graph']
     #print essay['ke_stats']
 
-    #return essay, gr_se_sample, gr_ke_sample
-    return essay
+
+    return essay, gr_se_sample, gr_ke_sample
+    #return essay
         
     ###################################################
     ###################################################
+
+# Copyright (c) 2013 Debora Georgia Field <deboraf7@aol.com>

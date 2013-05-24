@@ -71,3 +71,5 @@ essay_stop_words = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves',
                      # single letters and Latin devices  
                      'eg', 'et', 'al', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
                      'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+
+# Copyright (c) 2013 Debora Georgia Field <deboraf7@aol.com>
