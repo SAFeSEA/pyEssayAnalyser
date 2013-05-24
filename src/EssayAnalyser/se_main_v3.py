@@ -240,8 +240,8 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     #print essay['ke_stats']
 
 
-    return essay, gr_se_sample, gr_ke_sample
-    #return essay
+    #return essay, gr_se_sample, gr_ke_sample
+    return essay
         
     ###################################################
     ###################################################
