@@ -50,7 +50,7 @@ def make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
     @return: A dictionary containing various elements of the text analytics
     """
     essay = OrderedDict()
-    
+  
     '''
     @todo: What limit should we implement for the top ranked sentence? Hard-coded? Threshold-based? Parameter to process?
     '''
@@ -60,7 +60,12 @@ def make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
     mylist2 = {}
     for idx,val in enumerate(top_ranked_global_weights): 
         mylist2[val[1]]=idx         
-    
+
+    # list of lemmas of every sentence
+    myLemmas = []
+    for (a,b,c,d,e) in reorganised_array:
+        myLemmas.append([x for (w,x) in e]) 
+            
     # Restructure parasenttok with text,ID, structure tag (and score?)
     reorpar = []
     inc=0
@@ -70,7 +75,8 @@ def make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
             newsent = {
                 'text': sent,                       ## sentence text
                 'id':inc,                           ## sentence ID
-                'tag': reorganised_array[inc][2]    ## structural tag
+                'tag': reorganised_array[inc][2],   ## structural tag
+                'lemma': myLemmas[inc]              ## sentence's lemmas
             }
             if inc in mylist2:
                 newsent['rank'] = mylist2[inc]      ## rank if in top 15
@@ -92,7 +98,6 @@ def make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
     se_data['se_ranked'] = mylist2
     se_data['se_parasenttok'] = reorpar
     essay['se_data'] = se_data
-   
             
     ### Add statistics on essay
     se_stats = OrderedDict()
@@ -187,6 +192,7 @@ def make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
     
     #pprint.pprint(essay)
     return essay
+    
 
 def make_results_docs():
     essay = OrderedDict()
@@ -278,3 +284,4 @@ def make_results_docs():
         }
     
     return essay
+
