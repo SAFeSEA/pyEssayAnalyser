@@ -13,8 +13,9 @@ if sys.version_info < (2, 7):
     from EssayAnalyser.utils.counter import Counter
 else:
     from collections import Counter
-
-
+import numpy as np
+from operator import itemgetter
+from itertools import groupby
 
 __mapkeyscore = {}
 
@@ -60,7 +61,7 @@ def lemmaToJSON(keylemmas,myarray_ke):
             'ngram':[w],
             'source':[elem for (elem,count) in tally.items()],
             'count':len(v),
-            'score':[getScore(elem) for (elem,count) in tally.items() if getScore(elem) != 0]})
+            'score':[getScore(w)]})
     return jsonNGram
 
 
@@ -88,7 +89,21 @@ def ngramToTree(ngram_list):
    
     return treenode
 
-
+def setDispersionNgram(ngramlist,myarray_ke,lemmas):
+    for ngram in ngramlist:
+        forms=[getLemma(_form,myarray_ke) for _form in ngram['ngram']]
+        kk=[idx for hh in forms for idx,w in enumerate(lemmas) if w==hh]
+        kk.sort()
+        
+        ranges = []
+        for k, g in groupby(enumerate(kk), lambda (i,x):i-x):
+            group = map(itemgetter(1), g)
+            if (len(group) == len(ngram['ngram'])):
+                ranges = ranges + group
+            
+        ngram['dispersion'] = ranges
+        h,b = np.histogram(ranges,bins=10, range=(0, len(lemmas)))
+        ngram['trend'] = h.tolist()
 
 def Flask_process_text(text0):
     essay = top_level_procedure(text0, None, None, None, "NVL","H810","TMA01")
@@ -112,6 +127,24 @@ def Flask_process_text(text0):
     nvl_data['trigrams'] = ngramToJSON(trigram_keyphrases,myarray_ke)
     nvl_data['quadgrams'] = ngramToJSON(quadgram_keyphrases,myarray_ke)
     essay['nvl_data'] = nvl_data
+    
+    # Get complete flat list of text's lemmas
+    lemmas = [l for p in essay['se_data']['se_parasenttok'] for s in p for l in s['lemma']]
+    
+    # build dispersion arrays for lemma
+    for ngram in nvl_data['keywords']:
+        hh = ngram['ngram'][0]
+        kk=[idx for idx,w in enumerate(lemmas) if w==hh]
+        ngram['dispersion'] = kk
+        h,b = np.histogram(kk,bins=10, range=(0, len(lemmas)))
+        ngram['trend'] = h.tolist()
+
+    # build dispersion arrays for ngrams
+    setDispersionNgram(nvl_data['bigrams'],myarray_ke,lemmas)
+    setDispersionNgram(nvl_data['trigrams'],myarray_ke,lemmas)
+    setDispersionNgram(nvl_data['quadgrams'],myarray_ke,lemmas)
+        
+
     return essay
 
 
