@@ -6,3 +6,7 @@ Werkzeug==0.8.3
 blinker==1.2
 networkx==1.7
 nltk==2.0.4
+distribute==0.6.30
+python-graph-core==1.8.2
+requests==1.1.0
+virtualenv==1.8.2
