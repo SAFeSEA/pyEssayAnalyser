@@ -1,11 +1,12 @@
 import re # For regular expressions
-
-#from nltk.corpus import stopwords # For removing uninteresting words from the text
-#from nltk import PunktSentenceTokenizer 
-from nltk.tokenize import WordPunctTokenizer # Word tokeniser that separates punctuation marks from words
+from nltk.tokenize import LineTokenizer, WordPunctTokenizer, PunktSentenceTokenizer  
+from nltk.tag import pos_tag
 from nltk.stem.wordnet import WordNetLemmatizer
 from se_stops import essay_stop_words
-#from H810_TMA01_textbook_seale_index import textbook_index_terms
+# WordPunctTokenizer: Word tokeniser that separates punctuation marks from words
+# PunktSentenceTokenizer: The standard sentence tokeniser used by NLTK
+# LineTokenizer: "tokenizer that divides a string into substrings by treating any single newline character as a separator."
+
 """
 This file contains the functions for doing all the NLP pre-processing,
 but not the structure pre-processing.
@@ -13,25 +14,27 @@ Functions names:
 def remove_unwanted_pos(text):
 def print_function_name(sent):
 def print_unicode_name(sent):
+def parasent_tokenize(text):
 def get_essay_body(parasenttok,nf,dev):
 def find_appendix_head(parasenttok,refs_head_index,nf,dev):       
 def find_word_count_index(parasenttok,nf,dev):
 def find_refs_heading(parasenttok,nf,dev):
-def edit_text_detail(text):
-def replace_hyphens(sent):
-def sentence_tokenize(model,text):
+def edit_text(text):
+def reinstate_hyphens1(sent):
+def reinstate_hyphens2(sent):
 def process_sents(do_this, text):
 def word_tokenize(text):
 def remove_punc_fm_sents(sent):
-def count_words(text):
+def count_words(sent):
 def find_and_label_numeric_sents(sent):
 def lowercase_sents(sent):
 def remove_stops_fm_sents(sent):
 def get_lemmas(sent):
-
+def process_sents_b4_struc(parasenttok):
+def process_sents_after_struc(text77):
 """
 
-# Function: 
+# Called by process_sents_after_struc in this file
 def remove_unwanted_pos(text):
     #tags=['JJ', 'JJR', 'JJS', 'NN', 'NNS', 'NNP', 'NNPS', 'RB', 'RBR', 'RBS', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
     #newtext = [item for item in text if item[1] in tags]
@@ -41,24 +44,36 @@ def remove_unwanted_pos(text):
     #print item[1]
     return newtext
 
-# Function:
-def print_function_name(sent):
-    if sent.startswith('def '):        
-        print sent
+# Called by process_sents_b4_struc in this file.
+##def print_function_name(sent):
+##    if sent.startswith('def '):        
+##        print sent
 
-# Function:
-def print_unicode_name(sent):
-    c = unicode(sent)
-    #print c
-    if c.startswith("u'\u"): #u'\u03c31'
-        #s = str(sent)
-        #c = s.decode('unicode-escape')
-        #nf2.write(c)    
-        #nf2.write('\n')
-        print sent
 
+### Function:
+# Called by process_sents_b4_struc in this file.
+##def print_unicode_name(sent):
+##    c = unicode(sent)
+##    #print c
+##    if c.startswith("u'\u"): #u'\u03c31'
+##        #s = str(sent)
+##        #c = s.decode('unicode-escape')
+##        #nf2.write(c)    
+##        #nf2.write('\n')
+##        print sent
+
+# Called by pre_process_text in file se_procedure.py
+def parasent_tokenize(text):
+    # Paragraph-tokenisation results in having quotation marks as paragraph delimiters.
+    paratok = LineTokenizer().tokenize(text)
+    # Sentence-tokenisation results in having quotation marks as sentence delimiters,
+    # and preserves the paragraph delimiters by using square brackets.
+    result = [PunktSentenceTokenizer().tokenize(item) for item in paratok]     # xxxx normal NLTK sentence splitter   
+    #parasenttok = sentence_tokenize(model,paratok) # This calls a sentence splitter that uses a model. The model takes a few seconds to load.
+    return result
 
 # Function: get_essay_body(parasenttok,nf,dev)
+# Called by pre_process_text in file se_procedure.py.
 # This discards everything following the references section.
 # It takes parasenttok, looks for a references section,
 # and returns everything occurring before the references section for further processing.
@@ -70,9 +85,8 @@ def print_unicode_name(sent):
 # the refs section from the bullet point. We also need to add a new way
 # of identifying the refs section. This essay has a 'word count' following the body,
 # as many do, so I am using that.
-# Called by pre_process_text_se in file se_procedure.py.
 def get_essay_body(parasenttok,nf,dev):
-    refs_head_index,newtext,responseR = find_refs_heading(parasenttok,nf,dev)
+    refs_head_index,newtext,responseR = find_refs_heading(parasenttok,nf,dev) 
     #responseR = False # xxxx Need to swap this line with above line when printing function names
     if responseR == True:
         last_body_para_index = refs_head_index - 1
@@ -107,6 +121,7 @@ def get_essay_body(parasenttok,nf,dev):
                 print '~~~~~~~~~~~~ESSAY BODY NOT ISOLATED~~~~~~~~'
             return len(parasenttok),parasenttok,0, responseR,False,False
 
+# Called by get_essay_body             
 def find_appendix_head(parasenttok,refs_head_index,nf,dev):       
     p_counter = refs_head_index # Start at the REFS heading and work forwards
     while 1:
@@ -132,6 +147,7 @@ def find_appendix_head(parasenttok,refs_head_index,nf,dev):
             break                
     return [], False # If none of those terms are in text, just return nil and false.
 
+# Called by get_essay_body    
 def find_word_count_index(parasenttok,nf,dev):
     p_counter = len(parasenttok)-1 # Start at the end of the essay and work back
     p = re.compile('word count', re.IGNORECASE)              
@@ -156,46 +172,83 @@ def find_word_count_index(parasenttok,nf,dev):
 
 
 # Function: find_refs_heading(parasenttok,nf,dev)
+# Called by get_essay_body.
 # This looks for a 'references'-type heading, and it finds one,
 # it discards all the text from the refs heading onwards.
-# Called by get_essay_body.
 # Note: I have not used case-insensitive matching, because I don't want to
 # match lower-case instances because of ambiguity of 'reference' and 'references'.
-# I have tried various ways of using a disjunction for this, but have not yet succeeded.
 def find_refs_heading(parasenttok,nf,dev):
     p_counter = len(parasenttok)-1 # Start at the end of the essay and work back
     while 1:
         if p_counter >= 0:
             #print '######################THIS IS parasenttok[p_counter]', parasenttok[p_counter]
-            para = ' '.join(parasenttok[p_counter])
-            if 'Reference' in para and len(parasenttok[p_counter][0]) < 20: # This len condition is for U451953X-H810-10I_01-1-U_utf8.txt which has 'Reference software :dictionary and thesaurus' as a bullet point, and does not have a 'references' heading at all.
+            para = ' '.join(parasenttok[p_counter]) # Get the current paragraph
+            #q = re.compile('references', re.IGNORECASE)
+            firstsent = parasenttok[p_counter][0] # Get the first sentence only of the paragraph. Note it is not word tokenised.
+            if 'References' in firstsent and len(firstsent)<50: # This len condition is for U451953X-H810-10I_01-1-U_utf8.txt which has 'Reference software :dictionary and thesaurus' as a bullet point, and does not have a 'references' heading at all.                                                                            # A len condition should also help to stop references containing the word 'reference' being picked out as the bibliography heading.
                 newtext = parasenttok[:p_counter]
-                #print '~~~~~~~~~~~~~find_refs SUCCEEDS 1~~~~~~~~~~~'
+                print '~~~~~~~~~~~~~find_refs SUCCEEDS 1 with p_counter = ', p_counter, parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with refs heading', parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with length of refs heading = ', len(firstsent)
                 return p_counter, newtext, True                
-            elif 'REFERENCE' in para:
+            elif 'Bibliography' in firstsent and len(firstsent)<50:
                 newtext = parasenttok[:p_counter] 
-                #print '~~~~~~~~~~~~~find_refs SUCCEEDS 2~~~~~~~~~~~'
-                return p_counter, newtext, True                                
-            elif 'Bibliography' in para:
-                newtext = parasenttok[:p_counter] 
-                #print '~~~~~~~~~~~~~find_refs SUCCEEDS 3~~~~~~~~~~~'                
+                print '~~~~~~~~~~~~~find_refs SUCCEEDS 2 with p_counter = ', p_counter, parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with refs heading', parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with length of refs heading = ', len(firstsent)
                 return p_counter, newtext, True                
+            elif 'Reference' in firstsent and len(firstsent)<50: # This len condition is for U451953X-H810-10I_01-1-U_utf8.txt which has 'Reference software :dictionary and thesaurus' as a bullet point, and does not have a 'references' heading at all.                
+                newtext = parasenttok[:p_counter]
+                print '~~~~~~~~~~~~~find_refs SUCCEEDS 3 with p_counter = ', p_counter, parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with refs heading', parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with length of refs heading = ', len(firstsent)
+                return p_counter, newtext, True                
+            elif 'REFERENCES' in firstsent and len(firstsent)<50:
+                newtext = parasenttok[:p_counter] 
+                print '~~~~~~~~~~~~~find_refs SUCCEEDS 4 with p_counter = ', p_counter, parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with refs heading', parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with length of refs heading = ', len(firstsent)
+                return p_counter, newtext, True
+            elif 'REFERENCE' in firstsent and len(firstsent)<50:
+                newtext = parasenttok[:p_counter] 
+                print '~~~~~~~~~~~~~find_refs SUCCEEDS 5 with p_counter = ', p_counter, parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with refs heading', parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with length of refs heading = ', len(firstsent)
+                return p_counter, newtext, True
+            elif (re.search('^[0-9]+',para) # para starts with one or more numbers (For TMA01_H810_V_1.0_T5218396_utf8)
+                  and re.search('REFERENCES',para) # and it contains 'REFERENCES'
+                  and len(parasenttok[p_counter]) < 3): # and the heading has less than three words in it 
+                newtext = parasenttok[:p_counter] 
+                print '~~~~~~~~~~~~~find_refs SUCCEEDS 6 with p_counter = ', p_counter, parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with refs heading', parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with length of refs heading = ', len(firstsent)
+                return p_counter, newtext, True            
+            elif (re.search('^[0-9]+',para) # para starts with one or more numbers (For TMA01_H810_V_1.0_T5218396_utf8)
+                  and re.search('References',para) # and it contains 'REFERENCES'
+                  and len(parasenttok[p_counter]) < 3): # and the heading has less than three words in it 
+                newtext = parasenttok[:p_counter] 
+                print '~~~~~~~~~~~~~find_refs SUCCEEDS 7 with p_counter = ', p_counter, parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with refs heading', parasenttok[p_counter]
+                print '~~~~~~~~~~~~~and with length of refs heading = ', len(firstsent)
+                return p_counter, newtext, True            
+
             else:
                 p_counter -= 1      
         else:
             #print '~~~~~~~~~~~~~find_refs FAILS~~~~~~~~~~~'   
             break                
-    return [], parasenttok, False # If none of those terms are in text, just return text.
+    return [], parasenttok, False # If none of those terms is in text, just return text.
 
-
-    
-# Function: edit_text_detail(text)
+   
+# Function: edit_text(text)
 # Returns updated text.
-# Called by pre_process_text_se in file se_procedure.py.
+# Called by pre_process_text in file se_procedure.py.
 # Includs regexs to replace hyphens with 'hhhhh'. Hyphens are put back in after word tokenisation and punctuation removal.
 #[\|\+\(\{\}\[\]\^\$\\/\-\=%\*@\&\<\>\[\]\{\}~#\^]+
-
-def edit_text_detail(text):
+def edit_text(text):
+    text = re.split(r' ', text) # Split the essay body on whitespace so you can make the following edits.
+    #print 'After re.split:'
+    #print text[:300]
     #print text[-1000:]
     counter = 0
     #print '\n'
@@ -229,19 +282,31 @@ def edit_text_detail(text):
 ##    #text = [re.sub('\\xb9', "", w) for w in text] # footnote marker     
 ##    #text = [re.sub('\\xe9', "e", w) for w in text] # 'e accute' 
 ##    #text = [re.sub('\\xa3', "GBP ", w) for w in text] # British pound sign
-##    #text = [re.sub('\\xa0', " ", w) for w in text] 
-    
+##    #text = [re.sub('\\xa0', " ", w) for w in text]    
+    text = ' '.join(text)     # Following the above tidy-up, un-split the body of the essay ready for sentence splitting.
+    ##sent = [item[0] for item in sent] # Get the words without the POS-tags
+    ##temp = ' '.join(sent) # xxxx these four lines added for testing system with Seale textbook, which returned a lot of 'for example' sentences in its top 25
+    p = re.compile('for example', re.IGNORECASE)
+    q = re.compile('for example,', re.IGNORECASE)
+    temp2 = re.sub(p, " ", text) # Remove all cases of 'for example' from this text
+    text = re.sub(q, " ", temp2) # Remove all cases of 'for example,' from this text
+    ##temp = re.split(r' ', temp)
     return text
 
+# Called by process_sents_b4_struc     
 def reinstate_hyphens1(sent):
-    temp = [re.sub(r'(^[a-zA-Z]+)hhhhh([a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2-\3' , w) for w in sent] # 'facehhhhhtohhhhhface' with 'face-to-face' with 
-    temp = [re.sub(r'(^[a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2' , w) for w in temp] # 'facehhhhhoff' with 'face-off'
+    # If the part after the hyphen starts with 'h', the regex in the next para does not work properly, so deal with those cases first.
+    # xxxx Note that I have only covered lower-case 'h' here and I have not yet covered double-hyphenated forms.
+    temp = [re.sub(r'([a-zA-Z]+)hhhhhh([a-zA-Z]+)', r'\1-h\2' , w) for w in sent] # 'stakehhhhhholder' with 'stake-holder'
+    
+    temp = [re.sub(r'([a-zA-Z]+)hhhhh([a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2-\3' , w) for w in temp] # 'facehhhhhtohhhhhface' with 'face-to-face' with 
+    temp = [re.sub(r'([a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2' , w) for w in temp] # 'facehhhhhoff' with 'face-off'
     return temp
-
+    
+# Called by process_sents_b4_struc
 def reinstate_hyphens2(sent):
     sent = re.split(r' ', sent)
-    temp = [re.sub(r'(^[a-zA-Z]+)hhhhh([a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2-\3' , w) for w in sent] # 'facehhhhhtohhhhhface' with 'face-to-face' with 
-    temp = [re.sub(r'(^[a-zA-Z]+)hhhhh([a-zA-Z]+)', r'\1-\2' , w) for w in temp] # 'facehhhhhoff' with 'face-off'
+    temp = reinstate_hyphens1(sent)
     temp = ' '.join(temp)
     return temp
 
@@ -260,9 +325,8 @@ def reinstate_hyphens2(sent):
 
 
 # Function: process_sents(do_this, text)
+# Called by process_sents_b4_struc and process_sents_after_struc in this file.
 # A basic list processor that works through a para-sent-tok text and calls the function 'do_this' with each sentence.
-# Is called by 'main'.
-# Called by pre_process_text_se and pre_process_struc in file se_procedure.py. 
 def process_sents(do_this, text):
     mylist2 = []
     for para in text:
@@ -274,6 +338,7 @@ def process_sents(do_this, text):
     return mylist2
 
 # Function: word_tokenize(text)
+# Called by process_sents_b4_struc in this file.
 # Word-tokenise a paragraph-sentence-tokenised text.
 # There are different word tokenisers available in NLTK. This one
 # "divides a text into sequences of alphabetic and non-alphabetic characters".
@@ -282,20 +347,20 @@ def process_sents(do_this, text):
 # This tokeniser uses quotation marks as word delimiters.
 # In the output square brackets are now used to delimit paragraphs AND sentences.
 # Returns tokenised text.
-# Called by pre_process_text_se in file se_procedure.py.
 def word_tokenize(text):
     mylist = []
     for para in text:
          temp = [WordPunctTokenizer().tokenize(t) for t in para]
          mylist.append(temp)
     return mylist
+
  
 # Function: remove_punc_fm_sents(sent)
+# Called by process_sents_b4_struc via process_sents, both in this file.
 # Remove from a word-tok sentence all word-tokens that contain
 # punctuation marks or series of punctuation marks. 
 # Also remove fancy non-ASCII chars typically used by MS Word (curly quotes, ellipsis, em dash, en dash, etc.) but leave in the bullet point (u'\u2022') for headings analysis later.
 # Returns updated sentence.
-# Called by pre_process_text_se in file se_procedure.py via process_sents.
 def remove_punc_fm_sents(sent):
     #temp1 = [re.sub('--', "*", w) for w in sent] # Change double hyphens to stars, and then don't delete stars. Used as list markers. Useful for recognising non-headings.            
     #temp = [w for w in sent if not w.startswith(u'({\\')] # xxxx temporary for latex testing
@@ -347,27 +412,18 @@ def remove_punc_fm_sents(sent):
     else:
         result = ['#dummy#'] + temp # Otherwise put a 'dummy' label in as a place-holder for proper labels to be added later.
     return result
-
-# Function: count_words(text)
-# Count the words in a para-sent-word-tok text.
-# Returns number of words. Done after punctuation tokens removed.
-# Called by pre_process_text_se in file se_procedure.py.
-def count_words(text):
-    #print text[:50]
-    mylist = []
-    mylabels = ['#dummy#','#+s:i#','#+s:c#','#+s:s#','#+s:p#']
-    y = 0
-    for para in text:
-        for sent in para:
-            if sent[0] in mylabels: # Only count the words of the true sentences, not headings, not tables, not title
-                x = sum(1 for w in sent[1:]) # Don't count the structure label in the wrd count!
-                mylist.append(x)
-                y = sum(mylist)
-    return y
-
+    
 # Function: find_and_label_numeric_sents
+# Called by process_sents_b4_struc in this file.
 # If this sentence contains only tokens that contain numbers, label it as a numeric sentence: '#-s:n#'
-# Called by pre_process_struc in file se_procedure.py.
+# For each sentence that contains only words which contain
+# numbers, label the sentence as a numeric sentence.
+# Numeric sentences can be module names, entries in tables,
+# list enumerators, etc. Numeric sentences are not returned to
+# the user as key sentences, and are not included in the
+# derivation of the sentence graph and scores.
+# I do not remove them at the beginning, because I do not yet
+# know how interesting/significant numeric sentences are.
 def find_and_label_numeric_sents(sent):
     temp2 = [item for item in sent if not re.search('[0-9]+',item)] # Get every item in the sent that doesn't contain numbers
     #temp2 = [item for item in temp0 if not re.search('[\.\|\*\?\+\(\)\{\}\[\]\^\$\\\'!,;:/-]+', item)] # Get every item in the sent that doesn't contain punc
@@ -379,11 +435,37 @@ def find_and_label_numeric_sents(sent):
     else:
         result = sent               
     return result
-# and len(text[position2]) > 1: 
+# and len(text[position2]) > 1:     
+
+# Function: count_words(text)
+# Count the words in a para-sent-word-tok text.
+# Returns number of words. Done after punctuation tokens removed.
+##def count_words(text):
+##    #print text[:50]
+##    mylist = []
+##    mylabels = ['#dummy#','#+s:i#','#+s:c#','#+s:s#','#+s:p#']
+##    y = 0
+##    for para in text:
+##        for sent in para:
+##            if sent[0] in mylabels: # Only count the words of the true sentences, not headings, not tables, not title
+##                x = sum(1 for w in sent[1:]) # Don't count the structure label in the wrd count!
+##                mylist.append(x)
+##                y = sum(mylist)
+##    return y
+
+# Called by process_sents_after_struc in this file
+def count_words(sent):
+    #print text[:50]
+    mylist = []
+    mylabels = ['#dummy#','#+s:i#','#+s:c#','#+s:s#','#+s:p#']
+    if sent[0] in mylabels: # Only count the words of the true sentences, not headings, not tables, not title
+        x = sum(1 for w in sent[1:]) # Don't count the structure label in the wrd count!
+        mylist.append(x)
+    return mylist
 
 ### Function: lowercase_sents(sent) 
+# Called by process_sents_after_struc
 ### Given a word-tok sentence, put all word tokens into lower case.
-# Called by pre_process_struc in file se_procedure.py.
 def lowercase_sents(sent):
     mylist = []
     for w in sent:
@@ -393,20 +475,20 @@ def lowercase_sents(sent):
     #return [w[0].lower() for w[0] in sent]
 
 # Function: remove_stops_fm_sents(sent)
+# Called by process_sents_after_struc
 # Given a sentence, remove all word tokens that are stopwords (essay_stop_words).
-# Called by pre_process_struc in file se_procedure.py.
 # I _was_ checking that none of the stop words was in the index terms ('textbook_index_terms')
 # but the result was nil, and it was taking a lot of time, so it has gone for now.
-
+#[('#+s:i#', 'NN'), (u'a', 'DT'), (u'man', 'NN'), (u'had', 'VBD'), (u'a', 'DT'), (u'hen', 'VBN'), (u'that', 'IN'), (u'laid', 'JJ'), (u'a', 'DT'), (u'golden', 'JJ'), (u'egg', 'NN'), (u'for', 'IN'), (u'him', 'PRP'), (u'each', 'DT'), (u'and', 'CC'), (u'every', 'DT'), (u'day', 'NN')]
 def remove_stops_fm_sents(sent):
+    #print sent
     return [w for w in sent if w[0] not in essay_stop_words]
-
     # 'o' is missing, because it is used as a bullet point sometimes in Latin9. I take it out later for the key word graph.
     #return [w for w in temp if w[0] not in mylist]
 
 
-
 # Function: get_lemmas(sent)
+# Called by process_sents_after_struc in this file.
 # Puts each word in a tuple with its lemma, word first, then lemma
 # The POS tag disappears.
 # Note that for the lemmatiser to work properly, it needs to know the POS-tag, hence the POS-tagging.
@@ -432,5 +514,131 @@ def get_lemmas(sent):
     mylist.insert(0,sent[0]) # Put the label back at the beginning ofs the sentence
     return mylist
 
+# Called by pre_process_text in file se_procedure.py
+def process_sents_b4_struc(parasenttok):
+
+    #process_sents(print_function_name, parasenttok)  # xxxx only for printing function names. Need to save Python files as .txt and run EssayAnalyser on them.
+    #process_sents(print_unicode_name, parasenttok) # xxx only for printing unicode codes.
+
+    # WORD-TOKENISE THE PARAGRAPH- AND SENTENCE-TOKENISED TEXT           
+    wordtok = word_tokenize(parasenttok)
+    #wordtok_text2 = process_sents(word_tokenize,parasenttok)
+
+    # PUT THE HYPHENS BACK INTO PARASENTTOK TEXT
+    parasenttok = process_sents(reinstate_hyphens2, parasenttok)
+
+    # PUT THE HYPHENS BACK INTO WORDTOK FOR LATER USE FOR N-GRAMS
+    # Put the hyphens back into the text as originally to make an arg 'hyphend_wordtok'
+    # to be used later in the construction of n-grams.
+    hyphend_wordtok = process_sents(reinstate_hyphens1, wordtok)
+
+    # REMOVE PUNCTUATION
+    text = process_sents(remove_punc_fm_sents, wordtok)
+
+    # PUT THE HYPHENS BACK INTO MAIN WORDTOK
+    # Put the hyphens back into the text as originally now that the text is word-tokenised and the punctuation marks have been removed.
+    text = process_sents(reinstate_hyphens1, text)
     
+    # LABEL THE NUMERIC SENTENCES
+    text = process_sents(find_and_label_numeric_sents, text)
+    return text, hyphend_wordtok
+
+# Called by pre_process_text in file se_procedure.py
+def process_sents_after_struc(text77):
+    countslist = process_sents(count_words, text77)
+    mylist = [x for y in countslist for x in y] # unnest
+    mylist = [x for y in mylist for x in y] # unnest again
+    #print mylist
+    number_of_words = sum(mylist)        
+
+    # POS-TAG THE TEXT.
+    # This has to be done for the lemmatiser to be able to work.
+    text77 = process_sents(pos_tag, text77)
+
+    # REMOVE UNWANTED POSs
+    # xxxx Don't delete. This was added specifically to test the
+    # system against Mihalcea's paper example. I was trying to
+    # reproduce her input text, but there weren't enough details in
+    # the paper. It is left in for now, but all it is doing is 
+    # removing cardinal numbers, which needs to be done following
+    # structural analysis.
+    text77 = process_sents(remove_unwanted_pos,text77)
+    
+    # LOWER-CASE THE TEXT
+    # This is done so that the same word token represented in
+    # different cases will be counted as the same word. Note that
+    # this is done after sentence splitting in case capitalisation
+    # of sentence-initial words is used by sentence splitter.
+    text7 = process_sents(lowercase_sents, text77)
+    
+    # REMOVE STOP WORDS
+    text = process_sents(remove_stops_fm_sents, text7)
+
+    # GET THE LEMMA FOR EACH WORD AND PAIR IT WITH ITS SURFACE FORM
+    text = process_sents(get_lemmas, text)
+
+    return text,number_of_words
+
+### Legacy: leave in for now.
+### Function: pre_process_shorttext(shorttxt,dev)
+### Get the lemmas of a short text. Currently called with assignment
+### question and text book index. Also used for abstracts analysis.
+### So the short text can be compared with the essay for overlap.
+### Called by se_main.py.
+##
+##def pre_process_shorttext(shorttxt,dev):
+##    #print time()
+##    shorttxt,a01,a02,a03,a04,a05,a06,a07 = pre_process_text(shorttxt,[],[],[])
+##    # I've moved getting rid of digits up to here, because there are
+##    # hundreds of them in the textbook index, and as POS tagging and
+##    # lemmatising are slow, better to get rid of them as early as
+##    # possible. For full essays, we get rid of digits after structural
+##    # analysis, but struc analysis isn't relevant for these short texts.
+##    # xxxx But getting rid of digits before POS tagging may affect the
+##    # POS tagging results. This needs watching.
+##    shorttxt2 = []
+##    for para in shorttxt:
+##        mylist1 = []
+##        for sent in para:
+##            temp = [item for item in sent if not re.match('^\d+$',item)]
+##            mylist1.append(temp)
+##        shorttxt2.append(mylist1)    
+##    #print '\n\nThis is beginning of shorttext: ', shorttxt2[:30]
+##    #print 'Time before pos tagging: ', time()
+##    # Finish processing of assignment title (without doing all the structural analysis)
+##    temp = process_sents(pos_tag, shorttxt)
+##    #print 'Time after pos tagging: ', time()
+##    #print time()
+##    temp2 = process_sents(lowercase_sents, temp)
+##    #print 'Time after lowercasing: ', time()
+##    temp3 = process_sents(remove_stops_fm_sents, temp2)
+##    #print 'Time after removing stops: ', time()
+##    temp4 = process_sents(remove_unwanted_pos,temp3)
+##    #print 'Time after removing unwanted pos: ', time()
+##    shorttxt_lemmd = process_sents(get_lemmas, temp4) # Get the list of all the lemmas in the assignment question and textbook index.
+##    #print 'Time after lemmatising: ', time()    
+##    shorttxt_short = [[shorttxt_lemmd[0][0]]] # The short version of the assignment question is the first sentence of the long version. But need to preserve sentence,para, and text structure.
+##    #print '\n\n~~~~~~~~~~~THIS IS shorttxt_short in pre_process_shorttext~~~~~~~~~~~~\n', shorttxt_short
+##    shorttxt_words = []
+##    for para in temp4: # Get rid of the pos_tag to make a simpler structure 
+##        mylist1 = []
+##        for sent in para:
+##            temp2 = [i[0] for i in sent]
+##            # Also need to do some further pre-processing included in get_lemmas.            
+##            temp2 = [w for w in temp2 if not re.match(u'\u2022',w[0])] # Gets rid of bullet points.
+##            mylist1.append(temp2)
+##        shorttxt_words.append(mylist1)
+##    shorttxt_lemmd2 = []   # Get the list of unique lemmas in the assignment question.
+##    mylist3 = []
+##    for para in shorttxt_lemmd:
+##        mylist = []
+##        for sent in para:
+##            temp = [w[1] for w in sent[1:] if w[1] not in mylist3]
+##            mylist.append(temp)
+##            mylist3.extend(temp)
+##        shorttxt_lemmd2.append(mylist)
+##    return shorttxt_words, shorttxt_lemmd, shorttxt_lemmd2, shorttxt_short
+
+
+
 # Copyright (c) 2013 Debora Georgia Field <deboraf7@aol.com>

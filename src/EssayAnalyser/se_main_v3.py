@@ -1,19 +1,37 @@
 import os.path # This is for file handling
-import shutil # For file operations
-import codecs # For encoding handling
-import pickle
-import tempfile # For handling OS's temporary files directories
+import pickle # For encoding text files as Python objects
+#import shutil # For file operations
+#import codecs # For encoding handling
+#import tempfile # For handling OS's temporary files directories
+#from time import time # For calculating processing times
 
-#import networkx as nx
-from time import time # For calculating processing times
-
-from EssayAnalyser.se_procedure_v3 import pre_process_shorttext, pre_process_text,\
-	pre_process_struc, process_essay_se
+from EssayAnalyser.se_procedure_v3 import pre_process_text, pre_process_struc, process_essay_se
 #from EssayAnalyser.se_procedure_v3 import pre_process_text, pre_process_struc, process_essay_se    
 from EssayAnalyser.ke_all_v3 import process_essay_ke, get_essay_stats_ke, debora_write_results_ke
-from EssayAnalyser.se_print_v3 import get_essay_stats_se, debora_write_results_se, print_processing_times
+from EssayAnalyser.se_print_v3 import get_essay_stats_se, debora_write_results_se #, print_processing_times
 from EssayAnalyser.ea_results_v3 import make_results_array
 from EssayAnalyser.se_graph_v3 import sample_nodes_for_figure
+
+"""
+This file contains the following functions:
+def getAssignmentData(module,assignment):
+def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment)
+"""
+
+#### xxxx These are dummy assignment question extras for when I don't want to make these comparisons, typically when testing.
+#### Comment these in and also comment out the call of get_assignment_data.
+##ass_q_long_words = [[['#dummy#', u'write', u'report', u'explaining', u'main', u'accessibility', u'challenges', u'disabled', u'learners', u'work', u'support', u'work', u'context']]]
+##
+##ass_q_long_lemmd = [[[('#dummy#', 'NN'), (u'write', u'write'), (u'report', u'report'), (u'explaining', u'explain')]]]
+##
+##ass_q_long_lemmd2 = [[[u'write', u'report', u'explain', u'main', u'accessibility', u'challenge', u'disable']]]
+##
+##ass_q_short_lemmd = [[[('#dummy#', 'NN'), (u'write', u'write'), (u'report', u'report'), (u'explaining', u'explain')]]]
+##
+##tb_index_lemmd = [[[('#dummy#', 'NN'), (u'seale', u'seale'), (u'index', u'index')]]]
+##
+##tb_index_lemmd2 = [[[u'seale', u'index']], [[]], [[u'academic', u'freedom']], [[u'access', u'board', u'u']]]
+
 
 ##############################
 ##############################
@@ -59,14 +77,14 @@ def getAssignmentData(module,assignment):
     tb_index_lemmd = f 
 
     tb_index_le2 = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_tb_index_le2.txt')
-    f = codecs.open(tb_index_le2,'rb') 
+    f = pickle.load(open(tb_index_le2,'rb')) 
     tb_index_lemmd2 = f 
 
     #return ass_q_txt, tb_index_txt
     return ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd,tb_index_lemmd, tb_index_lemmd2
 
 def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
-    startassdatatime = time()
+    #startassdatatime = time()
 
     ##############################
     ##############################
@@ -75,12 +93,13 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     ##############################
 
     #ass_q_txt, tb_index_txt = getAssignmentData(module,assignment)
+    # xxxx the line below needs commenting out if you want to use small dummy data for the assignment question extras comparisons to speed up testing.
     ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd,tb_index_lemmd, tb_index_lemmd2 = \
                       getAssignmentData(module,assignment)
 
-    getassdatatime = time()
-    processasstexttime = time() # This is obselete now, because processing has been done beforehand
-    processtbindextime = time() # This is obselete now, because processing has been done beforehand
+    #getassdatatime = time()
+    #processasstexttime = time() # This is obselete now, because processing has been done beforehand
+    #processtbindextime = time() # This is obselete now, because processing has been done beforehand
 
     ##############################
     ##############################
@@ -89,12 +108,12 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     ##############################
 
 
-    startfiletime = time() # Set current time to a variable for later calculations   
+    #startfiletime = time() # Set current time to a variable for later calculations   
     text,parasenttok,wordtok_text,b_last,len_refs,refsheaded,late_wc,appendixheaded = pre_process_text(essay_txt,nf,nf2,dev)
     # Next line is needed instead of above line if we are using sbd sentence splitter. xxxx now needs updating
     #text,parasenttok,wordtok_text,number_of_words,struc_feedback = pre_process_text_se(essay_txt,nf,nf2,model,dev)
 
-    texttime = time() # Set current time to a variable for later calculations
+    #texttime = time() # Set current time to a variable for later calculations
    
     ##############################
     ##############################
@@ -105,18 +124,19 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     text_se,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,number_of_words = \
     pre_process_struc(text,ass_q_long_words,nf,nf2,dev)
 
-    structime = time() # Set current time to a variable for later calculations
+    #structime = time() # Set current time to a variable for later calculations
 
     ##############################
     ##############################
     ## 3. Construct the key sentence graph and do the graph analyses
     ##############################
     ##############################      
-    
-    gr_se,ranked_global_weights,reorganised_array,graphtime = \
-    process_essay_se(text_se,parasenttok,nf,nf2,dev)
 
-    se_scorestime = time() # Set current time to a variable for later calculations
+    #gr_se,ranked_global_weights,reorganised_array,graphtime = \
+    gr_se,ranked_global_weights,reorganised_array= \
+    process_essay_se(text_se,parasenttok,section_labels,nf,nf2,dev)
+
+    #se_scorestime = time() # Set current time to a variable for later calculations
 
 
     ##############################
@@ -128,7 +148,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     text_ke,gr_ke,di,myarray_ke,keylemmas,keywords,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,threshold_ke = \
     process_essay_ke(text_se,wordtok_text,nf,nf2,dev)
 
-    ke_scorestime = time() # Set current time to a variable for later calculations
+    #ke_scorestime = time() # Set current time to a variable for later calculations
 
     ##############################
     ##############################
@@ -205,9 +225,9 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
 			     	 #ass_q_long,ass_q_short,\
                      #tb_index_lemmd, tb_index_lemmd2,\
 
-        print_processing_times(getassdatatime,processasstexttime,processtbindextime,\
-                               startassdatatime,startfiletime, texttime, structime, \
-                               se_scorestime, ke_scorestime, nf2)
+##        print_processing_times(getassdatatime,processasstexttime,processtbindextime,\
+##                               startassdatatime,startfiletime, texttime, structime, \
+##                               se_scorestime, ke_scorestime, nf2)
 
 
 

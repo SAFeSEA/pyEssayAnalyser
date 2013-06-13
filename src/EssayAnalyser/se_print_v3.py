@@ -1,7 +1,7 @@
 import re # For regular expressions
 #import sys
-from time import time # For calculating processing times
-from decimal import getcontext, Decimal
+#from time import time # For calculating processing times
+#from decimal import getcontext, Decimal
 
 
 
@@ -16,7 +16,7 @@ def write_to_summary_file(essay_fname,paras,number_of_words,\
 def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_array):
 def print_processing_times(getassdatatime,processasstexttime,processtbindextime,startassdatatime,startfiletime, texttime, structime, se_scorestime, ke_scorestime, nf2):
 def cf_keysents_sections(sorted_list):
-def debora_write_results_se(essay_fname,paras,rankorder,number_of_words,\
+def debora_write_results_se(essay_fname,\
 """
 
 # Function: write_to_details_file(essay_fname,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr_se,ranked_global_weights,reorganised_array,i_toprank,c_toprank,nf,nf2):
@@ -35,14 +35,22 @@ def write_to_details_file(essay_fname,paras,rankorder,number_of_words,\
     nf.write(str(essay_fname)) # Write the new file name to the essay results file
     nf.write('\n') # Add blank lines to the essay results file
 
-    #nf.write('\nKey sentences in descending rank order: \n')
-    nf.write('\nSentences ranked in key-ness order (descending): \n')
-    # xxxx Do you want all the sentences or do you want the top N?
-    s = str(rankorder) # ...and write them to the results file so you can see the order at a glance.
-    #s = str(rankorder[:25]) # ...and write them to the results file so you can see the order at a glance.
-    w = re.sub('u\'', 'u\'\n\n', s) # Add a new line at the end of every result so that each result is written to a separate line
-
-    c = w.decode('unicode-escape')
+##    # xxxx do not delete. Do you want all the sentences or do you want the top N?
+##    nf.write('\nSentences ranked in key-ness order (descending): \n')
+##    s = str(rankorder) # ...and write them to the results file so you can see the order at a glance.
+##    c = s.decode('unicode-escape')
+##    nf.write(c)
+##    nf.write('\n')    
+    
+    # xxxx Do you want all the sentences or do you want the top N ('threshold')?
+    nf.write('\nTop ')
+    threshold = 25
+    nf.write(str(threshold))
+    nf.write(' sentences ranked in key-ness order (descending): \n')    
+    s = str(rankorder[:threshold]) # ...and write them to the results file so you can see the order at a glance.
+    #w = re.sub('u\'', 'u\'\n\n', s) # Add a new line at the end of every result so that each result is written to a separate line
+    #w = re.sub('u\'', 'u\'\n\n', s) # Add a new line at the end of every result so that each result is written to a separate line
+    c = s.decode('unicode-escape')
     nf.write(c)
     nf.write('\n')    
 
@@ -92,11 +100,111 @@ def write_to_summary_file(essay_fname,paras,number_of_words,\
                           introheaded,i_first,i_last,i_toprank,countIntroSent,percent_body_i,\
                           conclheaded,c_first,c_last,c_toprank,countConclSent,percent_body_c,\
                           nf,nf2):
-
+    #nf2.write('\n')
     
     #nf2.write(str(essay_fname)) # Write current essay file name to the summary results file
     #nf2.write('; ') # Add a blank line to the summary results file
 
+
+##    #####################
+##    #####################
+##    ## FULL SET
+##    #####################
+##    #####################
+##    nf2.write('all words; ') 
+##    nf2.write(str(number_of_words))
+##    nf2.write('; ')
+##    nf2.write('tidy words; ') 
+##    nf2.write(str(countSentLen))
+##    nf2.write('; ')
+##    nf2.write('true sents; ')         
+##    nf2.write(str(countTrueSent))
+##    nf2.write('; ')
+##    nf2.write('avlen tidysent; ')
+##    nf2.write(str(countAvSentLen))
+##    nf2.write('; ')
+##    nf2.write('paras; ') # Total number of paragraphs
+##    nf2.write(str(paras))
+##    nf2.write('; ')
+##    ################# begin new
+##    nf2.write('body last #; ')
+##    nf2.write(str(b_last))
+##    nf2.write('; ')
+##    nf2.write('refs head; ')
+##    nf2.write(str(refsheaded))
+##    nf2.write('; ')
+##    nf2.write('len refs; ')
+##    nf2.write(str(len_refs))
+##    nf2.write('; ')
+##    nf2.write('appndx head; ')
+##    nf2.write(str(appendixheaded))
+##    nf2.write('; ')
+##    nf2.write('late_wc; ')
+##    nf2.write(str(late_wc))
+##    nf2.write('; ')
+##    ######################## end new    
+##    nf2.write('heads; ')  # Total number of headings
+##    nf2.write(str(len_headings))
+##    nf2.write('; ')
+##    nf2.write('non-heading paras; ')
+##    nf2.write(str(len_body))
+##    nf2.write('; ')
+##    nf2.write('intro head; ')
+##    nf2.write(str(introheaded))
+##    nf2.write('; ')
+##    nf2.write('% body == i; ')
+##    nf2.write(str(percent_body_i))
+##    nf2.write('; ') 
+##    nf2.write('i sents; ')
+##    nf2.write(str(countIntroSent))
+##    nf2.write('; ')
+##    nf2.write('concl head; ')
+##    nf2.write(str(conclheaded))
+##    nf2.write('; ')
+##    nf2.write('% body == c; ')
+##    nf2.write(str(percent_body_c))
+##    nf2.write('; ')    
+##    nf2.write('c sents; ')
+##    nf2.write(str(countConclSent))
+##    nf2.write('; ')    
+##    ################### begin new
+##    nf2.write('t sents; ')         # How many sentences are labelled 'title'
+##    nf2.write(str(countTitleSent))
+##    nf2.write('; ')
+##    nf2.write('q sents; ')         # How many sentences are labelled 'assignment question'
+##    nf2.write(str(countAssQSent))
+##    nf2.write('; ')
+##    #################### end new
+##    nf2.write('nodes; ')         
+##    nf2.write(str(nodes))
+##    nf2.write('; ')
+##    nf2.write('edges; ')                       
+##    nf2.write(str(edges))
+##    nf2.write('; ')
+##    nf2.write('edges/sents; ')
+##    nf2.write(str(edges_over_sents))
+##    nf2.write('; ') 
+##    nf2.write('i & toprank; ') 
+##    nf2.write(str(i_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
+##    nf2.write('; ') 
+##    nf2.write('c & toprank; ') 
+##    nf2.write(str(c_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
+##    nf2.write('; ')
+##    if len(ranked_global_weights)>0: # edge case condition
+##        r = ranked_global_weights[0][0]
+##    else:
+##        r = 'nil'
+##    nf2.write('se top centr score; ')
+##    #s = round(r,5)
+##    nf2.write(str(r))
+##    nf2.write('; ')
+
+
+    ###################
+    ###################
+    ## PARTIAL SET
+    ###################
+    ###################
     nf2.write('all words; ') 
     nf2.write(str(number_of_words))
     nf2.write('; ')
@@ -113,57 +221,57 @@ def write_to_summary_file(essay_fname,paras,number_of_words,\
     nf2.write(str(paras))
     nf2.write('; ')
     ################# begin new
-    nf2.write('body last #; ')
-    nf2.write(str(b_last))
-    nf2.write('; ')
-    nf2.write('refs head; ')
-    nf2.write(str(refsheaded))
-    nf2.write('; ')
+##    nf2.write('body last #; ')
+##    nf2.write(str(b_last))
+##    nf2.write('; ')
+##    nf2.write('refs head; ')
+##    nf2.write(str(refsheaded))
+##    nf2.write('; ')
     nf2.write('len refs; ')
     nf2.write(str(len_refs))
     nf2.write('; ')
-    nf2.write('appndx head; ')
-    nf2.write(str(appendixheaded))
-    nf2.write('; ')
-    nf2.write('late_wc; ')
-    nf2.write(str(late_wc))
-    nf2.write('; ')
+##    nf2.write('appndx head; ')
+##    nf2.write(str(appendixheaded))
+##    nf2.write('; ')
+##    nf2.write('late_wc; ')
+##    nf2.write(str(late_wc))
+##    nf2.write('; ')
     ######################## end new    
     nf2.write('heads; ')  # Total number of headings
     nf2.write(str(len_headings))
     nf2.write('; ')
-    nf2.write('non-heading paras; ')
-    nf2.write(str(len_body))
-    nf2.write('; ')
-    nf2.write('intro head; ')
-    nf2.write(str(introheaded))
-    nf2.write('; ')
+##    nf2.write('non-heading paras; ')
+##    nf2.write(str(len_body))
+##    nf2.write('; ')
+##    nf2.write('intro head; ')
+##    nf2.write(str(introheaded))
+##    nf2.write('; ')
     nf2.write('% body == i; ')
     nf2.write(str(percent_body_i))
     nf2.write('; ') 
-    nf2.write('i sents; ')
-    nf2.write(str(countIntroSent))
-    nf2.write('; ')
-    nf2.write('concl head; ')
-    nf2.write(str(conclheaded))
-    nf2.write('; ')
+##    nf2.write('i sents; ')
+##    nf2.write(str(countIntroSent))
+##    nf2.write('; ')
+##    nf2.write('concl head; ')
+##    nf2.write(str(conclheaded))
+##    nf2.write('; ')
     nf2.write('% body == c; ')
     nf2.write(str(percent_body_c))
     nf2.write('; ')    
-    nf2.write('c sents; ')
-    nf2.write(str(countConclSent))
-    nf2.write('; ')    
+##    nf2.write('c sents; ')
+##    nf2.write(str(countConclSent))
+##    nf2.write('; ')    
     ################### begin new
-    nf2.write('t sents; ')         # How many sentences are labelled 'title'
-    nf2.write(str(countTitleSent))
-    nf2.write('; ')
-    nf2.write('q sents; ')         # How many sentences are labelled 'assignment question'
-    nf2.write(str(countAssQSent))
-    nf2.write('; ')
+##    nf2.write('t sents; ')         # How many sentences are labelled 'title'
+##    nf2.write(str(countTitleSent))
+##    nf2.write('; ')
+##    nf2.write('q sents; ')         # How many sentences are labelled 'assignment question'
+##    nf2.write(str(countAssQSent))
+##    nf2.write('; ')
     #################### end new
-    nf2.write('nodes; ')         
-    nf2.write(str(nodes))
-    nf2.write('; ')
+##    nf2.write('nodes; ')         
+##    nf2.write(str(nodes))
+##    nf2.write('; ')
     nf2.write('edges; ')                       
     nf2.write(str(edges))
     nf2.write('; ')
@@ -176,18 +284,21 @@ def write_to_summary_file(essay_fname,paras,number_of_words,\
     nf2.write('c & toprank; ') 
     nf2.write(str(c_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
     nf2.write('; ')
-    r = ranked_global_weights[0][0]
-    nf2.write('se top centr score; ')
-    s = round(r,5)
-    nf2.write(str(s))
-    nf2.write('; ')
+    if len(ranked_global_weights)>0: # edge case condition
+        r = ranked_global_weights[0][0]
+    else:
+        r = 'nil'
+##    nf2.write('se top centr score; ')
+##    #s = round(r,5)
+##    nf2.write(str(r))
+##    nf2.write('; ')    
     
 
 def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_array):
     rankorder = []
     for item in ranked_global_weights: # Get only the sentence key numbers from the sorted scores list...
         key = item[1] # xxxx this line if you want a list of integers (ranked sentence numbers) with no other info
-        #key = item[3] # xxxx this line is you want a list of sentences only (for producing clean results for testing purposes)
+        #key = item[3] # xxxx this line if you want a list of sentences only (for producing clean results for testing purposes)
         rankorder.append(key)
         
     paras = len(text)   
@@ -228,20 +339,34 @@ def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_arr
     len_headings = len(headings)
     len_body = len(text) - len(headings)  
 
-    getcontext().prec = 3
+    #getcontext().prec = 3
     if countIntroSent > 0: 
         ## @todo: added str() to ensure backward compatibility with Python 2.6
-        percent_body_i = 100 * Decimal(str(1.0/(countTrueSent / countIntroSent))) # y is the percentage of the essay body taken up by the introduction
+        #print countTrueSent
+        #print countIntroSent
+        x = 1.0/(float(countTrueSent)/float(countIntroSent))
+        #print x
+        #percent_body_i = 100 * Decimal(str(1.0/(countTrueSent / countIntroSent))) # y is the percentage of the essay body taken up by the introduction
+        percent_body_i = 100 * x
+        #print percent_body_i
     else: # xxxx This condition should not succeed for any essay, but some test files don't return a result for intro section, in which case countIntroSent == 0, which returns an error on the previous line. Needs a better fix. 
         percent_body_i = 0
-    percent_body_i = float(percent_body_i)
+    #percent_body_i = float(percent_body_i)
+    percent_body_i = round(percent_body_i,2)
+    print percent_body_i
+    
 
     if countConclSent > 0:
         ## @todo: added str() to ensure backward compatibility with Python 2.6
-        percent_body_c = 100 * Decimal(str(1.0/(countTrueSent / countConclSent))) # y is the percentage of the essay body taken up by the introduction
+        x = 1.0/(float(countTrueSent)/float(countConclSent))
+        #percent_body_c = 100 * Decimal(str(1.0/(countTrueSent / countConclSent))) # y is the percentage of the essay body taken up by the introduction
+        percent_body_c = 100 * x
     else:
         percent_body_c = 0
-    percent_body_c = float(percent_body_c)
+    #percent_body_c = float(percent_body_c)
+    percent_body_c = round(percent_body_c,2)
+    print percent_body_c
+    
 
     edges = len(gr_se.edges())   
     nodes = len(gr_se.nodes())
@@ -277,25 +402,25 @@ def print_processing_times(getassdatatime,processasstexttime,processtbindextime,
 ##    scoresproctime = scorestime - graphtime
 ##    totalproctime = scorestime - startfiletime
 ##    importproctime = endimporttime - startprogtime # Get some more processing timings   
-    nf2.write('\ngetassdata processing time: ')
-    nf2.write(str(getassdataproctime))
-    nf2.write('\nprocessasstext processing time: ')
-    nf2.write(str(processasstextproctime))
-    nf2.write('\nprocesstbindex processing time: ')
-    nf2.write(str(processtbindexproctime))
-    nf2.write('\nTOTAL ASS DATA PROC TIME: ')
-    nf2.write(str(totalassdataproctime))
-    nf2.write('\nEssay pre-processing time: ')
-    nf2.write(str(textproctime))
-    nf2.write('\nStruc processing time: ')
-    nf2.write(str(strucproctime))
-    nf2.write('\nSE scores processing time: ')
-    nf2.write(str(se_scoresproctime))
-    nf2.write('\nKE scores processing time: ')
-    nf2.write(str(ke_scoresproctime))
-    nf2.write('\nTotal processing time: ')
-    nf2.write(str(totalproctime))
-    nf2.write('\n\n*********************************************************\n\n')
+##    nf2.write('\ngetassdata processing time: ')
+##    nf2.write(str(getassdataproctime))
+##    nf2.write('\nprocessasstext processing time: ')
+##    nf2.write(str(processasstextproctime))
+##    nf2.write('\nprocesstbindex processing time: ')
+##    nf2.write(str(processtbindexproctime))
+##    nf2.write('\nTOTAL ASS DATA PROC TIME: ')
+##    nf2.write(str(totalassdataproctime))
+##    nf2.write('\nEssay pre-processing time: ')
+##    nf2.write(str(textproctime))
+##    nf2.write('\nStruc processing time: ')
+##    nf2.write(str(strucproctime))
+##    nf2.write('\nSE scores processing time: ')
+##    nf2.write(str(se_scoresproctime))
+##    nf2.write('\nKE scores processing time: ')
+##    nf2.write(str(ke_scoresproctime))
+##    nf2.write('\nTotal processing time: ')
+##    nf2.write(str(totalproctime))
+##    nf2.write('\n\n*********************************************************\n\n')
     #nf2.write('\n\n')
 
 

@@ -1,9 +1,9 @@
 import re
 import itertools
 import networkx as nx
-import codecs
+#import codecs
 from operator import itemgetter
-from pygraph.algorithms.pagerank import pagerank
+#from pygraph.algorithms.pagerank import pagerank
 
 
 #from decimal import getcontext, Decimal
@@ -36,8 +36,8 @@ def sort_betweenness_scores(betweenness_scores, nf):
 def cf_ass_q_keylemmas(ass_q,keylemmas,scoresNfreqs):
 def cf_ngrams_section(keywords,ngrams,text_se,label):
 def process_essay_ke(text,wordtok_text,nf,nf2,dev):
-def debora_write_results_ke(text_ke,text_se,gr_ke,di,myarray_ke,threshold_ke,...)
-def get_essay_stats_ke(text_se,gr_ke,di,myarray_ke,keylemmas,keywords,...)
+def debora_write_results_ke(text_ke,text_se,gr_ke,di,myarray_ke,threshold_ke,\
+def get_essay_stats_ke(text_se,gr_ke,di,myarray_ke,keylemmas,keywords,\
 """
 
 # Function: flatten(nested_list)
@@ -360,7 +360,7 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     a = len(di)
     y = 0.20 # y is going to be the percentage threshold. .03 will get us the top 3 per cent.
     x = 0.03 # x is going to be the score threshold. 0.1 will get us every word that scores more than 0.1.
-    #x = 0.0001 # xxxx temporarily very low for testing purposes: pagerank
+    #x = 0.01 # xxxx for Seale text book. For larger texts you need a lower threshold otherwise not many key words.
     #print a, y, x
     threshold_ke = (y,x)
     b = int(a * y)
@@ -538,19 +538,90 @@ def debora_write_results_ke(text_ke,text_se,gr_ke,di,myarray_ke,threshold_ke,\
 
 
     ###########WRITE TO SUMMARY FILE###################
+    ###################
+    ###################
+    ## FULL SET
+    ###################
+    ###################
+##    nf2.write('key lemmas; ') 
+##    nf2.write(str(len(keylemmas)))
+##    nf2.write('; ')   
+##    nf2.write('ke centr thrshld; ') #(20,.03) # Centrality score threshold_ke expressed as '(percentage_of_true_sents, centrality_score)' tuple defining what qualifies as a key lemma
+##    nf2.write(str(threshold_ke))
+##    nf2.write('; ')
+##    nf2.write('all lemmas; ')
+##    nf2.write(str(len(di)))
+##    nf2.write('; ')          
+##    nf2.write('key words; ') #(20 & >= .03%)
+##    nf2.write(str(len(keywords)))
+##    nf2.write('; ')
+##    nf2.write('avfreq top5freq; ') # Average frequency of the top five most frequent lemmas
+##    nf2.write(str(avfreqsum))
+##    nf2.write('; ')    
+##    nf2.write('distinct bigrams; ') # the number of different bigrams made up from key words
+##    nf2.write(str(len(bigram_keyphrases)))
+##    nf2.write('; ')
+##    x = sum(item[1] for item in bigram_keyphrases) # the total number of bigrams made up from key words including repetitions of bigrams.
+##    nf2.write('sum freq bigrams; ')
+##    nf2.write(str(x))
+##    nf2.write('; ')
+##    nf2.write('bigrams in intro; ')
+##    nf2.write(str(bigrams_in_intro1))
+##    nf2.write('; ')
+##    nf2.write('bigrams in concl; ')
+##    nf2.write(str(bigrams_in_concl1))
+##    nf2.write('; ')
+##    #nf2.write('ul in ass_q_long; ') # Number of unique lemmas appearing in ass_q_long # Added for abstract analyses
+##    #nf2.write(str(uls_in_ass_q_long))
+##    #nf2.write('; ')
+##    nf2.write('kls in ass_q_long; ') # Number of key lemmas also appearing in the ass_q_long
+##    nf2.write(str(len(kls_in_ass_q_long)))
+##    nf2.write('; ')
+##    nf2.write('sum freq kls_in_ass_q_long; ') # Sum of frequencies of key lemmas that appear in the ass_q_long
+##    nf2.write(str(sum_freq_kls_in_ass_q_long))
+##    nf2.write('; ')
+##    nf2.write('bigrams in ass_q; ') # 'Total number of key bigrams in the essay that also occur in the assignment question
+##    nf2.write(str(bigrams_in_assq2))
+##    nf2.write('; ')
+##    nf2.write('kls in ass_q_short; ') # Number of key lemmas also appearing in the ass_q_short
+##    nf2.write(str(len(kls_in_ass_q_short)))
+##    nf2.write('; ')
+##    nf2.write('sum freq kls_in_ass_q_short; ') # Sum of frequencies of key lemmas that appear in the ass_q_short
+##    nf2.write(str(sum_freq_kls_in_ass_q_short))
+##    nf2.write('; ')
+##    nf2.write("kls_in_tb_index; ") # Number of the essay's key lemmas occurring in the text book index
+##    nf2.write(str(len(kls_in_tb_index)))
+##    nf2.write('; ')
+##    nf2.write('sum_freq_kls_in_tb_index; ') # Sum of frequencies of the essay's key lemmas that occur in the text book index
+##    nf2.write(str(sum_freq_kls_in_tb_index)) 
+##    nf2.write('; ')
+##    nf2.write('ke top centr score; ')
+##    if len(scoresNfreqs)>0: # edge case condition
+##        x = scoresNfreqs[0][1]
+##        topbetscore = round(x,3)
+##    else:
+##        topbetscore = 'nil'
+##    nf2.write(str(topbetscore))
+##    nf2.write('\n') 
 
+
+    ###################
+    ###################
+    ## PARTIAL SET
+    ###################
+    ###################
     nf2.write('key lemmas; ') 
     nf2.write(str(len(keylemmas)))
     nf2.write('; ')   
-    nf2.write('ke centr thrshld; ') #(20,.03) # Centrality score threshold_ke expressed as '(percentage_of_true_sents, centrality_score)' tuple defining what qualifies as a key lemma
-    nf2.write(str(threshold_ke))
-    nf2.write('; ')
+##    nf2.write('ke centr thrshld; ') #(20,.03) # Centrality score threshold_ke expressed as '(percentage_of_true_sents, centrality_score)' tuple defining what qualifies as a key lemma
+##    nf2.write(str(threshold_ke))
+##    nf2.write('; ')
     nf2.write('all lemmas; ')
     nf2.write(str(len(di)))
     nf2.write('; ')          
-    nf2.write('key words; ') #(20 & >= .03%)
-    nf2.write(str(len(keywords)))
-    nf2.write('; ')
+##    nf2.write('key words; ') #(20 & >= .03%)
+##    nf2.write(str(len(keywords)))
+##    nf2.write('; ')
     nf2.write('avfreq top5freq; ') # Average frequency of the top five most frequent lemmas
     nf2.write(str(avfreqsum))
     nf2.write('; ')    
@@ -561,12 +632,12 @@ def debora_write_results_ke(text_ke,text_se,gr_ke,di,myarray_ke,threshold_ke,\
     nf2.write('sum freq bigrams; ')
     nf2.write(str(x))
     nf2.write('; ')
-    nf2.write('bigrams in intro; ')
-    nf2.write(str(bigrams_in_intro1))
-    nf2.write('; ')
-    nf2.write('bigrams in concl; ')
-    nf2.write(str(bigrams_in_concl1))
-    nf2.write('; ')
+##    nf2.write('bigrams in intro; ')
+##    nf2.write(str(bigrams_in_intro1))
+##    nf2.write('; ')
+##    nf2.write('bigrams in concl; ')
+##    nf2.write(str(bigrams_in_concl1))
+##    nf2.write('; ')
     #nf2.write('ul in ass_q_long; ') # Number of unique lemmas appearing in ass_q_long # Added for abstract analyses
     #nf2.write(str(uls_in_ass_q_long))
     #nf2.write('; ')
@@ -579,22 +650,25 @@ def debora_write_results_ke(text_ke,text_se,gr_ke,di,myarray_ke,threshold_ke,\
     nf2.write('bigrams in ass_q; ') # 'Total number of key bigrams in the essay that also occur in the assignment question
     nf2.write(str(bigrams_in_assq2))
     nf2.write('; ')
-    nf2.write('kls in ass_q_short; ') # Number of key lemmas also appearing in the ass_q_short
-    nf2.write(str(len(kls_in_ass_q_short)))
-    nf2.write('; ')
-    nf2.write('sum freq kls_in_ass_q_short; ') # Sum of frequencies of key lemmas that appear in the ass_q_short
-    nf2.write(str(sum_freq_kls_in_ass_q_short))
-    nf2.write('; ')
+##    nf2.write('kls in ass_q_short; ') # Number of key lemmas also appearing in the ass_q_short
+##    nf2.write(str(len(kls_in_ass_q_short)))
+##    nf2.write('; ')
+##    nf2.write('sum freq kls_in_ass_q_short; ') # Sum of frequencies of key lemmas that appear in the ass_q_short
+##    nf2.write(str(sum_freq_kls_in_ass_q_short))
+##    nf2.write('; ')
     nf2.write("kls_in_tb_index; ") # Number of the essay's key lemmas occurring in the text book index
     nf2.write(str(len(kls_in_tb_index)))
     nf2.write('; ')
     nf2.write('sum_freq_kls_in_tb_index; ') # Sum of frequencies of the essay's key lemmas that occur in the text book index
     nf2.write(str(sum_freq_kls_in_tb_index)) 
     nf2.write('; ')
-    nf2.write('ke top centr score; ')
-    x = scoresNfreqs[0][1]
-    topbetscore = round(x,3)
-    nf2.write(str(topbetscore))
+##    nf2.write('ke top centr score; ')
+##    if len(scoresNfreqs)>0: # edge case condition
+##        x = scoresNfreqs[0][1]
+##        topbetscore = round(x,3)
+##    else:
+##        topbetscore = 'nil'
+##    nf2.write(str(topbetscore))
     nf2.write('\n') 
 
     # nf2.write('\n__________________________________________________\n')
@@ -667,9 +741,11 @@ def get_essay_stats_ke(text_se,gr_ke,di,myarray_ke,keylemmas,keywords,\
     
     #print 'This is bigram_keyphrases:\n', bigram_keyphrases
     all_bigrams = sum(item[1] for item in bigram_keyphrases) # the total number of bigrams made up from key words including repetitions of bigrams.
-    x = scoresNfreqs[0][1]
-    topbetscore = round(x,3)
-
+    if len(scoresNfreqs)>0: # edge case condition
+        x = scoresNfreqs[0][1]
+        topbetscore = round(x,3)
+    else:
+        topbetscore = 'nil'
     return scoresNfreqs,fivemostfreq,avfreqsum,\
            uls_in_ass_q_long,kls_in_ass_q_long,sum_freq_kls_in_ass_q_long,\
            kls_in_ass_q_short,sum_freq_kls_in_ass_q_short,\

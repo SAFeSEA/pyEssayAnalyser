@@ -1,6 +1,6 @@
-import networkx as nx # This is for implementing networks/graphs
-import itertools
-import re
+#import networkx as nx # This is for implementing networks/graphs
+#import itertools
+#import re
 from operator import itemgetter
 
 """
@@ -9,7 +9,7 @@ Functions names:
 def add_item_to_array(myarray, num, item):
 def add_to_sentence_array(myarray, text):
 def fill_sentence_array(myarray, text, struc_labels):
-def make_graph_building_arrays(myarray, myWarray, myCarray):
+def make_edge_weights_arrays(myarray, myWarray, myCarray):
 def find_cosine_similarity(counter1,counter0,myWarray,myCarray,dev):
 def add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray,dev):
 def add_all_node_edges(gr,myWarray,myCarray,nf2,dev):    
@@ -17,13 +17,16 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
 def find_all_gw_scores(gr, scores_array, nf2, dev, d = .85, max_iterations = 100, min_delta = 0.0000000001):
 def update_array(myarray,scores_array):
 def reorganise_array(myarray):
-def sort_ranked_sentences(ranked_sents):
+def sort_ranked_sentences(mylist):
+def make_sentence_graph_nodes(myarray,text,section_labels,parasenttok):
+def add_sentence_graph_edges(gr_se,myarray,myWarray,myCarray,nf2,dev):
+def find_sentence_graph_scores(gr_se,myarray,scores_array,nf2,dev):
 def sample_nodes_for_figure(graph,nodes,cat):
 """
 # Function: add_item_to_array(myarray, num, item)
 # Add single item 'item' as a new item in 'myarray',
 # or as a detail of an existing item. 
-# Called by 'fill_sentence_array' and 'make_graph_building_arrays' and 'update_array'.
+# Called by 'fill_sentence_array' and 'make_edge_weights_arrays' and 'update_array'.
 def add_item_to_array(myarray, num, item):
     if myarray.has_key(num): # If num is one of the keys already in the array...
         myarray[num].append(item) # append 'item' (add 'item' as a detail to an already existing entry).
@@ -34,7 +37,7 @@ def add_item_to_array(myarray, num, item):
 # Add each original sentence as a detail to an entry in the 'myarray'
 # initialised and filled earlier. This is done so that we can return the original
 # sentence to the user in the results.
-# Called by process_essay_se in se_procedure.py
+# Called by make_sentence_graph_nodes in this file.
 def add_to_sentence_array(myarray, text):
     counter = 0 # Sentence counter to add as key in array
     for para in text:
@@ -49,7 +52,7 @@ def add_to_sentence_array(myarray, text):
 # pointing to it, so that we can build a graph using numbers as nodes instead of
 # actual sentences as nodes. The structure label of each sentence is also added
 # to the array entry of that sentence.
-# Called by process_essay_se in se_procedure.py
+# Called by make_sentence_graph_nodes in this file.
 def fill_sentence_array(myarray, text, struc_labels):
     counter = 0 # Sentence counter to add as key in array
     for para in text:
@@ -68,15 +71,15 @@ def fill_sentence_array(myarray, text, struc_labels):
                 add_item_to_array(myarray, counter, '#+s#')                  
             counter += 1
     #print myarray
-# Function:  make_graph_building_arrays(myarray, myWarray, myCarray)
+# Function:  make_edge_weights_arrays(myarray, myWarray, myCarray)
 # Fill the empty array 'myWarray' with the unique lemmas for each sentence
 # and fill the other empty array 'myCarray' with their numbers of occurrences.
 # There is one entry in 'myWarray' for each sentence. Each entry contains every
 # unique lemma in that sentence. Similarly there is one entry in 'myCarray' for
 # each sentence. Each entry is the number of occurrences of the lemma that occurs
 # in that same position in 'myWarray'.
-# Called by process_essay_se in se_procedure.py.
-def make_graph_building_arrays(myarray, myWarray, myCarray):
+# Called by add_sentence_graph_edges in this file.
+def make_edge_weights_arrays(myarray, myWarray, myCarray):
     sentencecounter = 0
     while 1:
         #if sentencecounter == 246:    
@@ -200,7 +203,7 @@ def add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray,dev):
         if counter1 <= (len(myWarray) - 1) and counter1 != counter0: # Stop looping when counter1 (instantiated earlier) reaches the total number of sentences and make sure 'from' and 'to' nodes are not the same node.
             weight = float(find_cosine_similarity(counter1,counter0,myWarray,myCarray,dev))
             if weight > 0:
-                gr.add_weighted_edges_from([(counter1,counter0,weight)]) # Add the current edge with the weight you have calculated. This line adds the backwards-directed edges for the current node (counter0).
+                gr.add_weighted_edges_from([(counter1,counter0,weight)]) # xxxx @directedness - both 'directed backards' and 'undirected'. Add the current edge with the weight you have calculated. This line adds the backwards-directed edges for the current node (counter0).
                 #gr.add_weighted_edges_from([(counter0,counter1,weight)]) # xxxx Do not delete. This line adds forwards-directed edges in a directed graph. The above line adds backwards edges.  Directed graph version.
             elif weight == 0: # Count the number of zero-weight edges you are making (for monitoring)
                 counterA += 1
@@ -216,11 +219,12 @@ def add_one_nodes_edges(gr, counter1, counter0,myWarray,myCarray,dev):
 # Note that this involves finding which nodes should be joined by an edge, which in turn
 # requires every pair of nodes/sentences in the graph to be compared in order to derive
 # a similarity score. That part is carried out by 'add_one_nodes_edges'.
-# Called by process_essay_se in se_procedure.py.
+# Called by add_sentence_graph_edges in this file.
 def add_all_node_edges(gr,myWarray,myCarray,nf2,dev):    
     mylist = []
     counter1 = 0
     counter0 = 0
+    zeroweights = []
     while 1:
         if counter0 <= (len(myWarray) - 1) and counter1 > counter0: # Stop looping when the counter reaches the total number of sentences
             # ... plus the first/'from' node in a pair must be greater (later in the text/graph) than the second/'to' node in this case to reflect directedness: later nodes can point to earlier ones, but not vice versa
@@ -252,8 +256,8 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
     #print 'For Vi:'
     #print Vi
     score = 0 # Set a temporary score to zero to enable calculations of the rhs of the TextRank equation
-    #list0 = gr.predecessors(Vi) # xxxx Do not delete. Find out which nodes point to Vi, i.e., ALL its predecessors. Directed graph.
-    list0 = gr.neighbors(Vi) # xxxx Find out which nodes link Vi to other nodes, i.e., ALL its NEIGHBOURS. Undirected graph.
+    #list0 = gr.predecessors(Vi) # xxxx @directedness 'directed'. Do not delete. Find out which nodes point to Vi, i.e., ALL its predecessors. Directed graph.
+    list0 = gr.neighbors(Vi) # xxxx @directedness 'undirected'. Find out which nodes link Vi to other nodes, i.e., ALL its NEIGHBOURS. Undirected graph.
     if list0 == []: # If Vi has no predecessors 
         WSVi = min_value # Set WSVi to the minimum value
         #print 'If clause: No nodes point to this Vi so WSVi set to minimum value:'
@@ -262,8 +266,8 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
     else:    
         for Vj in list0: # For each node Vj that points to Vi
             w = gr[Vj][Vi]['weight'] # Get the weight of the edge Vj->Vi from the graph
-            #WoutVj = gr.out_degree(Vj,weight='weight') # xxxx Do not delete. Find each edge Vj->Vk that points out of Vj and sum their weights to give WoutVj. Directed graph version.
-            WoutVj = gr.degree(Vj,weight='weight') # xxxx Find each edge Vj->Vk that links Vj to other nodes and sum their weights to give WoutVj. Undirected graph.
+            #WoutVj = gr.out_degree(Vj,weight='weight') # xxxx @directedness 'directed'. Do not delete. Find each edge Vj->Vk that points out of Vj and sum their weights to give WoutVj. Directed graph version.
+            WoutVj = gr.degree(Vj,weight='weight') # xxxx @directedness 'undirected' Find each edge Vj->Vk that links Vj to other nodes and sum their weights to give WoutVj. Undirected graph.
             # (We know that at least one edge points out of Vj, the one towards Vi, so no need for empty list alternative)
             WSVj = scores_array[Vj] # Get the most recent WS score from 'scores_array' for Vj (these are seeded right at the beginning with an arbitrary value)
             #print 'This is the most recent WSVj score:'
@@ -291,7 +295,7 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
 # Mihalcea presents a justification for using the same value for 'd' as PageRank uses, but I am not yet completely convinced by it.
 # Set a threshold 'max_iterations' to constrain the number of times find_all_gw_scores is consecutively called in order to calculate the WSVi scores.
 # Set a value 'min_delta' to help measure how different the current WSVi score is from the WSVi score at the last iteration.
-# Called by process_essay_se in se_procedure.py.
+# Called by find_sentence_graph_scores in this file.
 #def find_all_gw_scores(gr, scores_array, nf2, dev, d = .85, max_iterations = 100, min_delta = 0.00001):
 def find_all_gw_scores(gr, scores_array, nf2, dev, d = .85, max_iterations = 100, min_delta = 0.0000000001):
     nodes = gr.nodes() # Make a list of the graph's nodes
@@ -330,7 +334,7 @@ def find_all_gw_scores(gr, scores_array, nf2, dev, d = .85, max_iterations = 100
 # Function: update_array(myarray,scores_array)
 # Add the WSVi scores to the array created right at the beginning
 # that contains the processed and the original sentences. For printing the results out.
-# Called by process_essay_se in se_procedure.py.
+# Called by find_sentence_graph_scores in this file.
 def update_array(myarray,scores_array):
     temp = list(myarray)
     for Vi in temp:         
@@ -340,7 +344,7 @@ def update_array(myarray,scores_array):
 # Function: reorganise_array(myarray)
 # Make a structure containing the results presented with the WSVi score
 # first, then the array key, then the original sentence.
-# Called by process_essay_se in se_procedure.py.
+# Called by find_sentence_graph_scores in this file.
 # {0: [[(u'introduction', u'introduction')], ('#-s:h#', '0'), u'Introduction', 0.0025862068965517245], 
 def reorganise_array(myarray):
     #print '\n\n\nreorganise_array'
@@ -351,7 +355,8 @@ def reorganise_array(myarray):
         if counter <= len(myarray)-1: # 0: [[(u'introduction', u'introduction')], '#-s:h#', u'Introduction', 0.0025862068965517245]
             temp = myarray.items() # Retrieve the contents of the array in a different format.
                      # rank               # array key       # category           # original sentence  # processed sentence
-            temp1 = (round(temp[counter][1][3],7), temp[counter][0], temp[counter][1][1], temp[counter][1][2], temp[counter][1][0] ) # Put rank first, then key, then category label, then original sentence (before word tokenisation ff.), then processed sentence.
+            #temp1 = (round(temp[counter][1][3],7), temp[counter][0], temp[counter][1][1], temp[counter][1][2], temp[counter][1][0] ) # xxxx do not delete. Put rank first, then key, then category label, then original sentence (before word tokenisation ff.), then processed sentence.
+            temp1 = ( temp[counter][1][3], temp[counter][0], temp[counter][1][1], temp[counter][1][2], temp[counter][1][0] ) #  xxxx Switch to the above line if you want to round off the scores. Be careful because very large texts get much lower scores, and rounding can render all scores equal.
             mylist.append(temp1)
             counter += 1
         else:
@@ -360,12 +365,12 @@ def reorganise_array(myarray):
     #    print item
     return mylist
 
-# Function: sort_ranked_sentences(ranked_sents)
+# Function: sort_ranked_sentences(mylist)
 # The array has now been turned into a list for results purposes.
 # This function now removes from the list all items except for introduction, discussion, conclusion items.
 # Then sorts the remaining sentences into descending WSVi rank order. 
 # Returns the list of true sentences in descending rank order.
-# Called by process_essay_se in se_procedure.py.
+# Called by find_sentence_graph_scores in this file.
 def sort_ranked_sentences(mylist):
     # xxxx next line commented out for testing
     mylist = [item for item in mylist if item[2] == '#+s#' or item[2] == '#dummy#' or item[2] == '#+s:i#' or item[2] == '#+s:c#']# or item[2] == '#-s:h#']    # or item[2] == '#-s:t#'or item[2] == '#-s:q#']
@@ -377,6 +382,62 @@ def sort_ranked_sentences(mylist):
     #print '\n\n\nTHIS IS newlist', newlist
     return mylist
 
+
+def make_sentence_graph_nodes(myarray,text,section_labels,parasenttok):
+    fill_sentence_array(myarray, text, section_labels) # Fill array 'myarray' with the fully processed version of the text, one sentence per entry in the array. Each sentence is thus associated with an array key number which represents its position in the text.
+    add_to_sentence_array(myarray, parasenttok)     # Add each original unprocessed sentence to 'myarray' at the appropriate key point, so they can be returned in the user feedback later. 'Unprocessed' means following tidy-up, after sentence tokenisation, but before word tokenisation and all the other pre-processing
+
+    # Fill one array with the unique lemmas in each sentence
+    # (i.e., remove repetitions) and fill the other array with their
+    # numbers of occurrences. There is one entry in each array for
+    # each sentence. This is done to speed up the graph-building
+    # process. In an essay with 280 sentences, every sentence is
+    # compared to every sentence that precedes it, that's about
+    # 39,200 comparisons. The arrays are used as look-up tables by
+    # the cosine similarity function that measures the similarity
+    # of a pair of sentences so that each vector does not have be
+    # created over and over again.
+    #make_edge_weights_arrays(myarray, myWarray, myCarray)
+
+    # Add all the appropriate weighted and directed edges to the
+    # graph that you have already initiated, and to which you have
+    # added the appropriate nodes. This requires comparison of pairs
+    # of sentences/nodes in order to calculate the weight of the edge
+    # that joins them.
+    #add_all_node_edges(gr_se,myWarray,myCarray,nf2,dev)
+    
+def add_sentence_graph_edges(gr_se,myarray,myWarray,myCarray,nf2,dev):
+    make_edge_weights_arrays(myarray, myWarray, myCarray)
+    add_all_node_edges(gr_se,myWarray,myCarray,nf2,dev)
+
+    # And finally we get to calculate the WSVi global weight score
+    # for each node in the graph using parameters set above.
+    # This function relies on all the processing done so far (the
+    # building of a directed graph with weighted edges using an essay
+    # as input).    
+    #find_all_gw_scores(gr_se, scores_array, nf2, dev)        
+
+    # Add the WSVi scores to the array created earlier that contains
+    # the original text before word-tokenisation. For printing
+    # the results out.       
+    #update_array(myarray,scores_array)
+
+    # Change the order in which arguments occur in myarray
+    # putting the WSVi rank first(for sorting and printing)
+    #reorganised_array = reorganise_array(myarray)
+    
+    # Sort the ranked global weight scores 
+    #ranked_global_weights = sort_ranked_sentences(reorganised_array)
+    
+def find_sentence_graph_scores(gr_se,myarray,scores_array,nf2,dev):
+    find_all_gw_scores(gr_se, scores_array, nf2, dev)
+    update_array(myarray,scores_array)
+    reorganised_array = reorganise_array(myarray)
+    ranked_global_weights = sort_ranked_sentences(reorganised_array)
+    return ranked_global_weights,reorganised_array
+    
+
+
 # Function: sample_nodes_for_figure(graph,nodes,cat)
 # Derives a smaller sample graph from the main graph
 # for the purposes of making a graphic.
@@ -386,9 +447,9 @@ def sort_ranked_sentences(mylist):
 # In the case of the the key word graph, 'nodes' is the key lemmas.
 # These are also cut down but in a different way from the key sentences.
 def sample_nodes_for_figure(graph,nodes,cat):
-    if cat == 'se':
-        print graph.nodes()
-        print nodes
+    #if cat == 'se':
+        #print graph.nodes() # xxxx do not delete
+        #print nodes # xxxx do not delete
     #all_edges = graph.edges(data = True) # Get a list of all the graph's edges (expressed like '(21, 47, {'weight': 0.2891574659831202})')
     mylist = []
     for item in nodes:
@@ -411,7 +472,7 @@ def sample_nodes_for_figure(graph,nodes,cat):
         #temp2 = nodes
         temp2 = temp1
     elif cat == 'ke': # If this function is called to sample the key word graph
-        x = len(nodes)#/3
+        #x = len(nodes)#/3
         temp2 = nodes # Get the top third of the key lemmas sorted in order of centrality score. These are going to be the nodes in the key word sample graph.
     graph_sample = graph.subgraph(temp2) # Make a subgraph using only the nodes you want for the figure
     return graph_sample

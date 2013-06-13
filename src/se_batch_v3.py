@@ -1,4 +1,4 @@
-from time import time # For calculating processing times
+#from time import time # For calculating processing times
 #from operator import itemgetter # For sorting by particular arguments etc.
 #import itertools # For working with multiple arguments that are iterators
 import os.path # This is for file handling
@@ -6,8 +6,8 @@ import tempfile # For handling OS's temporary files directories
 import shutil # For file operations
 import codecs # For handling encoding 
 from EssayAnalyser.se_main_v3 import top_level_procedure
-import networkx as nx  # For drawing the sample graph.
-import matplotlib.pyplot as plt # For drawing the sample graph.
+#import networkx as nx  # For drawing the sample graph.
+#import matplotlib.pyplot as plt # For drawing the sample graph.
 #import pylab
 #import sbd # This is an alternative sentence splitter
 #import profile # For running the Python profiler to see which functions are hogging the time
@@ -29,6 +29,7 @@ Before uploading to Github:
  - empty the data folder in src
  - remove any text files from src
  - remove any other files you have added to src
+ - check no invalid 'import' expressions.
  # -*- coding: ascii -*-
  
 """
