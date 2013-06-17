@@ -33,7 +33,7 @@ def pre_process_text(text0,nf,nf2,dev):
     b_last,parasenttok, len_refs, refsheaded, late_wc, appendixheaded = get_essay_body(text,nf,dev)     # Find the body of the essay, being everything after the bibliography. Also note features concerning refs, word count, appendix.
 
     # DO SOME PRE-PROCESSING OF TEXT BEFORE STRUCTURE ANALYSIS
-    proc_text_b4_struc,wordtok_text = process_sents_b4_struc(parasenttok)
+    proc_text_b4_struc, parasenttok, wordtok_text = process_sents_b4_struc(parasenttok)
 
     return proc_text_b4_struc,parasenttok,wordtok_text,b_last,len_refs,refsheaded,late_wc,appendixheaded
 

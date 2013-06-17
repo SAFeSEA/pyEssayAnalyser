@@ -541,7 +541,7 @@ def process_sents_b4_struc(parasenttok):
     
     # LABEL THE NUMERIC SENTENCES
     text = process_sents(find_and_label_numeric_sents, text)
-    return text, hyphend_wordtok
+    return text, parasenttok, hyphend_wordtok
 
 # Called by pre_process_text in file se_procedure.py
 def process_sents_after_struc(text77):
