@@ -92,8 +92,10 @@ def ngramToTree(ngram_list):
 def setDispersionNgram(ngramlist,myarray_ke,lemmas):
     for ngram in ngramlist:
         forms=[getLemma(_form,myarray_ke) for _form in ngram['ngram']]
-        kk=[idx for hh in forms for idx,w in enumerate(lemmas) if w==hh]
-        kk.sort()
+        #kk=[idx for hh in forms for idx,w in enumerate(lemmas) if w==hh]
+        #kk.sort()
+        kk=[idx for idx,w in enumerate(lemmas) for hh in forms if w==hh]
+
         
         ranges = []
         for k, g in groupby(enumerate(kk), lambda (i,x):i-x):
@@ -104,6 +106,8 @@ def setDispersionNgram(ngramlist,myarray_ke,lemmas):
         ngram['dispersion'] = ranges
         h,b = np.histogram(ranges,bins=10, range=(0, len(lemmas)))
         ngram['trend'] = h.tolist()
+        if (ngram['source'][0]=='accessible' and ngram['source'][1]=='resource'):
+            f=1/0
 
 def Flask_process_text(text0):
     essay = top_level_procedure(text0, None, None, None, "NVL","H810","TMA01")
