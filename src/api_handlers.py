@@ -107,8 +107,8 @@ def setDispersionNgram(ngramlist,myarray_ke,lemmas):
         h,b = np.histogram(ranges,bins=10, range=(0, len(lemmas)))
         ngram['trend'] = h.tolist()
 
-def Flask_process_text(text0):
-    essay = top_level_procedure(text0, None, None, None, "NVL","H810","TMA01")
+def Flask_process_text(text0,module="H810",task="TMA01"):
+    essay = top_level_procedure(text0, None, None, None, "NVL",module,task)
     
     # reformat n-grams into unified structure
     keylemmas = essay['ke_data']['keylemmas']
