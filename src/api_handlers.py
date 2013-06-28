@@ -106,8 +106,6 @@ def setDispersionNgram(ngramlist,myarray_ke,lemmas):
         ngram['dispersion'] = ranges
         h,b = np.histogram(ranges,bins=10, range=(0, len(lemmas)))
         ngram['trend'] = h.tolist()
-        if (ngram['source'][0]=='accessible' and ngram['source'][1]=='resource'):
-            f=1/0
 
 def Flask_process_text(text0):
     essay = top_level_procedure(text0, None, None, None, "NVL","H810","TMA01")
@@ -144,9 +142,10 @@ def Flask_process_text(text0):
         ngram['trend'] = h.tolist()
 
     # build dispersion arrays for ngrams
-    setDispersionNgram(nvl_data['bigrams'],myarray_ke,lemmas)
-    setDispersionNgram(nvl_data['trigrams'],myarray_ke,lemmas)
-    setDispersionNgram(nvl_data['quadgrams'],myarray_ke,lemmas)
+    # TODO: dispersion does not work for key phrases; removed from data structure
+    #setDispersionNgram(nvl_data['bigrams'],myarray_ke,lemmas)
+    #setDispersionNgram(nvl_data['trigrams'],myarray_ke,lemmas)
+    #setDispersionNgram(nvl_data['quadgrams'],myarray_ke,lemmas)
         
 
     return essay
