@@ -22,7 +22,8 @@ def debora_write_results_se(essay_fname,\
 # Function: write_to_details_file(essay_fname,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr_se,ranked_global_weights,reorganised_array,i_toprank,c_toprank,nf,nf2):
 # Called by debora_results_se in this file.
 #def write_to_details_file(essay_fname,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr_se,ranked_global_weights,reorganised_array,i_toprank,c_toprank,nf,nf2):
-def write_to_details_file(essay_fname,paras,rankorder,number_of_words,\
+def write_to_details_file(essay_fname,\
+    paras,rankorder,number_of_words,\
     section_names,section_labels,headings,\
     conclheaded,c_first,c_last,introheaded,i_first,i_last,\
     ranked_global_weights,reorganised_array,i_toprank,c_toprank,\
@@ -53,10 +54,6 @@ def write_to_details_file(essay_fname,paras,rankorder,number_of_words,\
     c = s.decode('unicode-escape')
     nf.write(c)
     nf.write('\n')    
-
-##    s = str(
-##    c = s.decode('unicode-escape')
-##    nf.write(c)
     
     ########
     # WRITE SECTION SENTENCES
@@ -91,26 +88,143 @@ def write_to_details_file(essay_fname,paras,rankorder,number_of_words,\
 # Function: write_to_summary_file(essay_fname,text,number_of_words,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last,gr_se,ranked_global_weights,reorganised_array,i_toprank,c_toprank,nf,nf2)    
 # Called by debora_results_se in this file.
 def write_to_summary_file(essay_fname,paras,number_of_words,\
-                          countTrueSent,countSentLen,countAvSentLen,\
-                          countAssQSent,countTitleSent,
+                          countTrueSent,countTrueSentChars,\
+                          countFalseSent,countSentLen,countAvSentLen,\
+                          countAssQSent,countTitleSent,\
+                          countTableEnt,countListItem,\
                           nodes,edges,edges_over_sents,\
                           len_headings,\
                           ranked_global_weights,\
-                          b_last,len_body,len_refs,refsheaded,late_wc,appendixheaded,\
-                          introheaded,i_first,i_last,i_toprank,countIntroSent,percent_body_i,\
-                          conclheaded,c_first,c_last,c_toprank,countConclSent,percent_body_c,\
-                          nf,nf2):
+                          b_last,countProseParas,countProseChars,len_refs,refsheaded,late_wc,\
+                          appendixheaded,\
+                          introheaded,i_first,i_last,i_toprank,\
+                          countIntroSent,countIntroChars,percent_body_i,\
+                          conclheaded,c_first,c_last,c_toprank,
+                          countConclSent,countConclChars,percent_body_c,\
+                          nf,nf2):    
+    print ' '
     #nf2.write('\n')
     
     #nf2.write(str(essay_fname)) # Write current essay file name to the summary results file
     #nf2.write('; ') # Add a blank line to the summary results file
 
 
-##    #####################
-##    #####################
-##    ## FULL SET
-##    #####################
-##    #####################
+    #####################
+    #####################
+    ## FULL SET
+    #####################
+    #####################
+    nf2.write('all words; ') 
+    nf2.write(str(number_of_words))
+    nf2.write('; ')
+    nf2.write('tidy words; ') 
+    nf2.write(str(countSentLen))
+    nf2.write('; ')
+    nf2.write('avlen tidysent; ')
+    nf2.write(str(countAvSentLen))
+    nf2.write('; ')
+    nf2.write('paras; ') # Total number of paragraphs
+    nf2.write(str(paras))
+    nf2.write('; ')
+    nf2.write('body last #; ')
+    nf2.write(str(b_last))
+    nf2.write('; ')
+    nf2.write('refs head; ')
+    nf2.write(str(refsheaded))
+    nf2.write('; ')
+    nf2.write('refs; ')
+    nf2.write(str(len_refs))
+    nf2.write('; ')
+    nf2.write('appndx head; ')
+    nf2.write(str(appendixheaded))
+    nf2.write('; ')
+    nf2.write('late_wc; ')
+    nf2.write(str(late_wc))
+    nf2.write('; ')  
+    nf2.write('heads; ')  # Total number of true headings. Currently '#-s:h#', '#-s:H#','#-s:t#','#-s:s#','#-s:d#','#-s:l#'
+    nf2.write(str(len_headings))
+    nf2.write('; ')
+    nf2.write('table ents; ')
+    nf2.write(str(countTableEnt))
+    nf2.write('; ')
+    nf2.write('list items; ')
+    nf2.write(str(countListItem))
+    nf2.write('; ')                              
+    nf2.write('prose paras; ')
+    nf2.write(str(countProseParas))
+    nf2.write('; ')
+    nf2.write('prose chars; ')
+    nf2.write(str(countProseChars))
+    nf2.write('; ')
+    nf2.write('nodes; ')         
+    nf2.write(str(nodes))
+    nf2.write('; ')
+    nf2.write('edges; ')                       
+    nf2.write(str(edges))
+    nf2.write('; ')
+##    nf2.write('false sents; ')   # Note, This is meaningless at the moment, but I'm leaving it in case I want to do something similar.      
+##    nf2.write(str(countFalseSent))
+##    nf2.write('; ')    
+    nf2.write('true sents; ')         
+    nf2.write(str(countTrueSent))
+    nf2.write('; ')    
+    nf2.write('true sent chars; ')         
+    nf2.write(str(countTrueSentChars))
+    nf2.write('; ')    
+    nf2.write('edges/sents; ')
+    nf2.write(str(edges_over_sents))
+    nf2.write('; ')     
+    nf2.write('intro head; ')
+    nf2.write(str(introheaded))
+    nf2.write('; ')
+    nf2.write('% body == i; ')
+    nf2.write(str(percent_body_i))
+    nf2.write('; ') 
+    nf2.write('i sents; ')
+    nf2.write(str(countIntroSent))
+    nf2.write('; ')
+    nf2.write('i chars; ')
+    nf2.write(str(countIntroChars))
+    nf2.write('; ')
+    nf2.write('concl head; ')
+    nf2.write(str(conclheaded))
+    nf2.write('; ')
+    nf2.write('% body == c; ')
+    nf2.write(str(percent_body_c))
+    nf2.write('; ')    
+    nf2.write('c sents; ')
+    nf2.write(str(countConclSent))
+    nf2.write('; ')
+    nf2.write('c chars; ')
+    nf2.write(str(countConclChars))
+    nf2.write('; ')        
+    nf2.write('t sents; ')         # How many sentences are labelled 'title'
+    nf2.write(str(countTitleSent))
+    nf2.write('; ')
+    nf2.write('q sents; ')         # How many sentences are labelled 'assignment question'
+    nf2.write(str(countAssQSent))
+    nf2.write('; ')
+    nf2.write('i & toprank; ') 
+    nf2.write(str(i_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
+    nf2.write('; ') 
+    nf2.write('c & toprank; ') 
+    nf2.write(str(c_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
+    nf2.write('; ')
+    if len(ranked_global_weights)>0: # edge case condition
+        r = ranked_global_weights[0][0]
+    else:
+        r = 'nil'
+    nf2.write('se top centr score; ')
+    #s = round(r,5)
+    nf2.write(str(r))
+    nf2.write('; ')
+
+
+##    ###################
+##    ###################
+##    ## PARTIAL SET
+##    ###################
+##    ###################
 ##    nf2.write('all words; ') 
 ##    nf2.write(str(number_of_words))
 ##    nf2.write('; ')
@@ -127,167 +241,73 @@ def write_to_summary_file(essay_fname,paras,number_of_words,\
 ##    nf2.write(str(paras))
 ##    nf2.write('; ')
 ##    ################# begin new
-##    nf2.write('body last #; ')
-##    nf2.write(str(b_last))
-##    nf2.write('; ')
-##    nf2.write('refs head; ')
-##    nf2.write(str(refsheaded))
-##    nf2.write('; ')
+####    nf2.write('body last #; ')
+####    nf2.write(str(b_last))
+####    nf2.write('; ')
+####    nf2.write('refs head; ')
+####    nf2.write(str(refsheaded))
+####    nf2.write('; ')
 ##    nf2.write('len refs; ')
 ##    nf2.write(str(len_refs))
 ##    nf2.write('; ')
-##    nf2.write('appndx head; ')
-##    nf2.write(str(appendixheaded))
-##    nf2.write('; ')
-##    nf2.write('late_wc; ')
-##    nf2.write(str(late_wc))
-##    nf2.write('; ')
+####    nf2.write('appndx head; ')
+####    nf2.write(str(appendixheaded))
+####    nf2.write('; ')
+####    nf2.write('late_wc; ')
+####    nf2.write(str(late_wc))
+####    nf2.write('; ')
 ##    ######################## end new    
 ##    nf2.write('heads; ')  # Total number of headings
 ##    nf2.write(str(len_headings))
 ##    nf2.write('; ')
-##    nf2.write('non-heading paras; ')
-##    nf2.write(str(len_body))
-##    nf2.write('; ')
-##    nf2.write('intro head; ')
-##    nf2.write(str(introheaded))
-##    nf2.write('; ')
-##    nf2.write('% body == i; ')
-##    nf2.write(str(percent_body_i))
-##    nf2.write('; ') 
-##    nf2.write('i sents; ')
-##    nf2.write(str(countIntroSent))
-##    nf2.write('; ')
-##    nf2.write('concl head; ')
-##    nf2.write(str(conclheaded))
-##    nf2.write('; ')
-##    nf2.write('% body == c; ')
-##    nf2.write(str(percent_body_c))
-##    nf2.write('; ')    
-##    nf2.write('c sents; ')
-##    nf2.write(str(countConclSent))
-##    nf2.write('; ')    
+####    nf2.write('non-heading paras; ')
+####    nf2.write(str(countProseParas))
+####    nf2.write('; ')
+####    nf2.write('intro head; ')
+####    nf2.write(str(introheaded))
+####    nf2.write('; ')
+####    nf2.write('% body == i; ')
+####    nf2.write(str(percent_body_i))
+####    nf2.write('; ') 
+####    nf2.write('i sents; ')
+####    nf2.write(str(countIntroChars))
+####    nf2.write('; ')
+####    nf2.write('concl head; ')
+####    nf2.write(str(conclheaded))
+####    nf2.write('; ')
+####    nf2.write('% body == c; ')
+####    nf2.write(str(percent_body_c))
+####    nf2.write('; ')    
+####    nf2.write('c sents; ')
+####    nf2.write(str(countConclChars))
+####    nf2.write('; ')    
 ##    ################### begin new
-##    nf2.write('t sents; ')         # How many sentences are labelled 'title'
-##    nf2.write(str(countTitleSent))
-##    nf2.write('; ')
-##    nf2.write('q sents; ')         # How many sentences are labelled 'assignment question'
-##    nf2.write(str(countAssQSent))
-##    nf2.write('; ')
+####    nf2.write('t sents; ')         # How many sentences are labelled 'title'
+####    nf2.write(str(countTitleSent))
+####    nf2.write('; ')
+####    nf2.write('q sents; ')         # How many sentences are labelled 'assignment question'
+####    nf2.write(str(countAssQSent))
+####    nf2.write('; ')
 ##    #################### end new
-##    nf2.write('nodes; ')         
-##    nf2.write(str(nodes))
-##    nf2.write('; ')
+####    nf2.write('nodes; ')         
+####    nf2.write(str(nodes))
+####    nf2.write('; ')
 ##    nf2.write('edges; ')                       
 ##    nf2.write(str(edges))
 ##    nf2.write('; ')
 ##    nf2.write('edges/sents; ')
 ##    nf2.write(str(edges_over_sents))
 ##    nf2.write('; ') 
-##    nf2.write('i & toprank; ') 
-##    nf2.write(str(i_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
-##    nf2.write('; ') 
-##    nf2.write('c & toprank; ') 
-##    nf2.write(str(c_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
-##    nf2.write('; ')
+####    nf2.write('i & toprank; ') 
+####    nf2.write(str(i_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
+####    nf2.write('; ') 
+####    nf2.write('c & toprank; ') 
+####    nf2.write(str(c_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
+####    nf2.write('; ')
 ##    if len(ranked_global_weights)>0: # edge case condition
 ##        r = ranked_global_weights[0][0]
 ##    else:
 ##        r = 'nil'
-##    nf2.write('se top centr score; ')
-##    #s = round(r,5)
-##    nf2.write(str(r))
-##    nf2.write('; ')
-
-
-    ###################
-    ###################
-    ## PARTIAL SET
-    ###################
-    ###################
-    nf2.write('all words; ') 
-    nf2.write(str(number_of_words))
-    nf2.write('; ')
-    nf2.write('tidy words; ') 
-    nf2.write(str(countSentLen))
-    nf2.write('; ')
-    nf2.write('true sents; ')         
-    nf2.write(str(countTrueSent))
-    nf2.write('; ')
-    nf2.write('avlen tidysent; ')
-    nf2.write(str(countAvSentLen))
-    nf2.write('; ')
-    nf2.write('paras; ') # Total number of paragraphs
-    nf2.write(str(paras))
-    nf2.write('; ')
-    ################# begin new
-##    nf2.write('body last #; ')
-##    nf2.write(str(b_last))
-##    nf2.write('; ')
-##    nf2.write('refs head; ')
-##    nf2.write(str(refsheaded))
-##    nf2.write('; ')
-    nf2.write('len refs; ')
-    nf2.write(str(len_refs))
-    nf2.write('; ')
-##    nf2.write('appndx head; ')
-##    nf2.write(str(appendixheaded))
-##    nf2.write('; ')
-##    nf2.write('late_wc; ')
-##    nf2.write(str(late_wc))
-##    nf2.write('; ')
-    ######################## end new    
-    nf2.write('heads; ')  # Total number of headings
-    nf2.write(str(len_headings))
-    nf2.write('; ')
-##    nf2.write('non-heading paras; ')
-##    nf2.write(str(len_body))
-##    nf2.write('; ')
-##    nf2.write('intro head; ')
-##    nf2.write(str(introheaded))
-##    nf2.write('; ')
-    nf2.write('% body == i; ')
-    nf2.write(str(percent_body_i))
-    nf2.write('; ') 
-##    nf2.write('i sents; ')
-##    nf2.write(str(countIntroSent))
-##    nf2.write('; ')
-##    nf2.write('concl head; ')
-##    nf2.write(str(conclheaded))
-##    nf2.write('; ')
-    nf2.write('% body == c; ')
-    nf2.write(str(percent_body_c))
-    nf2.write('; ')    
-##    nf2.write('c sents; ')
-##    nf2.write(str(countConclSent))
-##    nf2.write('; ')    
-    ################### begin new
-##    nf2.write('t sents; ')         # How many sentences are labelled 'title'
-##    nf2.write(str(countTitleSent))
-##    nf2.write('; ')
-##    nf2.write('q sents; ')         # How many sentences are labelled 'assignment question'
-##    nf2.write(str(countAssQSent))
-##    nf2.write('; ')
-    #################### end new
-##    nf2.write('nodes; ')         
-##    nf2.write(str(nodes))
-##    nf2.write('; ')
-    nf2.write('edges; ')                       
-    nf2.write(str(edges))
-    nf2.write('; ')
-    nf2.write('edges/sents; ')
-    nf2.write(str(edges_over_sents))
-    nf2.write('; ') 
-    nf2.write('i & toprank; ') 
-    nf2.write(str(i_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
-    nf2.write('; ') 
-    nf2.write('c & toprank; ') 
-    nf2.write(str(c_toprank)) # i_toprank is the number of top-ranking sentences that are in the introduction
-    nf2.write('; ')
-    if len(ranked_global_weights)>0: # edge case condition
-        r = ranked_global_weights[0][0]
-    else:
-        r = 'nil'
 ##    nf2.write('se top centr score; ')
 ##    #s = round(r,5)
 ##    nf2.write(str(r))
@@ -304,6 +324,8 @@ def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_arr
     paras = len(text)   
     
     countTrueSent = 0
+    countTrueSentChars = 0
+    countFalseSent = 0
     countSentLen = 0
     truesents = []
     for item in reorganised_array: # For each member of the list/array (each sentence)
@@ -312,24 +334,69 @@ def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_arr
         label = item[2]
         if label == '#+s#' or label == '#+s:i#' or label == '#+s:c#' or label == '#+s:s#' or label == '#+s:p#':
             countTrueSent += 1
+            countTrueSentChars += len(item[3]) #1  # Count the number of characters in a true sentence 
             truesents.append(item[1]) # Get a list of the node numbers for the true sentences to use later in making a sample graph
         else:
-            countTrueSent = countTrueSent
+            #countTrueSent = countTrueSent
+            countFalseSent +=1
     #print '\n\nTHIS IS REORGANISED ARRAY ITEM: ', item
+    #section_names =  ['AssQ',  'Title', 'SectionHeadings', 'SpecialHeadings', 'GeneralHeadings','ItemisedShort', 'TableEntries', 'Captions', 'DigitalHeadings', 'LetterHeadings', 'Introduction', 'Conclusion', 'Summary', 'Preface', 'Numerics', 'Punctuation']
+    #section_labels = ['#-s:q#','#-s:t#','#-s:s#',          '#-s:h#',          '#-s:H#',         '#-s:b#',        '#-s:e#',       '#-s:c#',   '#-s:d#',          '#-s:l#',         '#+s:i#',       '#+s:c#',     '#+s:s#',  '#+s:p#',  '#-s:n#',   '#-s:p#']
+             
+    countIntroChars = 0
+    countConclChars = 0
+    countDiscChars = 0
     countIntroSent = 0
     countConclSent = 0
+    countDiscSent = 0
+    
     countTitleSent = 0
     countAssQSent = 0
-    for item in reorganised_array:
+    countSpecHead = 0
+    countGenHead = 0
+    countTableEnt = 0
+    countListItem = 0
+    countSectHead = 0
+    countCaption = 0
+    countDigitalHead = 0
+    countLetterHead = 0
+    for item in reorganised_array: # (0.0008982035928143714, 165, '#-s:H#', u'Acknowledgments', [(u'acknowledgments', u'acknowledgment')])
         label = item[2]
+        if label == '#-s:q#':
+            countAssQSent += 1  # Count the number of sentences in the essay that are lifted from the assignment question
+        if label == '#-s:t#':
+            countTitleSent += 1  # Count the number of sentences in the title
+        if label == '#-s:s#':
+            countSectHead += 1  # Count the number of section headings
+        if label == '#-s:h#':
+            countSpecHead += 1  # Count the number of special headings
+        if label == '#-s:H#':
+            countGenHead += 1  # Count the number of general headings
+        if label == '#-s:d#':
+            countDigitalHead += 1  # Count the number of headings beginning with a digit
+        if label == '#-s:l#':
+            countLetterHead += 1  # Count the number of headings beginning with a letter
+            
+        if label == '#-s:b#':
+            countListItem += 1  # Count the number of paras that are short bullet points and list items
+        if label == '#-s:e#':
+            countTableEnt += 1  # Count the number of paras that are table entries
+        if label == '#-s:c#':
+            countCaption += 1  # Count the number of captions
+   
+        if label == '#+s:i#':
+            countIntroChars += len(item[3]) #1  # Count the number of characters in a sentence in the introduction
+        if label == '#+s:c#':
+            countConclChars += len(item[3]) #1  # Count the number of characters in a sentence in the conclusion
+        if label == '#+s#':
+            countDiscChars += len(item[3]) #1  # Count the number of characters in a sentence in the conclusion
         if label == '#+s:i#':
             countIntroSent += 1  # Count the number of sentences in the introduction
         if label == '#+s:c#':
             countConclSent += 1  # Count the number of sentences in the conclusion
-        if label == '#-s:t#':
-            countTitleSent += 1  # Count the number of sentences in the title
-        if label == '#-s:q#':
-            countAssQSent += 1  # Count the number of sentences in the essay that are lifted from the assignment question
+        if label == '#+s#':
+            countDiscSent += 1  # Count the number of sentences in the essay body
+
     if countTrueSent > 0:
         countAvSentLen = float(countSentLen) / float(countTrueSent)
         countAvSentLen = round(countAvSentLen, 2)
@@ -337,35 +404,36 @@ def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_arr
         countAvSentLen = []
 
     len_headings = len(headings)
-    len_body = len(text) - len(headings)  
+
+    countProseParas = countIntroSent + countConclSent + countDiscSent
+
+    countProseChars = countIntroChars + countConclChars + countDiscChars
 
     #getcontext().prec = 3
-    if countIntroSent > 0: 
+    if countIntroChars > 0: 
         ## @todo: added str() to ensure backward compatibility with Python 2.6
         #print countTrueSent
-        #print countIntroSent
-        x = 1.0/(float(countTrueSent)/float(countIntroSent))
+        #print countIntroChars
+        x = 1.0/(float(countTrueSentChars)/float(countIntroChars))
         #print x
-        #percent_body_i = 100 * Decimal(str(1.0/(countTrueSent / countIntroSent))) # y is the percentage of the essay body taken up by the introduction
+        #percent_body_i = 100 * Decimal(str(1.0/(countTrueSent / countIntroChars))) # y is the percentage of the essay body taken up by the introduction
         percent_body_i = 100 * x
         #print percent_body_i
-    else: # xxxx This condition should not succeed for any essay, but some test files don't return a result for intro section, in which case countIntroSent == 0, which returns an error on the previous line. Needs a better fix. 
+    else: # xxxx This condition should not succeed for any essay, but some test files don't return a result for intro section, in which case countIntroChars == 0, which returns an error on the previous line. Needs a better fix. 
         percent_body_i = 0
     #percent_body_i = float(percent_body_i)
     percent_body_i = round(percent_body_i,2)
-    print percent_body_i
+    print 'Per cent body i:', percent_body_i
     
 
-    if countConclSent > 0:
+    if countConclChars > 0:
         ## @todo: added str() to ensure backward compatibility with Python 2.6
-        x = 1.0/(float(countTrueSent)/float(countConclSent))
-        #percent_body_c = 100 * Decimal(str(1.0/(countTrueSent / countConclSent))) # y is the percentage of the essay body taken up by the introduction
+        x = 1.0/(float(countTrueSentChars)/float(countConclChars))
         percent_body_c = 100 * x
     else:
         percent_body_c = 0
-    #percent_body_c = float(percent_body_c)
     percent_body_c = round(percent_body_c,2)
-    print percent_body_c
+    print 'Per cent body c:', percent_body_c
     
 
     edges = len(gr_se.edges())   
@@ -382,7 +450,13 @@ def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_arr
 
     i_toprank,c_toprank = cf_keysents_sections(ranked_global_weights)
 
-    return paras, rankorder,len_body,len_headings,countSentLen,truesents,countTrueSent,countAvSentLen,countIntroSent,countConclSent,countAssQSent,countTitleSent,percent_body_i,i_toprank,percent_body_c,c_toprank,nodes,edges,edges_over_sents
+    return paras, rankorder,countProseParas,countProseChars,len_headings,\
+           countSentLen,truesents,countTrueSent,countTrueSentChars, countFalseSent,\
+           countAvSentLen,countIntroSent,countIntroChars,countConclSent,\
+           countConclChars,countAssQSent,\
+           countTableEnt,countListItem,\
+           countTitleSent,percent_body_i,i_toprank,percent_body_c,\
+           c_toprank,nodes,edges,edges_over_sents
 
 
 def print_processing_times(getassdatatime,processasstexttime,processtbindextime,startassdatatime,startfiletime, texttime, structime, se_scorestime, ke_scorestime, nf2):
@@ -453,14 +527,17 @@ def cf_keysents_sections(sorted_list):
 # Called in se_main.py.
 def debora_write_results_se(essay_fname,\
             paras,rankorder,number_of_words,\
-            countTrueSent,countSentLen,countAvSentLen,\
+            countTrueSent,countTrueSentChars,\
+            countFalseSent,countSentLen,countAvSentLen,\
             nodes,edges,edges_over_sents,\
             ranked_global_weights,reorganised_array,\
             section_names,section_labels,headings,len_headings,\
             countAssQSent,countTitleSent,
-            b_last,len_body,len_refs,refsheaded,late_wc,appendixheaded,\
-            introheaded,i_first,i_last,i_toprank,countIntroSent,percent_body_i,\
-            conclheaded,c_first,c_last,c_toprank,countConclSent,percent_body_c,\
+            countTableEnt,countListItem,\
+            b_last,countProseParas,countProseChars,len_refs,refsheaded,late_wc,appendixheaded,\
+            introheaded,i_first,i_last,i_toprank,countIntroSent,countIntroChars,percent_body_i,\
+            conclheaded,c_first,c_last,c_toprank,
+            countConclSent,countConclChars,percent_body_c,\
             nf,nf2):
     write_to_details_file(essay_fname,paras,rankorder,number_of_words,\
     section_names,section_labels,headings,\
@@ -468,15 +545,21 @@ def debora_write_results_se(essay_fname,\
     ranked_global_weights,reorganised_array,i_toprank,c_toprank,\
     nf,nf2)
     write_to_summary_file(essay_fname,paras,number_of_words,\
-                          countTrueSent,countSentLen,countAvSentLen,\
-                          countAssQSent,countTitleSent,
+                          countTrueSent,countTrueSentChars,\
+                          countFalseSent,countSentLen,countAvSentLen,\
+                          countAssQSent,countTitleSent,\
+                          countTableEnt,countListItem,\
                           nodes,edges,edges_over_sents,\
                           len_headings,\
                           ranked_global_weights,\
-                          b_last,len_body,len_refs,refsheaded,late_wc,appendixheaded,\
-                          introheaded,i_first,i_last,i_toprank,countIntroSent,percent_body_i,\
-                          conclheaded,c_first,c_last,c_toprank,countConclSent,percent_body_c,\
+                          b_last,countProseParas,countProseChars,len_refs,refsheaded,late_wc,\
+                          appendixheaded,\
+                          introheaded,i_first,i_last,i_toprank,\
+                          countIntroSent,countIntroChars,percent_body_i,\
+                          conclheaded,c_first,c_last,c_toprank,\
+                          countConclSent,countConclChars,percent_body_c,\
                           nf,nf2)
+
 
 
 

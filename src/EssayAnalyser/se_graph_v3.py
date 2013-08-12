@@ -70,7 +70,7 @@ def fill_sentence_array(myarray, text, struc_labels):
                 add_item_to_array(myarray, counter, temp)
                 add_item_to_array(myarray, counter, '#+s#')                  
             counter += 1
-    #print myarray
+            
 # Function:  make_edge_weights_arrays(myarray, myWarray, myCarray)
 # Fill the empty array 'myWarray' with the unique lemmas for each sentence
 # and fill the other empty array 'myCarray' with their numbers of occurrences.
@@ -85,14 +85,22 @@ def make_edge_weights_arrays(myarray, myWarray, myCarray):
         #if sentencecounter == 246:    
         if sentencecounter <= len(myarray)-1:
             tidysent = myarray[sentencecounter][0]
+            #print '\n\n\n{{{{{{{{{{{{{{{{{{{{{{{{{{ myarray[sentencecounter]', myarray[sentencecounter]
             label = myarray[sentencecounter][1]           
             if tidysent == []:
                 add_item_to_array(myWarray, sentencecounter, '$$$$EMPTY_SENT_TOKEN$$$$')
                 add_item_to_array(myCarray, sentencecounter, 0)
-            # xxxx This para takes punctuation, numbers, headings, and title and ass_q out of the graph.
-            # xxxx Done now to make visual graphics of graph. May keep.
-            # xxxx Next three lines messed about with for testing
-            elif label == '#-s:p#' or label == '#-s:n#' or label == '#-s:h#' or label == '#-s:t#' or label == '#-s:q#':
+            # xxxx This para takes punctuation '#-s:p#',
+            # numerics '#-s:n#', special headings '#-s:h#', title '#-s:t#',
+            # assignment question sentences '#-s:q#', general headings '#-s:H#', list itemisers '#-s:b#',
+            # and table entries '#-s:e#' and captions'#-s:c#'  out of the sentence graph.
+            # Long bullet points are earlier labelled as true sentences.
+            elif (label == '#-s:p#' or label == '#-s:n#'
+                  or label == '#-s:h#' or label == '#-s:t#'
+                  or label == '#-s:q#' or label == '#-s:H#' or label == '#-s:s#'
+                  or label == '#-s:d#' or label == '#-s:l#' 
+                  or label == '#-s:b#' or label == '#-s:e#' or label == '#-s:c#'):
+                  #or label == '#+s:p#' or label == '#+s:s#'):
                 add_item_to_array(myWarray, sentencecounter, '$$$$NOT_A_TRUE_SENTENCE$$$$')
                 add_item_to_array(myCarray, sentencecounter, 0)
             else:
@@ -237,6 +245,8 @@ def add_all_node_edges(gr,myWarray,myCarray,nf2,dev):
             break
     mylist.append(zeroweights) # For counting zero-weight edges
     #print gr.edges() # Nicolas, this will show you the edges so you can see the difference that edge direction makes.
+    if mylist == [[]]: # edge case condition. If no zeroweight edges. Otherwise sum below will fail.
+        mylist = []
     sumzeroweights = sum(mylist) # Just keeping tabs on how many zero-weight edges there are.
     
 
@@ -257,7 +267,7 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
     #print Vi
     score = 0 # Set a temporary score to zero to enable calculations of the rhs of the TextRank equation
     #list0 = gr.predecessors(Vi) # xxxx @directedness 'directed'. Do not delete. Find out which nodes point to Vi, i.e., ALL its predecessors. Directed graph.
-    list0 = gr.neighbors(Vi) # xxxx @directedness 'undirected'. Find out which nodes link Vi to other nodes, i.e., ALL its NEIGHBOURS. Undirected graph.
+    list0 = gr.neighbors(Vi) # xxxx @directedness 'undirected'. Find out which nodes link Vi to other nodes, i.e., ALL its NEIGHBOURS. 
     if list0 == []: # If Vi has no predecessors 
         WSVi = min_value # Set WSVi to the minimum value
         #print 'If clause: No nodes point to this Vi so WSVi set to minimum value:'
@@ -300,7 +310,11 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
 def find_all_gw_scores(gr, scores_array, nf2, dev, d = .85, max_iterations = 100, min_delta = 0.0000000001):
     nodes = gr.nodes() # Make a list of the graph's nodes
     graph_size = len(nodes) # Find the size of the graph, meaning the number of the graph's nodes. 
-    min_value = (1.0-d)/graph_size # Set a minimum WSVi score value for nodes without inbound links, i.e., = .15/graph_size. This idea is taken directly from pagerank.py.
+    try:
+        min_value = (1.0-d)/graph_size # Set a minimum WSVi score value for nodes without inbound links, i.e., = .15/graph_size. This idea is taken directly from pagerank.py.
+    except ZeroDivisionError:
+        print '\nZero division error: no nodes in graph\n'
+        min_value = (1.0-d)/1
     #for i in range(3):  # Set low for testing purposes.
     for i in range(max_iterations):  # Only go round this loop max_iterations (100) times for each node.
         #print '######################################'
@@ -372,63 +386,29 @@ def reorganise_array(myarray):
 # Returns the list of true sentences in descending rank order.
 # Called by find_sentence_graph_scores in this file.
 def sort_ranked_sentences(mylist):
-    # xxxx next line commented out for testing
     mylist = [item for item in mylist if item[2] == '#+s#' or item[2] == '#dummy#' or item[2] == '#+s:i#' or item[2] == '#+s:c#']# or item[2] == '#-s:h#']    # or item[2] == '#-s:t#'or item[2] == '#-s:q#']
     mylist.sort() # ... and sort the structure according to its first argument (WSVi score)
-    #print '\n\n\nTHIS IS mylist', mylist
     list.reverse(mylist)
     #values = set(map(lambda x:x[1], mylist)) # This routine groups the things sorted into lists if they have the same sort value
     #newlist = [[y for y in mylist if y[1]==x] for x in values]
-    #print '\n\n\nTHIS IS newlist', newlist
     return mylist
 
-
+# Function: make_sentence_graph_nodes(myarray,text,section_labels,parasenttok):
 def make_sentence_graph_nodes(myarray,text,section_labels,parasenttok):
     fill_sentence_array(myarray, text, section_labels) # Fill array 'myarray' with the fully processed version of the text, one sentence per entry in the array. Each sentence is thus associated with an array key number which represents its position in the text.
     add_to_sentence_array(myarray, parasenttok)     # Add each original unprocessed sentence to 'myarray' at the appropriate key point, so they can be returned in the user feedback later. 'Unprocessed' means following tidy-up, after sentence tokenisation, but before word tokenisation and all the other pre-processing
 
-    # Fill one array with the unique lemmas in each sentence
-    # (i.e., remove repetitions) and fill the other array with their
-    # numbers of occurrences. There is one entry in each array for
-    # each sentence. This is done to speed up the graph-building
-    # process. In an essay with 280 sentences, every sentence is
-    # compared to every sentence that precedes it, that's about
-    # 39,200 comparisons. The arrays are used as look-up tables by
-    # the cosine similarity function that measures the similarity
-    # of a pair of sentences so that each vector does not have be
-    # created over and over again.
-    #make_edge_weights_arrays(myarray, myWarray, myCarray)
-
-    # Add all the appropriate weighted and directed edges to the
-    # graph that you have already initiated, and to which you have
-    # added the appropriate nodes. This requires comparison of pairs
-    # of sentences/nodes in order to calculate the weight of the edge
-    # that joins them.
-    #add_all_node_edges(gr_se,myWarray,myCarray,nf2,dev)
-    
+# Function: add_sentence_graph_edges(gr_se,myarray,myWarray,myCarray,nf2,dev):
+# Add all the appropriate weighted and directed edges to the
+# graph that you have already initiated, and to which you have
+# added the appropriate nodes. This requires comparison of pairs
+# of sentences/nodes in order to calculate the weight of the edge
+# that joins them.   
 def add_sentence_graph_edges(gr_se,myarray,myWarray,myCarray,nf2,dev):
     make_edge_weights_arrays(myarray, myWarray, myCarray)
     add_all_node_edges(gr_se,myWarray,myCarray,nf2,dev)
 
-    # And finally we get to calculate the WSVi global weight score
-    # for each node in the graph using parameters set above.
-    # This function relies on all the processing done so far (the
-    # building of a directed graph with weighted edges using an essay
-    # as input).    
-    #find_all_gw_scores(gr_se, scores_array, nf2, dev)        
-
-    # Add the WSVi scores to the array created earlier that contains
-    # the original text before word-tokenisation. For printing
-    # the results out.       
-    #update_array(myarray,scores_array)
-
-    # Change the order in which arguments occur in myarray
-    # putting the WSVi rank first(for sorting and printing)
-    #reorganised_array = reorganise_array(myarray)
-    
-    # Sort the ranked global weight scores 
-    #ranked_global_weights = sort_ranked_sentences(reorganised_array)
-    
+# Function: find_sentence_graph_scores(gr_se,myarray,scores_array,nf2,dev):   
 def find_sentence_graph_scores(gr_se,myarray,scores_array,nf2,dev):
     find_all_gw_scores(gr_se, scores_array, nf2, dev)
     update_array(myarray,scores_array)
@@ -436,8 +416,6 @@ def find_sentence_graph_scores(gr_se,myarray,scores_array,nf2,dev):
     ranked_global_weights = sort_ranked_sentences(reorganised_array)
     return ranked_global_weights,reorganised_array
     
-
-
 # Function: sample_nodes_for_figure(graph,nodes,cat)
 # Derives a smaller sample graph from the main graph
 # for the purposes of making a graphic.
@@ -454,7 +432,7 @@ def sample_nodes_for_figure(graph,nodes,cat):
     mylist = []
     for item in nodes:
         #successors = len(graph.successors(item)) # xxxx Do not delete. Get the length of the list of successors for each node. Directed graph version.
-        successors = len(graph.neighbors(item)) # xxxx Get the length of the list of neighbours for each node        
+        successors = len(graph.neighbors(item)) # xxxx Get the length of the list of neighbours for each node. Undirected version.
         #print 'Number of neighbours for node: ', item, ' : ', successors
         if successors > 2: #>= 0:  # > 2 # Currently I am including nodes that don't have any successors, so they would appear in the graph as unconnected nodes.
             mylist.append([item,successors])
