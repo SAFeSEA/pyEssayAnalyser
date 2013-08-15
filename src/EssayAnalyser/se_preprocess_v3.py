@@ -93,7 +93,7 @@ def count_refs(text,numsq):
                 p_counter +=1
                 #print '\n~~~~~~~~~~~~get_essay_body 2', para
             elif x > 50 and x < 400: # Only count the remaining paragraphs whose total number of characters is more than 50 and less than 400. Note that B5081458-H810-10I_02-1-U has an unheaded appendix following the refs and I am trying to avoid it being identified as refs.                
-                #print '\n~~~~~~~~~~~~get_essay_body 3 p_counter', p_counter
+                #print '\n~~~~~~~~~~~~get_essay_body 3', p_counter, para
                 refs_counter +=1
                 p_counter +=1                
             else: # This is not a reference so just increment counter
@@ -487,8 +487,9 @@ def find_and_label_numeric_sents(sent):
 def count_words(sent):
     #print text[:50]
     mylist = []
-    mylabels = ['#dummy#','#+s:i#','#+s:c#','#+s:s#','#+s:p#']
-    if sent[0] in mylabels: # Only count the words of the true sentences, not headings, not tables, not title, not captions, etc.
+    mylabels = ['#dummy#','#+s:i#','#+s:c#','#+s:s#','#+s:p#','#-s:e#','#+s:b#']
+    if sent[0] in mylabels: # Only count the words of the true sentences (prose), table entries and list items. These are the same items that are considered for the key word graph. 
+        # not headings, not title, not captions, 
         x = sum(1 for w in sent[1:]) # Don't count the structure label in the wrd count!
         mylist.append(x)
     return mylist

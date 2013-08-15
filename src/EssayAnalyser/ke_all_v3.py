@@ -242,11 +242,13 @@ def cf_ass_q_keylemmas(ass_q,keylemmas,scoresNfreqs):
 # Does something similar for 'conclusion' sentences. 
 # Called by debora_results_ke (in this file).
 def cf_ngrams_section(keywords,ngrams,text_se,label):
+    #print '\n\n\n8888888888888 cf_ngrams_section text_se', text_se
     if ngrams != []:
         n = len(ngrams[0][0]) # Get the length of the ngram (could be 2,3,4...)
     else:
         n = 0
     temp = [x for y in text_se for x in y] # Unnest paragraph level of nesting in text
+    #print '\n\n\n8888888888888 cf_ngrams_section temp', temp
     temp = [item for item in temp if item[0][0] == label] # [('#+s:i#', 'NN'), ('report', 'report'), ('outlines', 'outline'), ('main', 'main'),
     temp = [x[1:] for x in temp] # Get rid of structure label at head of each sentence
     text = [x for y in temp for x in y] # Unnest sentence level of nesting

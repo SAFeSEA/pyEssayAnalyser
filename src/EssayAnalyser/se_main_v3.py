@@ -22,18 +22,18 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment)
 #### Comment these in and also comment out the call of get_assignment_data.
 #### Note that openEssayist is not using the comparison of the essay with the assignment question. These are only
 #### being used in the statistical analyses. They are dummy arguments in the openEssayist version of EssayAnalyser.
-ass_q_long_words = [[['#dummy#', u'write', u'report', u'explaining', u'main', u'accessibility', u'challenges', u'disabled', u'learners', u'work', u'support', u'work', u'context']]]
-
-ass_q_long_lemmd = [[[('#dummy#', 'NN'), (u'write', u'write'), (u'report', u'report'), (u'explaining', u'explain')]]]
-
-ass_q_long_lemmd2 = [[[u'write', u'report', u'explain', u'main', u'accessibility', u'challenge', u'disable']]]
-
-ass_q_short_lemmd = [[[('#dummy#', 'NN'), (u'write', u'write'), (u'report', u'report'), (u'explaining', u'explain')]]]
-
-tb_index_lemmd = [[[('#dummy#', 'NN'), (u'seale', u'seale'), (u'index', u'index')]]]
-
-tb_index_lemmd2 = [[[u'seale', u'index']], [[]], [[u'academic', u'freedom']], [[u'access', u'board', u'u']]]
-
+##ass_q_long_words = [[['#dummy#', u'write', u'report', u'explaining', u'main', u'accessibility', u'challenges', u'disabled', u'learners', u'work', u'support', u'work', u'context']]]
+##
+##ass_q_long_lemmd = [[[('#dummy#', 'NN'), (u'write', u'write'), (u'report', u'report'), (u'explaining', u'explain')]]]
+##
+##ass_q_long_lemmd2 = [[[u'write', u'report', u'explain', u'main', u'accessibility', u'challenge', u'disable']]]
+##
+##ass_q_short_lemmd = [[[('#dummy#', 'NN'), (u'write', u'write'), (u'report', u'report'), (u'explaining', u'explain')]]]
+##
+##tb_index_lemmd = [[[('#dummy#', 'NN'), (u'seale', u'seale'), (u'index', u'index')]]]
+##
+##tb_index_lemmd2 = [[[u'seale', u'index']], [[]], [[u'academic', u'freedom']], [[u'access', u'board', u'u']]]
+##
 
 ##############################
 ##############################
@@ -41,38 +41,38 @@ tb_index_lemmd2 = [[[u'seale', u'index']], [[]], [[u'academic', u'freedom']], [[
 ##############################
 ##############################     
 
-##def getAssignmentData(module,assignment):
-##    # get path of current file
-##    cwdir = os.path.abspath(os.path.dirname(__file__))
-##    # build path to data file
-##    
-##    ass_q_long_w = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long_w.txt')
-##    ass_q_long_w = os.path.normpath(ass_q_long_w)
-##    f = pickle.load(open(ass_q_long_w,'rb')) # Open for reading and unpickle the assignment question long version
-##    ass_q_long_words = f # which is stored in 'data' dir in the same dir as 'se_batch.py'
-##
-##    ass_q_long_le = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long_le.txt')
-##    f = pickle.load(open(ass_q_long_le,'rb')) 
-##    ass_q_long_lemmd = f 
-##
-##    ass_q_long_le2 = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long_le2.txt')
-##    f = pickle.load(open(ass_q_long_le2,'rb')) 
-##    ass_q_long_lemmd2 = f 
-##
-##    ass_q_short_le = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_short_le.txt')
-##    f = pickle.load(open(ass_q_short_le,'rb')) 
-##    ass_q_short_lemmd = f 
-##
-##    tb_index_le = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_tb_index_le.txt')
-##    f = pickle.load(open(tb_index_le,'rb')) 
-##    tb_index_lemmd = f 
-##
-##    tb_index_le2 = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_tb_index_le2.txt')
-##    f = pickle.load(open(tb_index_le2,'rb')) 
-##    tb_index_lemmd2 = f 
-##
-##    #return ass_q_txt, tb_index_txt
-##    return ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd,tb_index_lemmd, tb_index_lemmd2
+def getAssignmentData(module,assignment):
+    # get path of current file
+    cwdir = os.path.abspath(os.path.dirname(__file__))
+    # build path to data file
+    
+    ass_q_long_w = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long_w.txt')
+    ass_q_long_w = os.path.normpath(ass_q_long_w)
+    f = pickle.load(open(ass_q_long_w,'rb')) # Open for reading and unpickle the assignment question long version
+    ass_q_long_words = f # which is stored in 'data' dir in the same dir as 'se_batch.py'
+
+    ass_q_long_le = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long_le.txt')
+    f = pickle.load(open(ass_q_long_le,'rb')) 
+    ass_q_long_lemmd = f 
+
+    ass_q_long_le2 = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_long_le2.txt')
+    f = pickle.load(open(ass_q_long_le2,'rb')) 
+    ass_q_long_lemmd2 = f 
+
+    ass_q_short_le = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_ass_q_short_le.txt')
+    f = pickle.load(open(ass_q_short_le,'rb')) 
+    ass_q_short_lemmd = f 
+
+    tb_index_le = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_tb_index_le.txt')
+    f = pickle.load(open(tb_index_le,'rb')) 
+    tb_index_lemmd = f 
+
+    tb_index_le2 = os.path.join(cwdir,'..' + os.sep + 'data'+ os.sep,module + '_' + assignment + '_tb_index_le2.txt')
+    f = pickle.load(open(tb_index_le2,'rb')) 
+    tb_index_lemmd2 = f 
+
+    #return ass_q_txt, tb_index_txt
+    return ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd,tb_index_lemmd, tb_index_lemmd2
 
 def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     #startassdatatime = time()
@@ -84,8 +84,8 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     ##############################
 
     # xxxx the line below needs commenting out if you want to use small dummy data for the assignment question extras comparisons to speed up testing.
-##    ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd,tb_index_lemmd, tb_index_lemmd2 = \
-##                      getAssignmentData(module,assignment)
+    ass_q_long_words, ass_q_long_lemmd, ass_q_long_lemmd2,ass_q_short_lemmd,tb_index_lemmd, tb_index_lemmd2 = \
+                      getAssignmentData(module,assignment)
 
     #getassdatatime = time()
     #processasstexttime = time() # This is obselete now, because processing has been done beforehand
@@ -232,8 +232,8 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     # ranked_global_weights: [(0.0015941317409155402, 1, '#+s#', u'Navigation o the o resource is not required as the screencast opens automatically.', [(u'navigation', u'navigation'), (u'resource', u'resource'), (u'required', u'require'), (u'screencast', u'screencast'), (u'opens', u'open'), (u'automatically', u'automatically')]), (0.0015941317409154273, 2,
     # All headings are listed in reorganised_array, so change that.
     # reorganised_array [(0.0015789473684210528, 0, '#-s:t#', u'1 rhubarb 1234 4567', [(u'rhubarb', u'rhubarb')]), (0.0015941317409155402, 1, '#+s#', 
-    myheadings = ['#-s:H#', '#-s:s#', '#-s:d#', '#-s:l#', '#-s:c#'] # Map these back to old heading label
-    mysents = ['#-s:e#','#-s:b#','#-s:q#'] # Map these back to old sentence label. xxxx Note we have decided not to use the copied assignment questions in the openEssayist feedback.
+    myheadings = ['#-s:H#', '#-s:s#', '#-s:d#', '#-s:l#', '#-s:c#','#-s:q#'] # Map these back to old heading label
+    mysents = ['#-s:e#','#-s:b#'] # Map these back to old sentence label. xxxx Note we have decided not to use the copied assignment questions in the openEssayist feedback.
     mylist = []
     for item in reorganised_array:
         if item[2] in myheadings:

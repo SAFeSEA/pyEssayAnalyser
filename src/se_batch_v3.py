@@ -25,7 +25,7 @@ Before running a new version to generate a test set of data, check:
  - key sentence threshold -  Do you want all the sentences ranked, or the top N?
  - values defining the subgraphs
  - algorithm (betweenness or pagerank) of the key word graph
- - comment out code for comparing assignment question with essay. This is in main.py and ke_all.py.
+ - comment out arguments for comparing assignment question with essay. These are in ke_all.py.
  - make sure the correct sentence labels are being fed into ea.py by main.py.
 Before uploading to Github:
  - empty the data folder in src
@@ -41,8 +41,8 @@ Before uploading to Github:
 #def main():
 
 # Toggle between developer initials. My initials set to 'dev' switches on printing in a handful of cases.
-#dev = 'DGF'
-dev = 'NVL'
+dev = 'DGF'
+#dev = 'NVL'
 
 # The following model needs to be loaded if we use the alternative sentence splitter.
 #model = sbd.load_sbd_model('C:/Python27/Lib/site-packages/splitta.1.03/model_nb/', use_svm=False) # Playing with a different sentence splitter
@@ -166,7 +166,7 @@ for essay_fname in filelist: # For each file in the current directory...
         #print '\n\n', essay, '\n\n', essay_id , '\n\n'
 
         #print gr_se.edges(data = True)
-        
+        #print '\n', essay_fname # Print to shell to monitor progress        
         nf.close() # Close the essay results file
 nf2.close() # Close the summary results file.
 
