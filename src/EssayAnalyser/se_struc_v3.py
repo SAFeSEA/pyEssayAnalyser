@@ -1078,8 +1078,8 @@ def find_and_label_heading(text,sent, proc_sent, sent1, counter_s, counter_p, pa
           and counter_s == 0
           and len(sent1) < 7
           and not re.match('\d+$',lastword) # Stop contents being matched
-          and countPassageChars < countTextChars/3 # The introduction must not be more than a third of the length of the whole essay
-          and counter_p < len(text)/4): # The introduction heading must be in the first third of the text
+          and countPassageChars < countTextChars/3): # countPassageChars gives how many chars are between beginning of whole text and this line. That chunk should not be more than a third of the whole essay.
+          #and counter_p < len(text)/4): # The introduction heading must be in the first third of the text
         temp = ['#-s:s#'] + sent[1:]
         #print '\n12.', temp
         return temp
