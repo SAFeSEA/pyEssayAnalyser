@@ -91,12 +91,7 @@ def count_this_heading(section_name, headings, text):
 # Does this by finding the heading that follows the heading 'section_name' (already found).
 # The para that precedes that next heading is assumed to be the last para of the section.
 # Assumes that the sections (Intro, Concl, Summary, Preface) don't have headings inside them, which is not true in every case.
-# Function: find_last_section_para_index(section_name, heading_index_first, text)
 # Called by several functions in this file.
-# Returns the position of the last section_name paragraph in the essay.
-# Does this by finding the heading that follows the heading 'section_name' (already found).
-# The para that precedes that next heading is assumed to be the last para of the section.
-# Assumes that the sections (Intro, Concl, Summary, Preface) don't have headings inside them, which is not true in every case.
 def find_last_section_para_index(section_name, heading_index_first, text):
     counter_p = heading_index_first + 1 # Get the paragraph following the para that is the heading
     position1 = heading_index_first + 1 # position1 is used to ensure we only get the first eligible paragraph returned as the result.
@@ -111,7 +106,7 @@ def find_last_section_para_index(section_name, heading_index_first, text):
                         or text[counter_p][counter_s][0] == '#-s:l#' # a letter heading
                         or text[counter_p][counter_s][0] == '#-s:d#' # a digital heading
                         or text[counter_p][counter_s][0] == '#-s:s#') # a section heading
-                        and counter_p == position1): # See if this paragraph is a heading
+                        and counter_p == position1): 
                         section_index_last = counter_p - 1
                         position1 += counter_p
                         counter_s += 1
@@ -126,13 +121,35 @@ def find_last_section_para_index(section_name, heading_index_first, text):
             break
     if section_index_last != []: # If you have found a heading following 'heading_index_first'
         result = section_index_last
-    elif section_name == 'Conclusion': # If you can't find any headings following 'Conclusion', assume the end of the concl is the last paragraph of the body of the essay.
-        temp = len(text)-1
-        result = temp
+    elif section_name == 'Conclusion': # If you can't find any headings following 'Conclusion', 
+        counter_p = len(text)-1
+        while 1: # Start at the end of the essay and work backwards looking for a para that is not a heading or a caption
+            if counter_p >= heading_index_first: # If you find one, make that the last para of the conclusion
+                counter_s = 0
+                while 2:
+                    if counter_s <= len(text[counter_p]) - 1:
+                        if ((text[counter_p][counter_s][0] != '#-s:h#'
+                            and text[counter_p][counter_s][0] != '#-s:c#'
+                            and text[counter_p][counter_s][0] != '#-s:H#'
+                            and text[counter_p][counter_s][0] != '#-s:l#' # a letter heading
+                            and text[counter_p][counter_s][0] != '#-s:d#' # a digital heading
+                            and text[counter_p][counter_s][0] != '#-s:s#')): # a section heading
+                                #print '\n\nLAST PARA OF CONCL 11', text[counter_p]
+                                section_index_last = counter_p 
+                                #print section_index_last
+                                return section_index_last                                
+                        else:                        
+                            counter_s += 1                        
+                    else:
+                        break
+                counter_p -= 1
+            else:
+                x = len(text)-1
+                #print '\n\n LAST PARA OF CONCL 22', text[x]                
+                return len(text)-1 # If you don't find one, make the last para of the text the last para of the conclusion.                
     else:
         result = heading_index_first
     return result
-
 
 # Function: find_first_section_para_index(section_name, first_heading, text)
 # Called by find_section_paras when a section_name heading has been found.
