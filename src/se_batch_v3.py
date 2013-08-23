@@ -81,7 +81,7 @@ for essay_fname in filelist: # For each file in the current directory...
             #nf2.write('\n') # Add blank lines to the essay results file            
         nf2.write(str(essay_fname)) # Write the new file name to the essay results file
         nf2.write('; ')        
-        essay = top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA02")
+        essay = top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")
 
 ##        #############################
 ##        #############################
@@ -166,7 +166,7 @@ for essay_fname in filelist: # For each file in the current directory...
         #print '\n\n', essay, '\n\n', essay_id , '\n\n'
 
         #print gr_se.edges(data = True)
-        #print '\n', essay_fname # Print to shell to monitor progress        
+        print '\n', essay_fname # Print to shell to monitor progress        
         nf.close() # Close the essay results file
 nf2.close() # Close the summary results file.
 

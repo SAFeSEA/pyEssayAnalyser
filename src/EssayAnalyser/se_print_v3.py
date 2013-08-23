@@ -95,7 +95,7 @@ def write_to_summary_file(essay_fname,paras,number_of_words,\
                           nodes,edges,edges_over_sents,\
                           len_headings,\
                           ranked_global_weights,\
-                          b_last,countProseParas,countProseChars,len_refs,refsheaded,late_wc,\
+                          b_last,countProseSents,countProseChars,len_refs,refsheaded,late_wc,\
                           appendixheaded,\
                           introheaded,i_first,i_last,i_toprank,\
                           countIntroSent,countIntroChars,percent_body_i,\
@@ -150,8 +150,8 @@ def write_to_summary_file(essay_fname,paras,number_of_words,\
     nf2.write('list items; ')
     nf2.write(str(countListItem))
     nf2.write('; ')                              
-    nf2.write('prose paras; ')
-    nf2.write(str(countProseParas))
+    nf2.write('prose sents; ')
+    nf2.write(str(countProseSents))
     nf2.write('; ')
     nf2.write('prose chars; ')
     nf2.write(str(countProseChars))
@@ -261,7 +261,7 @@ def write_to_summary_file(essay_fname,paras,number_of_words,\
 ##    nf2.write(str(len_headings))
 ##    nf2.write('; ')
 ####    nf2.write('non-heading paras; ')
-####    nf2.write(str(countProseParas))
+####    nf2.write(str(countProseSents))
 ####    nf2.write('; ')
 ####    nf2.write('intro head; ')
 ####    nf2.write(str(introheaded))
@@ -389,13 +389,13 @@ def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_arr
         if label == '#+s:c#':
             countConclChars += len(item[3]) #1  # Count the number of characters in a sentence in the conclusion
         if label == '#+s#':
-            countDiscChars += len(item[3]) #1  # Count the number of characters in a sentence in the conclusion
+            countDiscChars += len(item[3]) #1  # Count the number of characters in a sentence in the discussion
         if label == '#+s:i#':
             countIntroSent += 1  # Count the number of sentences in the introduction
         if label == '#+s:c#':
             countConclSent += 1  # Count the number of sentences in the conclusion
         if label == '#+s#':
-            countDiscSent += 1  # Count the number of sentences in the essay body
+            countDiscSent += 1  # Count the number of sentences in the discussion
 
     if countTrueSent > 0:
         countAvSentLen = float(countSentLen) / float(countTrueSent)
@@ -405,7 +405,7 @@ def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_arr
 
     len_headings = len(headings)
 
-    countProseParas = countIntroSent + countConclSent + countDiscSent
+    countProseSents = countIntroSent + countConclSent + countDiscSent
 
     countProseChars = countIntroChars + countConclChars + countDiscChars
 
@@ -450,7 +450,7 @@ def get_essay_stats_se(gr_se,text,headings,ranked_global_weights,reorganised_arr
 
     i_toprank,c_toprank = cf_keysents_sections(ranked_global_weights)
 
-    return paras, rankorder,countProseParas,countProseChars,len_headings,\
+    return paras, rankorder,countProseSents,countProseChars,len_headings,\
            countSentLen,truesents,countTrueSent,countTrueSentChars, countFalseSent,\
            countAvSentLen,countIntroSent,countIntroChars,countConclSent,\
            countConclChars,countAssQSent,\
@@ -534,7 +534,7 @@ def debora_write_results_se(essay_fname,\
             section_names,section_labels,headings,len_headings,\
             countAssQSent,countTitleSent,
             countTableEnt,countListItem,\
-            b_last,countProseParas,countProseChars,len_refs,refsheaded,late_wc,appendixheaded,\
+            b_last,countProseSents,countProseChars,len_refs,refsheaded,late_wc,appendixheaded,\
             introheaded,i_first,i_last,i_toprank,countIntroSent,countIntroChars,percent_body_i,\
             conclheaded,c_first,c_last,c_toprank,
             countConclSent,countConclChars,percent_body_c,\
@@ -552,7 +552,7 @@ def debora_write_results_se(essay_fname,\
                           nodes,edges,edges_over_sents,\
                           len_headings,\
                           ranked_global_weights,\
-                          b_last,countProseParas,countProseChars,len_refs,refsheaded,late_wc,\
+                          b_last,countProseSents,countProseChars,len_refs,refsheaded,late_wc,\
                           appendixheaded,\
                           introheaded,i_first,i_last,i_toprank,\
                           countIntroSent,countIntroChars,percent_body_i,\

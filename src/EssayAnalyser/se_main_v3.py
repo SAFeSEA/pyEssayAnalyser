@@ -143,7 +143,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     ##############################
     ##############################      
 
-    paras,rankorder,countProseParas,countProseChars,len_headings,\
+    paras,rankorder,countProseSents,countProseChars,len_headings,\
     countSentLen,truesents,countTrueSent,countTrueSentChars,countFalseSent,\
     countAvSentLen,countIntroSent,countIntroChars,countConclSent,\
     countConclChars,countAssQSent,\
@@ -200,7 +200,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
             section_names,section_labels,headings,len_headings,\
             countAssQSent,countTitleSent,\
             countTableEnt,countListItem,\
-            b_last,countProseParas,countProseChars,len_refs,refsheaded,late_wc,appendixheaded,\
+            b_last,countProseSents,countProseChars,len_refs,refsheaded,late_wc,appendixheaded,\
             introheaded,i_first,i_last,i_toprank,countIntroSent,countIntroChars,percent_body_i,\
             conclheaded,c_first,c_last,c_toprank,
             countConclSent,countConclChars,percent_body_c,\
@@ -232,8 +232,8 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     # ranked_global_weights: [(0.0015941317409155402, 1, '#+s#', u'Navigation o the o resource is not required as the screencast opens automatically.', [(u'navigation', u'navigation'), (u'resource', u'resource'), (u'required', u'require'), (u'screencast', u'screencast'), (u'opens', u'open'), (u'automatically', u'automatically')]), (0.0015941317409154273, 2,
     # All headings are listed in reorganised_array, so change that.
     # reorganised_array [(0.0015789473684210528, 0, '#-s:t#', u'1 rhubarb 1234 4567', [(u'rhubarb', u'rhubarb')]), (0.0015941317409155402, 1, '#+s#', 
-    myheadings = ['#-s:H#', '#-s:s#', '#-s:d#', '#-s:l#', '#-s:c#','#-s:q#'] # Map these back to old heading label
-    mysents = ['#-s:e#','#-s:b#'] # Map these back to old sentence label. xxxx Note we have decided not to use the copied assignment questions in the openEssayist feedback.
+    myheadings = ['#-s:H#', '#-s:s#', '#-s:d#', '#-s:l#', '#-s:c#','#-s:q#','#-s:e#','#-s:b#'] # Map these back to old heading label
+#    mysents = ['#-s:e#','#-s:b#'] # Map these back to old sentence label. xxxx Note we have decided not to use the copied assignment questions in the openEssayist feedback.
     mylist = []
     for item in reorganised_array:
         if item[2] in myheadings:
@@ -242,12 +242,12 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
             c = a+('#-s:h#',)
             d = c + b
             mylist.append(d)
-        elif item[2] in mysents:
-            a = item[:2]
-            b = item[3:]
-            c = a+('#+s#',)
-            d = c + b
-            mylist.append(d)            
+##        elif item[2] in mysents:
+##            a = item[:2]
+##            b = item[3:]
+##            c = a+('#+s#',)
+##            d = c + b
+##            mylist.append(d)            
         else:
             mylist.append(item)
     reorganised_array = mylist
@@ -258,7 +258,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     ## 9. Make an array containing the paramaters Nicolas wants for ea_results/openEssayist and call it 'essay'
     ##############################
     ##############################
-    # xxxx Note that 'countProseParas' is the old 'len_body'. I am leaving ea.py as it is for now.
+    # xxxx Note that 'countProseSents' is the old 'len_body'. I am leaving ea.py as it is for now.
 
     essay = make_results_array(parasenttok,myarray_ke,gr_ke_sample,\
                                paras,number_of_words,
@@ -267,7 +267,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
                                ranked_global_weights,reorganised_array,threshold_ke,\
                                len_headings,\
                                countAssQSent,countTitleSent,\
-                               b_last,countProseParas,len_refs,refsheaded,late_wc,appendixheaded,\
+                               b_last,countProseSents,len_refs,refsheaded,late_wc,appendixheaded,\
                                introheaded,i_first,i_last,i_toprank,countIntroSent,percent_body_i,\
                                conclheaded,c_first,c_last,c_toprank,countConclSent,percent_body_c,\
                                keylemmas,keywords,fivemostfreq,bigram_keyphrases,trigram_keyphrases,quadgram_keyphrases,\
@@ -284,7 +284,7 @@ def top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,module,assignment):
     #print '\n\n', essay
     #print '\n\n',parasenttok[:5]
     #print '\n\n',ranked_global_weights
-    #print '\n\n',reorganised_array
+    #print '\n\n',reorganised_array[-10:]
     
 
 

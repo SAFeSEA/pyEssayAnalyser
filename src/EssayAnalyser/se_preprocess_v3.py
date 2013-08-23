@@ -25,6 +25,7 @@ def reinstate_hyphens2(sent):
 def process_sents(do_this, text):
 def word_tokenize(text):
 def remove_punc_fm_sents(sent):
+def remove_punc_fm_sents2(sent):
 def count_words(sent):
 def find_and_label_numeric_sents(sent):
 def lowercase_sents(sent):
@@ -161,8 +162,10 @@ def get_essay_body(parasenttok,nf,dev):
                 print '~~~~~~~~~~~~ESSAY BODY NOT ISOLATED~~~~~~~~'
             return len(parasenttok),parasenttok,0, responseR,False,False
 
-# Called by get_essay_body             
+# Called by get_essay_body
+
 def find_appendix_head(parasenttok,refs_head_index,nf,dev):
+    appendices = re.compile('appendices', re.IGNORECASE)
     result = []
     p_counter = refs_head_index # Start at the REFS heading
     print '~~~~~~~~~~~~~~~parasenttok[p_counter]', parasenttok[p_counter] 
@@ -183,6 +186,21 @@ def find_appendix_head(parasenttok,refs_head_index,nf,dev):
         else:
             #print '~~~~~~~~~~~~~find_refs FAILS~~~~~~~~~~~'   
             break
+    p_counter = refs_head_index # Start at the REFS heading and look for 'APPENDICES' only first in case essay has several not just one and you have skip over each occurrence of 'appendix' to find the first one.
+    while 1: # Start at refs heading and work backwards 
+        if p_counter >= 0: # ... and stop when you reach the beginning of the text
+            para = ' '.join(parasenttok[p_counter])
+            firstsent = parasenttok[p_counter][0] # Get the first sentence only of the paragraph. Note it is not word tokenised.
+            if len(firstsent)<50: # Note I'm not sure what this number should be. Needs to be lower than 54 for this essay: Y432872X-H810-12I_02-1-M.txt
+                if re.search(appendices, firstsent):
+                    print '~~~~~~~~~~~~~find_appendix_head succeeds 2 with p_counter =: ', p_counter                    
+                    return 'before', p_counter, True
+                else:
+                    p_counter -= 1
+            else:
+                p_counter -= 1
+        else: 
+            break        
     p_counter = refs_head_index # Start at the REFS heading
     while 1: # Start at refs heading and work backwards 
         if p_counter >= 0: # ... and stop when you reach the beginning of the text
@@ -192,7 +210,7 @@ def find_appendix_head(parasenttok,refs_head_index,nf,dev):
                 if ('Appendix' in firstsent or 'APPENDIX' in firstsent or 'Appendices' in firstsent or 'Annex' in firstsent):
                     if dev == 'DGF':
                         result = True
-                        print '~~~~~~~~~~~~~find_appendix_head succeeds 2 with p_counter =: ', p_counter                    
+                        print '~~~~~~~~~~~~~find_appendix_head succeeds 3 with p_counter =: ', p_counter                    
                     return 'before', p_counter, True
                 else:
                     p_counter -= 1
@@ -260,7 +278,7 @@ def find_refs_heading(parasenttok,nf,dev):
                 #print '~~~~~~~~~~~~~and with refs heading', parasenttok[p_counter]
                 #print '~~~~~~~~~~~~~and with length of refs heading = ', len(firstsent)
                 return p_counter, newtext, True                        
-            elif len(firstsent)<50: # xxxx This doesn't work even for tma01: and p_counter > len(parasenttok)/2: # The refs heading must be in the second half of paragraphs. This may not work for TMA02.
+            elif len(firstsent)<45: # xxxx This doesn't work even for tma01: and p_counter > len(parasenttok)/2: # The refs heading must be in the second half of paragraphs. This may not work for TMA02.
                 # I need to be more careful about 'Resources' because there are lots of headings in tma02 with 'resource' in them. I've specified single-sentence para, short, must start with 'Resources'.
 ##                if (len(parasenttok[p_counter]) == 1 # if the current para has only one sentence                        
 ##                        and re.search(r'(^|\n)Resources', firstsent)): # and it starts with 'Resources'
@@ -406,15 +424,12 @@ def word_tokenize(text):
 # Returns updated sentence.
 # These items are removed because we don't want them appearing as key words or affecting the key sentence calculations.
 def remove_punc_fm_sents(sent):
-    #temp1 = [re.sub('--', "*", w) for w in sent] # Change double hyphens to stars, and then don't delete stars. Used as list markers. Useful for recognising non-headings.            
-    #temp = [w for w in sent if not w.startswith(u'({\\')] # xxxx temporary for latex testing
-    #temp = [w for w in temp if not w.startswith(u'{\\')] # xxxx temporary for latex testing
-    #temp = [w for w in temp if not w.startswith(u'\\')] # xxxx temporary for latex testing
-    #temp = [w for w in temp if not w.startswith(u'cite')] # xxxx temporary for latex testing
-    # \- # I am not getting rid of hyphens, because they are often used as list enumerators.
+    # - # I am not getting rid of hyphens, because they are often used as list enumerators.
+    # I am not getting rid of colons because they help identify prose sentences that end with a hyphen which can be mistaken for headings.
     # Get rid of them later.
-    temp = [w for w in sent if not re.search('[\.\|\?\+\(\)\{\}\[\]\^\$\\\'\"`!,;:/\
-                                             \=%\*@\&\<\>\[\]\{\}~#\^]+', w)] # This gets rid of ASCII punctuation and symbols
+    #print sent
+    temp = [w for w in sent if not re.match('[\.\|\?\+\(\)\{\}\[\]\^\$\\\'\"`!,;/\=%\*@\&\<\>\[\]\{\}~#]+$', w)] # This gets rid of tokens that constitute a series of ASCII punctuation and symbols and that do not end in symbols omitted from the list, e.g., hyphen and colon-
+    #print temp
     myfunnychars = [u'\u2019', u'\u2018', u'\u201a', u'\u201b', u'\u201c', # A crib for these symbols is in file unicode_symbol_codes.xlsx
                     u'\u201d', u'\u201e', u'\u201f', u'\ufeff',
                     u'\u2026', u'\u27a2', u'\ufeff', u'\xb9', u'\xb2',
@@ -446,7 +461,7 @@ def remove_punc_fm_sents(sent):
                     u'\u21b5', u'\u21b5', u'\u21b5\u2020',
                     u'\u21b5\u2020', u'\u2202', u'\u2208', u'\u2211', u'\u221d', u'\u221e',
                     u'\u222b', u'\u223c', u'\u2260', u'\u2261', u'\u2264', 
-                    u'\u226a', u'\u226b', u'\u3008', u'\u3009',
+                    u'\u226a', u'\u226b', u'\u3008', u'\u3009', u'\u0060',
                     
                     u'\u2212', u'\u21B5\x2a' u'\xB0', u'\xB1',u'\xD7', u'\u03BB', u'\xA9',u'\u03BE',u'\u03C6',u'\u03B1', # xxxx From this line onwards were put in for the abstract analyses.
                     u'\u03D5', u'\u02D5',u'\u03BC',u'\u2032',u'\u03C9',u'\u2265',u'\u2248',u'\u225C'] 
@@ -461,6 +476,15 @@ def remove_punc_fm_sents(sent):
     else:
         result = ['#dummy#'] + temp # Otherwise put a 'dummy' label in as a place-holder for proper labels to be added later.
     return result
+
+def remove_punc_fm_sents2(sent):
+    sent = [w for w in sent if not re.match(r'^o$',w)] # Gets rid of single letter 'o' (used as a bullet point).
+    sent = [w for w in sent if not re.match(r'^[0-9]+$',w)] # Gets rid of single letter 'o' (used as a bullet point) and integers.
+    sent = [w for w in sent if not re.match(u'\u2022',w)] # Gets rid of bullet points.
+    sent = [w for w in sent if not re.match(u'\xb7',w)] # Gets rid of middle dots.
+    sent = [w for w in sent if not re.match(u'-',w)] # Gets rid of a token that is a hyphen or a series of hyphens (not hyphens in the middle of hyphenated words). These often used like bullet points. Should not interfere with hyphenated words.
+    sent = [w for w in sent if not re.match(u':',w)] # Gets rid of a token that is a colon or a series of colons 
+    return sent
     
 # Function: find_and_label_numeric_sents
 # Called by 'pre_process_text' in file 'se_procedure.py'.
@@ -485,9 +509,9 @@ def find_and_label_numeric_sents(sent):
 
 # Called by 'pre_process_text' in file 'se_procedure.py'.
 def count_words(sent):
-    #print text[:50]
+    #print sent
     mylist = []
-    mylabels = ['#dummy#','#+s:i#','#+s:c#','#+s:s#','#+s:p#','#-s:e#','#+s:b#']
+    mylabels = ['#+s#','#+s:i#','#+s:c#','#+s:s#','#+s:p#','#-s:e#','#+s:b#'] # xxxx 'dummy' is the label of things that have not been identified. Much more likely not to be prose than to be prose, so I've left it out.
     if sent[0] in mylabels: # Only count the words of the true sentences (prose), table entries and list items. These are the same items that are considered for the key word graph. 
         # not headings, not title, not captions, 
         x = sum(1 for w in sent[1:]) # Don't count the structure label in the wrd count!
@@ -530,21 +554,12 @@ def remove_stops_fm_sents(sent):
 # The POS tag is removed.
 # Note that for the lemmatiser to work properly, it needs to know the POS-tag, hence the POS-tagging.
 # Test sentence: [('#+s:i#', 'NN'), ('*', '-NONE-'), ('usual', 'JJ'), ('counter', 'NN'), ('questions', 'NNS'), ('one', 'CD'), ('meets', 'NNS'), ('looking', 'VBG'), ('answers', 'NNS'), ('system', 'NN'), ('builders', 'NNS'), ('test', 'NN'), ('creations', 'NNS'), ('cleverest', 'JJS'), ('users', 'NNS'), ('instead', 'RB'), ('trying', 'VBG'), ('dumbest', 'JJS'), ('handicapped', 'JJ'), ('users', 'NNS'),('#-s:h#', 'NN'), ('tma01', 'NNP'), ('#-s:h#', 'NN'), ('michele', 'NNP'), ('farmer', 'NNP'), ('#-s:h#', 'NN'), ('c2907684', 'NNP'),('#dummy#', 'NN'), ('person', 'NN'), ('disability', 'NN'), ('purposes', 'NNS'), ('act', 'NNP'), ('physical', 'JJ'), ('mental', 'JJ'), ('impairment', 'NN'), ('impairment', 'NN'), ('substantial', 'JJ'), ('long', 'JJ'), ('term', 'NN'), ('adverse', 'NN'), ('effect', 'NN'), ('ability', 'NN'), ('carry', 'VB'), ('normal', 'JJ'), ('day', 'NN'), ('day', 'NN'), ('activities', 'NNS'), ('s6', 'NNP'), ('1', 'CD'), ('12', 'CD'), ('122', 'CD'), ('#dummy#', 'NN'), ('o', 'VBD'), ('visually', 'NNP'), ('impaired', 'VBD'), ('student', 'NN'), ('received', 'VBN'), ('tactile', 'JJ'), ('diagrams', 'NNS'), ('geography', 'NN'), ('course', 'NN'), ('#dummy#', 'NN'), ('o', 'VBD'), ('student', 'NNP'), ('fatigue', 'JJ'), ('received', 'VBN')]
-# I am cleaning the text a little by getting rid of chars that were used to mark headings
-# and that we therefore couldn't get rid of before the headings were identified.
-# These were needed until now to derive essay structure, but we don't want them as nodes in the graphs.
-# xxxx Note that I am getting rid of integers, which means that years (from citations) are going.
-# This only happens in the key word graph. We don't lemmatise for the key sentence graph.
+# We don't lemmatise for the key sentence graph only the key word graph.
 def get_lemmas(sent):
-    # Note that the text is word-tokenised and POS-tagged, and so position relative to the text is now largely irrelevant.
-    #sent = [w for w in sent if not re.match('^[o*0-9]+$',w[0])] # Gets rid of tokens that are 'o' or '*' or an integer. # [('#dummy#', 'NN'), ('write', 'NNP'), ('report', 'NN')
-    sent = [w for w in sent if not re.match(r'[o0-9]+$',w[0])] # Gets rid of single letter 'o' (used as a bullet point) and integers.
-    sent = [w for w in sent if not re.match(u'\u2022',w[0])] # Gets rid of bullet points.
-    sent = [w for w in sent if not re.match(u'\xb7',w[0])] # Gets rid of middle dots.
-    sent = [w for w in sent if not re.match(u'-',w[0])] # Gets rid of a token that is a hyphen (not hyphens in the middle of hyphenated words). These often used like bullet points. Should not interfere with hyphenated words.
     mylist = []
     lmtzr = WordNetLemmatizer()
     sent1 = sent[1:] # Redefine sent so it doesn't include the struc label
+    #print sent1
     wordnet_tag ={'NN':'n','NNS':'n','NNP':'n','NNPS':'n','JJ':'a','JJR':'a','JJS':'a','VB':'v','VBD':'v','VBG':'v','VBN':'v','VBP':'v','VBZ':'v','RB':'r','RBR':'r','RBS':'r'}
     for t in sent1:
 	try:

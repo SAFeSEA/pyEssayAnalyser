@@ -53,23 +53,40 @@ def add_to_sentence_array(myarray, text):
 # actual sentences as nodes. The structure label of each sentence is also added
 # to the array entry of that sentence.
 # Called by make_sentence_graph_nodes in this file.
+# xxxx Now that I am labelling the 'discussion' before I get to this point, I am simplifying this rule.
+# Everything goes into the array with the label it has gained by this point.
 def fill_sentence_array(myarray, text, struc_labels):
     counter = 0 # Sentence counter to add as key in array
     for para in text:
         for sent in para:
-            #if sent != [] and sent[0] != '#-s:p#' and sent[0] != '#-s:n#' and sent[0] != '#-s:h#' and sent[0] != '#-s:t#' and sent[0] != '#-s:q#' and sent[0] != '#dummy#':            
-            if sent != [] and sent[0][0] != '#dummy#':  # If sent is anything but a true sentence
+            if sent != []:            
                 place = struc_labels.index(sent[0][0]) # Get the label of the sentence
                 label = struc_labels[place]
                 temp = sent[1:] # Get everything in the sent after the label
                 add_item_to_array(myarray, counter, temp) # Add the sent to the array
                 add_item_to_array(myarray, counter, label) # add the label to the array at the same key
-            # Everything is labelled 'dummy' in the first instance. Here things still labelled 'dummy' are relabelled '#+s#' for 'true sentence'.                
-            elif sent != [] and sent[0][0] == '#dummy#': # I am keeping 'dummy' for the time being but may get rid of it. 
-                temp = sent[1:]
-                add_item_to_array(myarray, counter, temp)
-                add_item_to_array(myarray, counter, '#+s#')                  
-            counter += 1
+                counter += 1
+            else:
+                counter += 1
+
+
+##def fill_sentence_array(myarray, text, struc_labels):
+##    counter = 0 # Sentence counter to add as key in array
+##    for para in text:
+##        for sent in para:
+##            #if sent != [] and sent[0] != '#-s:p#' and sent[0] != '#-s:n#' and sent[0] != '#-s:h#' and sent[0] != '#-s:t#' and sent[0] != '#-s:q#' and sent[0] != '#dummy#':            
+##            if sent != [] and sent[0][0] != '#dummy#' and sent[0][0] != '#+s#':  # If sent is anything but a true sentence
+##                place = struc_labels.index(sent[0][0]) # Get the label of the sentence
+##                label = struc_labels[place]
+##                temp = sent[1:] # Get everything in the sent after the label
+##                add_item_to_array(myarray, counter, temp) # Add the sent to the array
+##                add_item_to_array(myarray, counter, label) # add the label to the array at the same key
+##            # Everything is labelled 'dummy' in the first instance. Here things still labelled 'dummy' are relabelled '#+s#' for 'true sentence'.                
+##            elif sent != [] and (sent[0][0] == '#dummy#' or sent[0][0] == '#+s#'): # I am keeping 'dummy' for the time being but may get rid of it. 
+##                temp = sent[1:]
+##                add_item_to_array(myarray, counter, temp)
+##                add_item_to_array(myarray, counter, '#+s#')                  
+##            counter += 1            
             
 # Function:  make_edge_weights_arrays(myarray, myWarray, myCarray)
 # Fill the empty array 'myWarray' with the unique lemmas for each sentence
@@ -79,13 +96,16 @@ def fill_sentence_array(myarray, text, struc_labels):
 # each sentence. Each entry is the number of occurrences of the lemma that occurs
 # in that same position in 'myWarray'.
 # Called by add_sentence_graph_edges in this file.
+#['#-s:q#','#-s:t#','#-s:s#','#-s:h#','#-s:H#','#-s:b#',
+# '#-s:e#','#-s:c#','#-s:d#','#-s:l#','#+s:i#','#+s:c#',
+# '#+s#', '#dummy#', '#+s:p#','#-s:n#','#-s:p#']
+
 def make_edge_weights_arrays(myarray, myWarray, myCarray):
     sentencecounter = 0
     while 1:
         #if sentencecounter == 246:    
         if sentencecounter <= len(myarray)-1:
             tidysent = myarray[sentencecounter][0]
-            #print '\n\n\n{{{{{{{{{{{{{{{{{{{{{{{{{{ myarray[sentencecounter]', myarray[sentencecounter]
             label = myarray[sentencecounter][1]           
             if tidysent == []:
                 add_item_to_array(myWarray, sentencecounter, '$$$$EMPTY_SENT_TOKEN$$$$')
@@ -99,7 +119,8 @@ def make_edge_weights_arrays(myarray, myWarray, myCarray):
                   or label == '#-s:h#' or label == '#-s:t#'
                   or label == '#-s:q#' or label == '#-s:H#' or label == '#-s:s#'
                   or label == '#-s:d#' or label == '#-s:l#' 
-                  or label == '#-s:b#' or label == '#-s:e#' or label == '#-s:c#'):
+                  or label == '#-s:b#' or label == '#-s:e#' or label == '#-s:c#'
+                  or label == '#+s:p#' or label == '#dummy#'): # xxxx Note that this is new here. I am now labelling discussion before this point.
                   #or label == '#+s:p#' or label == '#+s:s#'):
                 add_item_to_array(myWarray, sentencecounter, '$$$$NOT_A_TRUE_SENTENCE$$$$')
                 add_item_to_array(myCarray, sentencecounter, 0)
@@ -237,7 +258,6 @@ def add_all_node_edges(gr,myWarray,myCarray,nf2,dev):
         if counter0 <= (len(myWarray) - 1) and counter1 > counter0: # Stop looping when the counter reaches the total number of sentences
             # ... plus the first/'from' node in a pair must be greater (later in the text/graph) than the second/'to' node in this case to reflect directedness: later nodes can point to earlier ones, but not vice versa
             zeroweights = add_one_nodes_edges(gr, counter1, counter0, myWarray,myCarray,dev) # Add all the edges for one node (the 'to' node)
-            #print '\n\nThis is counter 0 and counter 1: ', counter0, counter1
             counter0 += 1 # Increment the 'to' node
         elif counter1 <= counter0: # If the 'from' node is smaller/= the 'to' node
             counter1 += 1
@@ -261,13 +281,9 @@ def add_all_node_edges(gr,myWarray,myCarray,nf2,dev):
 # 'min_value' is (1.0-d)/graph_size.
 # i is just for monitoring.
 def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):  
-    #print 'Iteration:'
-    #print i
-    #print 'For Vi:'
-    #print Vi
     score = 0 # Set a temporary score to zero to enable calculations of the rhs of the TextRank equation
-    #list0 = gr.predecessors(Vi) # xxxx @directedness 'directed'. Do not delete. Find out which nodes point to Vi, i.e., ALL its predecessors. Directed graph.
-    list0 = gr.neighbors(Vi) # xxxx @directedness 'undirected'. Find out which nodes link Vi to other nodes, i.e., ALL its NEIGHBOURS. 
+    list0 = gr.predecessors(Vi) # xxxx @directedness 'directed'. Do not delete. Find out which nodes point to Vi, i.e., ALL its predecessors. Directed graph.
+    #list0 = gr.neighbors(Vi) # xxxx @directedness 'undirected'. Find out which nodes link Vi to other nodes, i.e., ALL its NEIGHBOURS. 
     if list0 == []: # If Vi has no predecessors 
         WSVi = min_value # Set WSVi to the minimum value
         #print 'If clause: No nodes point to this Vi so WSVi set to minimum value:'
@@ -276,8 +292,8 @@ def find_global_weight_score(Vi, gr, d, min_value, graph_size, scores_array, i):
     else:    
         for Vj in list0: # For each node Vj that points to Vi
             w = gr[Vj][Vi]['weight'] # Get the weight of the edge Vj->Vi from the graph
-            #WoutVj = gr.out_degree(Vj,weight='weight') # xxxx @directedness 'directed'. Do not delete. Find each edge Vj->Vk that points out of Vj and sum their weights to give WoutVj. Directed graph version.
-            WoutVj = gr.degree(Vj,weight='weight') # xxxx @directedness 'undirected' Find each edge Vj->Vk that links Vj to other nodes and sum their weights to give WoutVj. Undirected graph.
+            WoutVj = gr.out_degree(Vj,weight='weight') # xxxx @directedness 'directed'. Do not delete. Find each edge Vj->Vk that points out of Vj and sum their weights to give WoutVj. Directed graph version.
+            #WoutVj = gr.degree(Vj,weight='weight') # xxxx @directedness 'undirected' Find each edge Vj->Vk that links Vj to other nodes and sum their weights to give WoutVj. Undirected graph.
             # (We know that at least one edge points out of Vj, the one towards Vi, so no need for empty list alternative)
             WSVj = scores_array[Vj] # Get the most recent WS score from 'scores_array' for Vj (these are seeded right at the beginning with an arbitrary value)
             #print 'This is the most recent WSVj score:'
@@ -386,7 +402,7 @@ def reorganise_array(myarray):
 # Returns the list of true sentences in descending rank order.
 # Called by find_sentence_graph_scores in this file.
 def sort_ranked_sentences(mylist):
-    mylist = [item for item in mylist if item[2] == '#+s#' or item[2] == '#dummy#' or item[2] == '#+s:i#' or item[2] == '#+s:c#']# or item[2] == '#-s:h#']    # or item[2] == '#-s:t#'or item[2] == '#-s:q#']
+    mylist = [item for item in mylist if item[2] == '#+s#' or item[2] == '#+s:i#' or item[2] == '#+s:c#']# or item[2] == '#dummy#' or item[2] == '#-s:h#']    # or item[2] == '#-s:t#'or item[2] == '#-s:q#']
     mylist.sort() # ... and sort the structure according to its first argument (WSVi score)
     list.reverse(mylist)
     #values = set(map(lambda x:x[1], mylist)) # This routine groups the things sorted into lists if they have the same sort value
@@ -431,8 +447,8 @@ def sample_nodes_for_figure(graph,nodes,cat):
     #all_edges = graph.edges(data = True) # Get a list of all the graph's edges (expressed like '(21, 47, {'weight': 0.2891574659831202})')
     mylist = []
     for item in nodes:
-        #successors = len(graph.successors(item)) # xxxx Do not delete. Get the length of the list of successors for each node. Directed graph version.
-        successors = len(graph.neighbors(item)) # xxxx Get the length of the list of neighbours for each node. Undirected version.
+        successors = len(graph.successors(item)) # xxxx Do not delete. Get the length of the list of successors for each node. Directed graph version.
+        #successors = len(graph.neighbors(item)) # xxxx Get the length of the list of neighbours for each node. Undirected version.
         #print 'Number of neighbours for node: ', item, ' : ', successors
         if successors > 2: #>= 0:  # > 2 # Currently I am including nodes that don't have any successors, so they would appear in the graph as unconnected nodes.
             mylist.append([item,successors])

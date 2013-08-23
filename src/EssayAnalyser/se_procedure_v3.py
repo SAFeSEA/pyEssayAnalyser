@@ -1,7 +1,7 @@
 import networkx as nx # This is for implementing networks/graphs
 #from time import time # For calculating processing times
 from nltk.tag import pos_tag
-from se_preprocess_v3 import parasent_tokenize, edit_text, get_essay_body, reinstate_hyphens1, reinstate_hyphens2, process_sents, word_tokenize, remove_punc_fm_sents, find_and_label_numeric_sents, count_words, lowercase_sents, remove_stops_fm_sents, get_lemmas  # File containing my own functions. This version of the functions uses cosine similarity, no edge if edge == 0, AND uses two arrays to speed up building of the graph. 
+from se_preprocess_v3 import parasent_tokenize, edit_text, get_essay_body, reinstate_hyphens1, reinstate_hyphens2, process_sents, word_tokenize, remove_punc_fm_sents, remove_punc_fm_sents2, find_and_label_numeric_sents, count_words, lowercase_sents, remove_stops_fm_sents, get_lemmas  # File containing my own functions. This version of the functions uses cosine similarity, no edge if edge == 0, AND uses two arrays to speed up building of the graph. 
 from se_struc_v3 import find_and_label_headings,find_and_label_section_sents
 from se_graph_v3 import make_sentence_graph_nodes, add_sentence_graph_edges, find_sentence_graph_scores
 """
@@ -55,20 +55,21 @@ def pre_process_text(text0,ass_q_long_words,nf,nf2,dev):
     parasenttok = process_sents(reinstate_hyphens2, text)
 
     # WORD-TOKENISE THE PARAGRAPH- AND SENTENCE-TOKENISED TEXT BEFORE HYPHENS PUT BACK IN          
-    wordtok = word_tokenize(text)
+    wordtok = word_tokenize(text)    
 
     # PUT THE HYPHENS BACK IN
     # Preserve variable 'wordtok' to pass for later use in key word analysis.
     # Key word analysis uses a part-of-speech tagger that
     # uses _all_ the tokens to help decisions about parts of speech.
     # So keep 'wordtok' for later as is before punctuation removed.
-    wordtok = process_sents(reinstate_hyphens1, wordtok)
+    wordtok = process_sents(reinstate_hyphens1, wordtok)    
 
     # REMOVE PUNCTUATION
     # Note that this also labels sentences that only contain punctuation as '#-s:p#'.
     # Hyphens are not removed by this because hyphens are used sometimes as list itemisers.
-    # Hyphens are removed by 'get_lemmas' prior to lemmatising and key word analysis.
+    # Hyphens and commas are removed later prior to the key element graph constructions. 
     # Only hyphens that constitute tokens are removed, not hyphens within words.
+    # Colons are not removed at this stage because they are used in 'non' heading recognition.
     text = process_sents(remove_punc_fm_sents, wordtok)
         
     # LABEL THE SENTENCES THAT ONLY CONTAIN NUMBERS
@@ -85,22 +86,34 @@ def pre_process_text(text0,ass_q_long_words,nf,nf2,dev):
     # Find and label as 'heading' all the paragraphs that are probably headings, captions, table entries, list items, etc.
     # Happens before lowercasing in case we use letter case as a clue.
     # Happens before removing stop words because some sentences become very short if you remove all the stop words from them, and so can get mistaken for headings.
-    text50, headings = find_and_label_headings(text,ass_q_long_words,nf2,dev)
+    text50, headings, countTextChars = find_and_label_headings(text,ass_q_long_words,nf2,dev)
 
     # FIND AND LABEL SECTION SENTENCES
     text77,section_names,section_labels,headings,conclheaded,c_first,c_last,introheaded,i_first,i_last = \
-        find_and_label_section_sents(text50,headings,nf,nf2,dev)
+        find_and_label_section_sents(text50,headings,countTextChars,nf,nf2,dev)
+    print '\nREMAINING UNLABELLED SENTENCES:'
+    for para in text77:
+        for sent in para:
+            if sent[0] == '#dummy#':
+                print sent
+    print '\n'
+
+#_______________________________________
+    #########################
+    # REMOVE REMAINING PUNC
+    #########################
+
+    text77 = process_sents(remove_punc_fm_sents2, text77)
+    
 #__________________________________________
     #########################
     # DO FURTHER PRE-PROCESSING OF TEXT FOLLOWING STRUCTURE ANALYSIS
     #########################
-    # COUNT THE NUMBER OF WORDS IN THE ESSAY. ONLY COUNT PROSE WORDS (WORDS IN TRUE SENTENCES). 
+    # COUNT THE NUMBER OF WORDS IN THE ESSAY. ONLY COUNT PROSE WORDS (WORDS IN TRUE SENTENCES).
     countslist = process_sents(count_words, text77)
     mylist = [x for y in countslist for x in y] # unnest
     mylist = [x for y in mylist for x in y] # unnest again
-    #print mylist
     number_of_words = sum(mylist)
-    print 'number of words: ', number_of_words
        
     # POS-TAG THE TEXT.
     # This has to be done for the lemmatiser to be able to work.
@@ -149,8 +162,8 @@ def process_essay_se(text, parasenttok, section_labels,nf, nf2, dev):
     make_sentence_graph_nodes(myarray,text,section_labels,parasenttok)
   
     # INITIATE AN EMPTY GRAPH TO BE THE SENTENCE GRAPH
-    #gr_se=nx.DiGraph() # xxxx @directedness: 'directed'. 
-    gr_se=nx.Graph() # xxxx @directedness: 'undirected'. 
+    gr_se=nx.DiGraph() # xxxx @directedness: 'directed'. 
+    #gr_se=nx.Graph() # xxxx @directedness: 'undirected'. 
 
     # ADD THE DEFINED NODES TO THE EMPTY GRAPH
     # 'list(myarray)' lists only the keys from 'myarray', so this

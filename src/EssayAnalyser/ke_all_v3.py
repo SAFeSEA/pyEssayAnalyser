@@ -242,14 +242,17 @@ def cf_ass_q_keylemmas(ass_q,keylemmas,scoresNfreqs):
 # Does something similar for 'conclusion' sentences. 
 # Called by debora_results_ke (in this file).
 def cf_ngrams_section(keywords,ngrams,text_se,label):
-    #print '\n\n\n8888888888888 cf_ngrams_section text_se', text_se
+    temp = [x for y in text_se for x in y] # Unnest paragraph level of nesting in text
+    if label == '#+s:i#':
+        temp = [item for item in temp if item[0][0] == '#+s:i#'] # [('#+s:i#', 'NN'), ('report', 'report'), ('outlines', 'outline'), ('main', 'main'),
+    elif label == '#+s:c#':
+        temp = [item for item in temp if item[0][0] == '#+s:c#'] # [('#+s:i#', 'NN'), ('report', 'report'), ('outlines', 'outline'), ('main', 'main'),
+    else:
+        temp = temp
     if ngrams != []:
         n = len(ngrams[0][0]) # Get the length of the ngram (could be 2,3,4...)
     else:
         n = 0
-    temp = [x for y in text_se for x in y] # Unnest paragraph level of nesting in text
-    #print '\n\n\n8888888888888 cf_ngrams_section temp', temp
-    temp = [item for item in temp if item[0][0] == label] # [('#+s:i#', 'NN'), ('report', 'report'), ('outlines', 'outline'), ('main', 'main'),
     temp = [x[1:] for x in temp] # Get rid of structure label at head of each sentence
     text = [x for y in temp for x in y] # Unnest sentence level of nesting
     counterA = 0
@@ -277,6 +280,7 @@ def cf_ngrams_section(keywords,ngrams,text_se,label):
 # Function: process_essay_ke(text,wordtok_text,nf,nf2,dev)  
 # Derive key lemmas
 def process_essay_ke(text,wordtok_text,nf,nf2,dev):
+    #print '\n\n\n text', text
     # These lines are needed to map the essay's nested and labelled structure into something simpler,
     # because we don't need the paragraph and sentence structure information to derive the key lemmas.
     # Currently I am not deriving/carrying the index number for each key word and each n-gram.
@@ -286,7 +290,8 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     # I suppose I could include headings if the results are strange??
     # 24/07/2013 Now I have added twp classes of what I have hitherto called 'headings',
     # two of which I want to include in the key word graph: table entries '#-s:e#' and short bullet points '#-s:b#'.
-    mylabels = ['#dummy#','#+s:i#','#+s:c#','#+s:s#','#+s:p#', '#-s:e#', '#-s:b#']
+
+    mylabels = ['#+s#','#+s:i#','#+s:c#','#+s:s#','#+s:p#', '#-s:e#', '#-s:b#'] # '#dummy#',
     temp = [x for x in temp if x[0][0] in mylabels]
     temp2 = [x[1:] for x in temp] # Get rid of structure label at head of each sentence
     text = [x for y in temp2 for x in y] # Unnest sentence level of nesting  
@@ -294,11 +299,9 @@ def process_essay_ke(text,wordtok_text,nf,nf2,dev):
     # Get the lemma set for the essay.
     unique_lemma_set = unique_everseen([x[1] for x in text ])
 
-    #unique_word_set = unique_everseen([x[0] for x in text])
-
     myarray_ke = {} # Initiate an array 
     
-    for item in unique_lemma_set:  # item: fox 
+    for item in unique_lemma_set:  # item: fox
         temp = [w[0] for w in text if item == w[1]] # temp: ['foxes', 'foxes', 'foxes', 'fox', 'foxes', 'foxes', 'foxes', 'fox']
         add_item_to_array_ke(myarray_ke, item, temp)
 
