@@ -330,6 +330,7 @@ def edit_text(text):
     text = [re.sub(r'(^|\n)([A-Z])\.([A-Z])\.', r'\1\2\3' , w) for w in text]# 'I.T.' with 'IT'
     text = [re.sub(r'(^|\n)(\d)\,(\d\d\d)', r'\1\2\3' , w) for w in text]# '1,234' with '1234'     
     text = [re.sub(r'(^|\n)(p)\.', r'\1\2', w) for w in text] # 'p.' with 'p'
+    text = [re.sub(r'(^|\n)(No)\.', r'\1\2', w) for w in text] # 'No.' with 'No'
     text = [re.sub(r'(^|\n)(vs)\.', r'\1\2', w) for w in text] # 'vs.' with 'vs'
     text = [re.sub(r'(^|\n)(cf)\.', r'\1\2', w) for w in text] # 'cf.' with 'cf'
     text = [re.sub(r'(^|\n)(ie)\.', r'\1\2', w) for w in text] # 'ie.' with 'ie'
@@ -430,10 +431,10 @@ def remove_punc_fm_sents(sent):
     #print sent
     temp = [w for w in sent if not re.match('[\.\|\?\+\(\)\{\}\[\]\^\$\\\'\"`!,;/\=%\*@\&\<\>\[\]\{\}~#]+$', w)] # This gets rid of tokens that constitute a series of ASCII punctuation and symbols and that do not end in symbols omitted from the list, e.g., hyphen and colon-
     #print temp
-    myfunnychars = [u'\u2019', u'\u2018', u'\u201a', u'\u201b', u'\u201c', # A crib for these symbols is in file unicode_symbol_codes.xlsx
+    myfunnychars = [u'\u2019', u'\u2019\u002C', u'\u2019\u002E', u'\u2018', u'\u201a', u'\u201b', u'\u201c', # A crib for these symbols is in file unicode_symbol_codes.xlsx
                     u'\u201d', u'\u201e', u'\u201f', u'\ufeff',
                     u'\u2026', u'\u27a2', u'\ufeff', u'\xb9', u'\xb2',
-                    u'\xb3', u'\u2013', u'\u2014', u'\u20AC', u'\xa3', u'\x5c', # u'\xb7',  # this 'middle dot' is used as a list enumerator by B4375120-H810-10I_01-1-U_utf8.txt
+                    u'\xb3', u'\u2013', u'\u2014', u'\u20AC', u'\xa3', u'\x5c', u'\xa8', # u'\xb7',  # this 'middle dot' is used as a list enumerator by B4375120-H810-10I_01-1-U_utf8.txt
 
                     u'\u025b', u'\u025b\u03c9a', u'\u025b1',
                     u'\u025b3', u'\u025bp', u'\u025bu', u'\u03b112', u'\u03b12',

@@ -1138,6 +1138,10 @@ def find_and_label_heading(text,sent, proc_sent, sent1, counter_s, counter_p, pa
         temp = ['#-s:c#'] + sent[1:] 
         #print '\n16.5.', temp
         return temp
+    elif re.match(r'Authors', firstword) and len(para) == 1: #  xxxx Added for RANLP        
+        temp = ['#-s:c#'] + sent[1:] 
+        print '\n16.5.', temp
+        return temp
     elif re.search(report, untokend) and len(para) == 1 and len(untokend) < 10: # 'report' alone on a line
         temp = ['#-s:c#'] + sent[1:] 
         #print '\n16.6.', temp

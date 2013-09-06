@@ -120,8 +120,8 @@ def make_edge_weights_arrays(myarray, myWarray, myCarray):
                   or label == '#-s:q#' or label == '#-s:H#' or label == '#-s:s#'
                   or label == '#-s:d#' or label == '#-s:l#' 
                   or label == '#-s:b#' or label == '#-s:e#' or label == '#-s:c#'
-                  or label == '#+s:p#' or label == '#dummy#'): # xxxx Note that this is new here. I am now labelling discussion before this point.
-                  #or label == '#+s:p#' or label == '#+s:s#'):
+                  or label == '#dummy#'): # Currently including abstract/preface in sentence graph
+                  #or label == '#+s:p#' or label == '#dummy#'): # xxxx this line commented out for RANLP because I need abstract to be included in graphs. Sections following conclusion are unrecognised and labelled 'dummy'..                    
                 add_item_to_array(myWarray, sentencecounter, '$$$$NOT_A_TRUE_SENTENCE$$$$')
                 add_item_to_array(myCarray, sentencecounter, 0)
             else:
@@ -402,7 +402,7 @@ def reorganise_array(myarray):
 # Returns the list of true sentences in descending rank order.
 # Called by find_sentence_graph_scores in this file.
 def sort_ranked_sentences(mylist):
-    mylist = [item for item in mylist if item[2] == '#+s#' or item[2] == '#+s:i#' or item[2] == '#+s:c#']# or item[2] == '#dummy#' or item[2] == '#-s:h#']    # or item[2] == '#-s:t#'or item[2] == '#-s:q#']
+    mylist = [item for item in mylist if item[2] == '#+s#' or item[2] == '#+s:i#' or item[2] == '#+s:c#' or item[2] == '#+s:p#'] # or item[2] == '#dummy#' # xxxx 'dummy' and '+s:p' included for RANLP. # or item[2] == '#-s:h#']  # or item[2] == '#-s:t#'or item[2] == '#-s:q#']
     mylist.sort() # ... and sort the structure according to its first argument (WSVi score)
     list.reverse(mylist)
     #values = set(map(lambda x:x[1], mylist)) # This routine groups the things sorted into lists if they have the same sort value
