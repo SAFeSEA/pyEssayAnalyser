@@ -169,7 +169,11 @@ def find_first_section_para_index(section_name, first_heading, text):
             if (sent[0] == '#dummy#'):
                     first = counter1
                     last = find_last_section_para_index(section_name, first, text)
-                    break                                       
+                    break
+            elif counter1 == len(text)-1: # If you get to the end of the text and you still haven't found any prose, set first and last paras of this section to the last para
+                first = counter1 # This is typically for essays which end in a heading or something misidentified as a heading.
+                last = counter1
+                break                                
             else: # If this isn't a likely section para, move on to the next para                    
                 counter1 += 1                                           
         else:
