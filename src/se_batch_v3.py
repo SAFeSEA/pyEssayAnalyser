@@ -83,88 +83,9 @@ for essay_fname in filelist: # For each file in the current directory...
         nf2.write('; ')        
         essay = top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")
 
-##        #############################
-##        #############################
-##        ### This section is for drawing figures. Comment it in, and comment out previous line. Also change 'return' line in 'top_level_procedure'.
-##        #############################
-##        #############################
-##        essay, gr_se_sample, gr_ke_sample = top_level_procedure(essay_txt,essay_fname,nf,nf2,dev,"H810","TMA01")
-##        string = essay_fname[:-4] + '_gr_se_sample_nodes' + '.png'
-##        figurefilename = os.path.join(tempdir1, string)
-##        #pos=nx.circular_layout(gr_se_sample)
-##        #pos=nx.graphviz_layout(gr_se_sample,prog="neato")
-##        plt.figure(1, figsize=(8,8))
-##        x = gr_se_sample.nodes()
-##        #plt.title(essay_fname)
-##        nx.draw(gr_se_sample, font_size=0, font_color='c', font_weight='normal',\
-##        #nx.draw(gr_se_sample, font_size=3, font_color='k', font_weight='normal',\
-##                node_size=500,
-##                #stretch_factor=100,
-##                #node_size=gr_se_sample.degree().values(), # node size proportional to node degree
-##                alpha = 0.25, # transparency of the node               
-##                linewidths=.2,
-##                node_shape='o',
-##                #node_color='c',
-##                node_color=range(len(x)),
-##                cmap=plt.cm.rainbow, # Blues,
-##                edge_color='k',width=.1,style='solid',arrows=False) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
-##        ##plt.show() # Use this line if you want to print to a pop-up window from the shell
-##        plt.savefig(figurefilename)#, dpi=1000)
-##        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.
-##
-####        string = essay_fname[:-4] + '_gr_se_sample_edges' + '.png'
-####        figurefilename = os.path.join(tempdir1, string)
-####        plt.figure(1, figsize=(8,8))
-####        #nx.draw(gr_se_sample, font_size=0, font_color='c', font_weight='normal',\
-####        nx.draw(gr_se_sample, font_size=0, font_color='k', font_weight='normal',\
-####                node_size=0.01,                
-####                #node_size=gr_se_sample.degree().values(),                
-####                linewidths=0,node_shape='o',node_color='c',
-####                alpha = 0.5, # total transparency of node
-####                edge_color='k',width=.09,style='solid',arrows=False) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
-####        ##plt.show() # Use this line if you want to print to a pop-up window from the shell
-####        plt.savefig(figurefilename, dpi=1000)
-####        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.
-##
-####        string = essay_fname[:-4] + '_gr_se_sample_labels' + '.png'
-####        figurefilename = os.path.join(tempdir1, string)
-####        plt.figure(1, figsize=(8,8))
-####        #nx.draw(gr_se_sample, font_size=0, font_color='c', font_weight='normal',\
-####        nx.draw(gr_se_sample, font_size=2, font_color='k', font_weight='normal',\
-####                node_size=0.01,                
-####                #node_size=gr_se_sample.degree().values(),                
-####                linewidths=0,node_shape='o',node_color='c',
-####                alpha = 0.5, # transparency of node
-####                edge_color='c',width=.09,style='solid',arrows=False) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
-####        ##plt.show() # Use this line if you want to print to a pop-up window from the shell
-####        plt.savefig(figurefilename, dpi=1000)
-####        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.
-##
-##
-##
-##        string = essay_fname[:-4] + '_gr_ke_sample' + '.png' # can use pdf but don't specify dpi in plt.savefig
-##        figurefilename = os.path.join(tempdir1, string)
-##        pos=nx.circular_layout(gr_ke_sample)
-##        plt.figure(2,figsize=(14,10))        
-##        nx.draw(gr_ke_sample, pos, font_size=14, font_color='b',\
-##                node_size=0,
-##                #node_size=gr_se_sample.degree().values(), alpha = 0.25,
-##                linewidths=.001,node_shape='o', node_color='w',\
-##                edge_color='c',width=.2,style='solid',arrows=False) # circular figure in which the edges cross the middle like spokes            #nx.draw(gr_ke_sample) # figure which clusters connected nodes very closely and unconnected nodes a long way away. Not sure why.
-##        ##plt.show() # Use this line if you want to print to a pop-up window from the shell
-##        plt.savefig(figurefilename)#,dpi=1000) #
-##        plt.close() # If you don't close the current figure, the data from the current figure will leak into the next essay's figure.        
-##        #############################
-##        #############################
-##        ### End of figures section
-##        #############################
-##        #############################
-
-
-
         #nx.write_weighted_edgelist(gr_se, fullpath, comments="#", delimiter=' ', encoding='utf-8') # This writes edge list to temp dir instead of to cwd
         #print '\n\n', essay, '\n\n', essay_id , '\n\n'
-
+        # soopakallerfrajallipstickcexxpeealliidoshus
         #print gr_se.edges(data = True)
         print '\n', essay_fname # Print to shell to monitor progress        
         nf.close() # Close the essay results file
