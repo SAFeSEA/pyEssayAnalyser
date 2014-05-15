@@ -85,7 +85,6 @@ for essay_fname in filelist: # For each file in the current directory...
 
         #nx.write_weighted_edgelist(gr_se, fullpath, comments="#", delimiter=' ', encoding='utf-8') # This writes edge list to temp dir instead of to cwd
         #print '\n\n', essay, '\n\n', essay_id , '\n\n'
-        # soopakallerfrajallipstickcexxpeealliidoshus
         #print gr_se.edges(data = True)
         print '\n', essay_fname # Print to shell to monitor progress        
         nf.close() # Close the essay results file
