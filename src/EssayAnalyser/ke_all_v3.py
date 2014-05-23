@@ -741,3 +741,5 @@ def get_essay_stats_ke(text_se,gr_ke,di,myarray_ke,keylemmas,keywords,\
            bigrams_in_concl1,bigrams_in_concl2,\
            bigrams_in_assq1,bigrams_in_assq2,\
            all_bigrams,topbetscore
+
+# Copyright (c) 2013 Debora Georgia Field <deboraf7@aol.com>

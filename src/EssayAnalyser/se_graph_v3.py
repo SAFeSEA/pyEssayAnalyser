@@ -470,3 +470,5 @@ def sample_nodes_for_figure(graph,nodes,cat):
         temp2 = nodes # Get the top third of the key lemmas sorted in order of centrality score. These are going to be the nodes in the key word sample graph.
     graph_sample = graph.subgraph(temp2) # Make a subgraph using only the nodes you want for the figure
     return graph_sample
+
+# Copyright (c) 2013 Debora Georgia Field <deboraf7@aol.com>
